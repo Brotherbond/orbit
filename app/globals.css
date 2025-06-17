@@ -92,3 +92,21 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#ff6600] hover:bg-[#ff6b00] text-white;
+  }
+
+  .status-active {
+    @apply bg-[#12b636] hover:bg-[#1cd344] text-white;
+  }
+
+  .status-pending {
+    @apply bg-[#ffb800] text-white;
+  }
+
+  .status-inactive {
+    @apply bg-[#ff0000] text-white;
+  }
+}
