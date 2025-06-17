@@ -11,16 +11,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Bell, Search, User, Settings, LogOut } from "lucide-react"
-import { useAuth } from "@/lib/auth-context"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 export function DashboardHeader() {
-  const { user, logout } = useAuth()
+  const { data: session } = useSession()
   const router = useRouter()
 
   const handleLogout = async () => {
-    await logout()
-    router.push("/auth/login")
+    await signOut({ callbackUrl: "/auth/login" })
   }
 
   return (
@@ -45,10 +44,8 @@ export function DashboardHeader() {
                   <User className="h-4 w-4 text-white" />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-medium text-[#444444]">
-                    {user?.first_name} {user?.last_name}
-                  </p>
-                  <p className="text-xs text-[#ababab]">{user?.email}</p>
+                  <p className="text-sm font-medium text-[#444444]">{session?.user?.name || "User"}</p>
+                  <p className="text-xs text-[#ababab]">{session?.user?.email}</p>
                 </div>
               </Button>
             </DropdownMenuTrigger>

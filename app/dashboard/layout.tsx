@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useAuth } from "@/lib/auth-context"
+import { useSession } from "next-auth/react"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { useRouter } from "next/navigation"
@@ -13,16 +12,16 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, isLoading } = useAuth()
+  const { data: session, status } = useSession()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (status === "unauthenticated") {
       router.push("/auth/login")
     }
-  }, [user, isLoading, router])
+  }, [status, router])
 
-  if (isLoading) {
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-[#f8f8f8] flex items-center justify-center">
         <div className="text-center">
@@ -35,7 +34,7 @@ export default function DashboardLayout({
     )
   }
 
-  if (!user) {
+  if (status === "unauthenticated") {
     return null
   }
 

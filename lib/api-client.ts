@@ -1,3 +1,5 @@
+import { getSession } from "next-auth/react"
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
 
 interface ApiResponse<T> {
@@ -33,7 +35,8 @@ class ApiClient {
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    const session = await getSession();
+    const token = session?.accessToken || null;
 
     const config: RequestInit = {
       headers: {
