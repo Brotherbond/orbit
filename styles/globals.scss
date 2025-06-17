@@ -1,0 +1,101 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+// Custom SCSS variables matching the Figma design
+$primary-orange: #ff6600;
+$primary-orange-hover: #ff6b00;
+$success-green: #12b636;
+$success-green-light: #1cd344;
+$warning-yellow: #ffb800;
+$error-red: #ff0000;
+$text-primary: #444444;
+$text-secondary: #ababab;
+$text-dark: #434343;
+$background-light: #f8f8f8;
+$background-gray: #f2f2f2;
+$border-light: #eeeeee;
+$border-gray: #d9d9d9;
+
+// Custom component styles
+.dashboard-card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+  
+  &:hover {
+    @apply shadow-md transition-shadow duration-200;
+  }
+}
+
+.status-badge {
+  &.active {
+    background-color: $success-green;
+    
+    &:hover {
+      background-color: $success-green-light;
+    }
+  }
+  
+  &.pending {
+    background-color: $warning-yellow;
+  }
+  
+  &.inactive {
+    background-color: $error-red;
+  }
+}
+
+.form-input {
+  @apply border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent;
+  
+  &.error {
+    @apply border-red-500 focus:ring-red-500;
+  }
+}
+
+.btn-primary {
+  background-color: $primary-orange;
+  
+  &:hover {
+    background-color: $primary-orange-hover;
+  }
+}
+
+// Responsive utilities
+@media (max-width: 768px) {
+  .dashboard-grid {
+    @apply grid-cols-1;
+  }
+  
+  .table-responsive {
+    @apply overflow-x-auto;
+  }
+}
+
+// Animation utilities
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
