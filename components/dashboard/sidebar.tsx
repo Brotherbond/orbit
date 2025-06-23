@@ -16,67 +16,81 @@ import {
   UserCheck,
   LogOut,
 } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 const menuItems = [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: Home,
+    roles: ["everybody"],
   },
   {
     title: "Orders",
     href: "/dashboard/orders",
     icon: ShoppingCart,
+    roles: ["everybody"],
   },
   {
     title: "Distributors",
     href: "/dashboard/distributors",
     icon: UserCheck,
+    roles: ["super-admin", "operations", "sales-admin"],
   },
   {
     title: "IME/VSS",
     href: "/dashboard/ime-vss",
     icon: Users,
+    roles: ["super-admin", "operations", "sales-admin"],
   },
   {
     title: "Users",
     href: "/dashboard/users",
     icon: Users,
+    roles: ["super-admin"],
   },
   {
     title: "Brands",
     href: "/dashboard/brands",
     icon: Package,
+    roles: ["super-admin", "operations"],
   },
   {
     title: "Markets",
     href: "/dashboard/markets",
     icon: Building2,
+    roles: ["super-admin", "operations", "sales-admin"],
   },
   {
     title: "Locations",
     href: "/dashboard/locations",
     icon: MapPin,
+    roles: ["super-admin", "operations"],
   },
   {
     title: "Roles & Permissions",
     href: "/dashboard/roles",
     icon: Shield,
+    roles: ["super-admin"],
   },
   {
     title: "Reports",
     href: "/dashboard/reports",
     icon: FileText,
+    roles: ["everybody"],
   },
   {
     title: "Settings",
     href: "/dashboard/settings",
     icon: Settings,
+    roles: ["everybody"],
   },
 ]
 
 export function DashboardSidebar() {
   const pathname = usePathname()
+  const { data: session } = useSession();
+  const userRole = session?.user?.role?.toLowerCase() || "";
 
   const activeItem = menuItems
     .filter((item) => pathname === item.href || pathname.startsWith(item.href + "/"))
@@ -86,11 +100,15 @@ export function DashboardSidebar() {
     await signOut({ callbackUrl: "/auth/login" })
   }
 
+  const visibleMenuItems = menuItems.filter((item) =>
+    item.roles.includes("everybody") || item.roles.includes(userRole)
+  )
+
   return (
     <aside className="w-64 bg-white border-r border-[#eeeeee] min-h-screen">
       <div className="p-4">
         <nav className="space-y-1">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const isActive = activeItem && item.href === activeItem.href;
             return (
               <Link key={item.href} href={item.href}>
