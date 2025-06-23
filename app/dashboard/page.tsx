@@ -2,56 +2,64 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, Users, ShoppingCart, DollarSign, Package, Plus } from "lucide-react";
+import { ShoppingCart, DollarSign, Package } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
-import type { Order } from "@/types/order";
 import { DataTable } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getColumns, getStatusFilter } from "./orders/page";
 
-interface DashboardStats {
-  totalRevenue: number
-  totalOrders: number
-  totalDistributors: number
-  totalBrands: number
-  revenueGrowth: number
-  ordersGrowth: number
-  distributorsGrowth: number
-  brandsGrowth: number
+interface BrandCategoryPriceData {
+  category: string;
+  total_price: string;
+  volume: number;
+}
+
+interface DailyRevenue {
+  date: string;
+  total: string;
+}
+
+interface RecentOrderBrand {
+  uuid: string;
+  quantity: string;
+  price: string;
+  info: {
+    uuid: string;
+    name: string;
+    category: string;
+    image: string;
+    created_at: string;
+  };
+}
+
+interface RecentOrder {
+  uuid: string;
+  ref: string;
+  ime_vss: any;
+  distributor_user: any;
+  promos: any;
+  brands: RecentOrderBrand[];
+  total_amount: string;
+  status: string;
+  status_progress: any;
+  created_at: string;
+}
+
+interface DashboardData {
+  daily_revenue: DailyRevenue[];
+  recent_orders: RecentOrder[];
+  total_revenue: string;
+  total_volume: number;
+  brand_category_price_data: BrandCategoryPriceData[];
 }
 
 
-const chartData = [
-  { name: "Jan", revenue: 45000, orders: 120 },
-  { name: "Feb", revenue: 52000, orders: 140 },
-  { name: "Mar", revenue: 48000, orders: 130 },
-  { name: "Apr", revenue: 61000, orders: 160 },
-  { name: "May", revenue: 55000, orders: 145 },
-  { name: "Jun", revenue: 67000, orders: 180 },
-]
-
-const pieData = [
-  { name: "Pending", value: 30, color: "#ffb800" },
-  { name: "Confirmed", value: 45, color: "#12b636" },
-  { name: "Delivered", value: 20, color: "#ff6600" },
-  { name: "Cancelled", value: 5, color: "#ff0000" },
-]
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalRevenue: 0,
-    totalOrders: 0,
-    totalDistributors: 0,
-    totalBrands: 0,
-    revenueGrowth: 0,
-    ordersGrowth: 0,
-    distributorsGrowth: 0,
-    brandsGrowth: 0,
-  })
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true)
 
   const { toast } = useToast()
@@ -62,46 +70,25 @@ export default function DashboardPage() {
   const statusFilter = getStatusFilter(role)
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
+    const fetchDashboardData = async () => {
       try {
-        setIsLoading(true)
-        const { data: statsData } = await apiClient.get<{ items: any }>("/orders/dashboard-stats")
-        let stats: DashboardStats = {
-          totalRevenue: 0,
-          totalOrders: 0,
-          totalDistributors: 0,
-          totalBrands: 0,
-          revenueGrowth: 0,
-          ordersGrowth: 0,
-          distributorsGrowth: 0,
-          brandsGrowth: 0,
+        setIsLoading(true);
+        const res = await apiClient.get<{ items: any }>("/admin/dashboard/sales-admin");
+        if (res.data && res.data.items) {
+          setDashboardData(res.data.items);
         }
-        if (statsData && statsData.items) {
-          const items = statsData.items
-          stats = {
-            totalRevenue: 0,
-            totalOrders: (items.pending ?? 0) + (items.confirmed ?? 0) + (items.fulfilled ?? 0),
-            totalDistributors: 0,
-            totalBrands: 0,
-            revenueGrowth: 0,
-            ordersGrowth: 0,
-            distributorsGrowth: 0,
-            brandsGrowth: 0,
-          }
-        }
-        setStats(stats)
       } catch (error: any) {
         toast({
           title: "Error",
-          description: "Failed to load dashboard stats",
+          description: "Failed to load dashboard data",
           variant: "destructive",
-        })
+        });
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    fetchDashboardStats()
-  }, [])
+    };
+    fetchDashboardData();
+  }, []);
 
   if (isLoading) {
     return (
@@ -119,7 +106,11 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-    )
+    );
+  }
+
+  if (!dashboardData) {
+    return null;
   }
 
   return (
@@ -129,28 +120,23 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-[#444444]">Dashboard</h1>
           <p className="text-[#ababab]">Welcome back! Here&apos;s what&apos;s happening with your business.</p>
         </div>
-        <Button className="btn-primary">
-          <Plus className="mr-2 h-4 w-4" />
-          Quick Actions
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full dashboard-charts">
-        {/* Revenue & Orders Trend Chart */}
+        {/* Revenue Trend Chart */}
         <div className="flex flex-col justify-between w-full">
           <Card className="h-full card-hover">
             <CardHeader>
-              <CardTitle className="text-[#444444]">Revenue & Orders Trend</CardTitle>
+              <CardTitle className="text-[#444444]">Daily Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
+                <BarChart data={dashboardData.daily_revenue}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eeeeee" />
-                  <XAxis dataKey="name" stroke="#ababab" />
+                  <XAxis dataKey="date" stroke="#ababab" />
                   <YAxis stroke="#ababab" />
                   <Tooltip />
-                  <Bar dataKey="revenue" fill="#ff6600" />
-                  <Bar dataKey="orders" fill="#12b636" />
+                  <Bar dataKey="total" fill="#ff6600" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -163,14 +149,10 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#ababab]">Total Revenue</p>
-                  <p className="text-2xl font-semibold text-[#444444]">₦{stats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue).toLocaleString()}</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-[#12b636]" />
               </div>
-              <div className="flex items-center mt-2">
-                <TrendingUp className="h-4 w-4 text-[#12b636] mr-1" />
-                <span className="text-sm text-[#12b636]">+{stats.revenueGrowth}%</span>
-              </div>
             </CardContent>
           </Card>
 
@@ -178,51 +160,31 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-[#ababab]">Total Orders</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{stats.totalOrders.toLocaleString()}</p>
+                  <p className="text-sm text-[#ababab]">Total Volume</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
               </div>
-              <div className="flex items-center mt-2">
-                <TrendingUp className="h-4 w-4 text-[#12b636] mr-1" />
-                <span className="text-sm text-[#12b636]">+{stats.ordersGrowth}%</span>
-              </div>
             </CardContent>
           </Card>
 
-          <Card className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#ababab]">Distributors</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{stats.totalDistributors.toLocaleString()}</p>
+          {dashboardData.brand_category_price_data.map((cat) => (
+            <Card className="card-hover" key={cat.category}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-[#ababab]">{cat.category} Revenue</p>
+                    <p className="text-2xl font-semibold text-[#444444]">₦{Number(cat.total_price).toLocaleString()}</p>
+                  </div>
+                  <Package className="h-8 w-8 text-[#1cd344]" />
                 </div>
-                <Users className="h-8 w-8 text-[#ffb800]" />
-              </div>
-              <div className="flex items-center mt-2">
-                <TrendingUp className="h-4 w-4 text-[#12b636] mr-1" />
-                <span className="text-sm text-[#12b636]">+{stats.distributorsGrowth}%</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#ababab]">Active Brands</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{stats.totalBrands.toLocaleString()}</p>
+                <div className="flex items-center mt-2">
+                  <span className="text-sm text-[#12b636]">Volume: {cat.volume}</span>
                 </div>
-                <Package className="h-8 w-8 text-[#1cd344]" />
-              </div>
-              <div className="flex items-center mt-2">
-                <TrendingUp className="h-4 w-4 text-[#12b636] mr-1" />
-                <span className="text-sm text-[#12b636]">+{stats.brandsGrowth}%</span>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-
       </div>
 
       {/* Recent Orders */}
