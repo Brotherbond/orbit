@@ -9,86 +9,145 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { ArrowLeft, Save } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import { Formik, Form, ErrorMessage } from "formik"
 import * as Yup from "yup"
+import { User } from "../../users/page"
+import { Distributor } from "../page"
 
-interface User {
-  id: string
-  first_name: string
-  last_name: string
-  email: string
+function ImeVssUserSelect({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (uuid: string) => void
+}) {
+  const [options, setOptions] = useState<User[]>([])
+  const [search, setSearch] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(handler)
+  }, [search])
+
+  useEffect(() => {
+    setLoading(true)
+    apiClient
+      .get<{ items: User[] }>(`/users?roles=ime,vss&search=${encodeURIComponent(debouncedSearch)}`)
+      .then(({ data }) => setOptions(data.items))
+      .finally(() => setLoading(false))
+  }, [debouncedSearch])
+
+  const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined)
+
+  useEffect(() => {
+    if (value) {
+      // Try to find in options first
+      const found = options.find((u) => u.id === value)
+      if (found) setSelectedUser(found)
+    }
+  }, [value, options])
+
+  const handleSelect = (uuid: string) => {
+    if (!uuid) return;
+    const found = options.find((u) => u.id === uuid)
+    if (found) setSelectedUser(found)
+    onChange(uuid)
+  }
+
+  return (
+    <Select value={value || ''} onValueChange={handleSelect}>
+      <SelectTrigger>
+        <SelectValue
+          placeholder={loading ? "Loading..." : "Select IME/VSS user"}
+        >
+          {selectedUser
+            ? `${selectedUser.first_name} ${selectedUser.last_name} (${selectedUser.email})`
+            : undefined}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <div className="p-2">
+          <Input
+            placeholder="Search user..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            autoFocus
+          />
+        </div>
+        {loading && <div className="px-3 py-2 text-gray-400">Searching...</div>}
+        {options.length === 0 && !loading && (
+          <div className="px-3 py-2 text-gray-400">No users found</div>
+        )}
+        {options.map(user => (
+          <SelectItem key={user.uuid} value={user.uuid}>
+            {user.first_name} {user.last_name} ({user.email})
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
 }
 
-export default function CreateDistributorPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [isLoading, setIsLoading] = useState(false)
 
+export default function CreateDistributorPage() {
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const fetchUsers = async () => {
-    try {
-      const response = await apiClient.get("/users?role=distributor")
-      const data = response.data as { status: string; data: { items: User[] } }
-      if (data.status === "success") {
-        setUsers(data.data.items)
-      }
-    } catch (error) {
-      console.error("Failed to fetch users:", error)
-    }
-  }
-
   const initialValues = {
-    user_id: "",
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    password: "",
+    market_id: "",
     business_name: "",
     address: "",
-    business_type: "",
-    registration_number: "",
-    tax_id: "",
-    bank_name: "",
-    account_number: "",
-    account_name: "",
+    ime_vss_user_id: "",
+    send_notification: false,
   }
 
   const validationSchema = Yup.object({
-    user_id: Yup.string().required("User is required"),
+    first_name: Yup.string().required("First name is required"),
+    last_name: Yup.string().required("Last name is required"),
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    phone: Yup.string(),
+    password: Yup.string().required("Password is required"),
+    market_id: Yup.string(),
     business_name: Yup.string().required("Business name is required"),
     address: Yup.string().required("Address is required"),
-    business_type: Yup.string().required("Business type is required"),
-    registration_number: Yup.string(),
-    tax_id: Yup.string(),
-    bank_name: Yup.string(),
-    account_number: Yup.string(),
-    account_name: Yup.string(),
+    ime_vss_user_id: Yup.string().required("IME VSS User is required"),
+    send_notification: Yup.boolean(),
   })
 
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.post("/distributors", values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
+      const { data, status } = await apiClient.post<{ item: Distributor }>("/distributors", values);
+      if (status === "success") {
         toast({
           title: "Success",
           description: "Distributor created successfully",
         })
-        router.push("/dashboard/distributors")
+        // router.push("/dashboard/distributors")
       }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create distributor",
+        description: error.message || "Failed to create distributor",
         variant: "destructive",
       })
-      setFieldError("business_name", error.response?.data?.errors?.business_name || "")
+      if (error.response?.data?.errors) {
+        Object.entries(error.response.data.errors).forEach(([field, message]) => {
+          setFieldError(field, message as string)
+        })
+      }
     } finally {
       setIsLoading(false)
       setSubmitting(false)
@@ -121,148 +180,144 @@ export default function CreateDistributorPage() {
           >
             {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
               <Form className="space-y-8">
-                {/* Basic Information */}
+                {/* Distributor Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-[#444444]">Basic Information</h3>
+                  <h3 className="text-lg font-medium text-[#444444]">Distributor Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="user_id" className="text-[#444444]">
-                        Associated User *
-                      </Label>
-                      <Select
-                        value={values.user_id}
-                        onValueChange={(value) => setFieldValue("user_id", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.first_name} {user.last_name} ({user.email})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <ErrorMessage name="user_id" component="p" className="text-sm text-red-500" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="business_name" className="text-[#444444]">
-                        Business Name *
+                      <Label htmlFor="first_name" className="text-[#444444]">
+                        First Name *
                       </Label>
                       <Input
-                        id="business_name"
-                        name="business_name"
-                        value={values.business_name}
+                        id="first_name"
+                        name="first_name"
+                        value={values.first_name}
                         onChange={handleChange}
-                        placeholder="Enter business name"
+                        placeholder="Enter first name"
                       />
-                      <ErrorMessage name="business_name" component="p" className="text-sm text-red-500" />
+                      <ErrorMessage name="first_name" component="p" className="text-sm text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name" className="text-[#444444]">
+                        Last Name *
+                      </Label>
+                      <Input
+                        id="last_name"
+                        name="last_name"
+                        value={values.last_name}
+                        onChange={handleChange}
+                        placeholder="Enter last name"
+                      />
+                      <ErrorMessage name="last_name" component="p" className="text-sm text-red-500" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-[#444444]">
+                        Email *
+                      </Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        value={values.email}
+                        onChange={handleChange}
+                        placeholder="Enter email"
+                        type="email"
+                      />
+                      <ErrorMessage name="email" component="p" className="text-sm text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-[#444444]">
+                        Phone
+                      </Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        value={values.phone}
+                        onChange={handleChange}
+                        placeholder="Enter phone number"
+                      />
+                      <ErrorMessage name="phone" component="p" className="text-sm text-red-500" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-[#444444]">
+                        Password *
+                      </Label>
+                      <Input
+                        id="password"
+                        name="password"
+                        value={values.password}
+                        onChange={handleChange}
+                        placeholder="Enter password"
+                        type="password"
+                      />
+                      <ErrorMessage name="password" component="p" className="text-sm text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="market_id" className="text-[#444444]">
+                        Market
+                      </Label>
+                      <Input
+                        id="market_id"
+                        name="market_id"
+                        value={values.market_id}
+                        onChange={handleChange}
+                        placeholder="Enter market ID"
+                      />
+                      <ErrorMessage name="market_id" component="p" className="text-sm text-red-500" />
                     </div>
                   </div>
                   <div className="space-y-2">
+                    <Label htmlFor="business_name" className="text-[#444444]">
+                      Business Name *
+                    </Label>
+                    <Input
+                      id="business_name"
+                      name="business_name"
+                      value={values.business_name}
+                      onChange={handleChange}
+                      placeholder="Enter business name"
+                    />
+                    <ErrorMessage name="business_name" component="p" className="text-sm text-red-500" />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="address" className="text-[#444444]">
-                      Business Address *
+                      Address *
                     </Label>
                     <Textarea
                       id="address"
                       name="address"
                       value={values.address}
                       onChange={handleChange}
-                      placeholder="Enter complete business address"
+                      placeholder="Enter address"
                       rows={3}
                     />
                     <ErrorMessage name="address" component="p" className="text-sm text-red-500" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="business_type" className="text-[#444444]">
-                        Business Type *
-                      </Label>
-                      <Select
-                        value={values.business_type}
-                        onValueChange={(value) => setFieldValue("business_type", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select business type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="retail">Retail</SelectItem>
-                          <SelectItem value="wholesale">Wholesale</SelectItem>
-                          <SelectItem value="supermarket">Supermarket</SelectItem>
-                          <SelectItem value="pharmacy">Pharmacy</SelectItem>
-                          <SelectItem value="restaurant">Restaurant</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <ErrorMessage name="business_type" component="p" className="text-sm text-red-500" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="registration_number" className="text-[#444444]">
-                        Registration Number
-                      </Label>
-                      <Input
-                        id="registration_number"
-                        name="registration_number"
-                        value={values.registration_number}
-                        onChange={handleChange}
-                        placeholder="Enter business registration number"
-                      />
-                    </div>
-                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="tax_id" className="text-[#444444]">
-                      Tax ID
+                    <Label htmlFor="ime_vss_user_id" className="text-[#444444]">
+                      IME VSS User *
                     </Label>
-                    <Input
-                      id="tax_id"
-                      name="tax_id"
-                      value={values.tax_id}
-                      onChange={handleChange}
-                      placeholder="Enter tax identification number"
+                    <ImeVssUserSelect
+                      value={values.ime_vss_user_id}
+                      onChange={(uuid: string) => setFieldValue("ime_vss_user_id", uuid)}
                     />
+                    <ErrorMessage name="ime_vss_user_id" component="p" className="text-sm text-red-500" />
                   </div>
-                </div>
-                {/* Banking Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-[#444444]">Banking Information</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="bank_name" className="text-[#444444]">
-                        Bank Name
-                      </Label>
-                      <Input
-                        id="bank_name"
-                        name="bank_name"
-                        value={values.bank_name}
-                        onChange={handleChange}
-                        placeholder="Enter bank name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="account_number" className="text-[#444444]">
-                        Account Number
-                      </Label>
-                      <Input
-                        id="account_number"
-                        name="account_number"
-                        value={values.account_number}
-                        onChange={handleChange}
-                        placeholder="Enter account number"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="account_name" className="text-[#444444]">
-                        Account Name
-                      </Label>
-                      <Input
-                        id="account_name"
-                        name="account_name"
-                        value={values.account_name}
-                        onChange={handleChange}
-                        placeholder="Enter account name"
-                      />
-                    </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="send_notification"
+                      name="send_notification"
+                      type="checkbox"
+                      checked={values.send_notification}
+                      onChange={handleChange}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="send_notification" className="text-[#444444]">
+                      Send Notification
+                    </Label>
                   </div>
                 </div>
                 <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">

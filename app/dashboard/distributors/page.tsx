@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 
-interface Distributor {
+export interface Distributor {
   id: string
   uuid: string
   user: {
