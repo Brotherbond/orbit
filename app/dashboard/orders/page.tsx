@@ -14,29 +14,34 @@ import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import type { Order } from "@/types/order"
 
-export default function OrdersPage() {
-  const { data: session } = useSession();
-  const { toast } = useToast();
-  const router = useRouter();
-  const user = session?.user;
-  const role = user?.role;
-  let statusFilter = "";
-  if (role === "treasury") {
-    statusFilter = "&status=pending";
-  } else if (role === "sales-admin") {
-    statusFilter = "&status=confirmed";
-  }
 
-  const dataTableRef = useRef<{ refresh: () => void }>(null);
+export function getStatusFilter(role?: string): string {
+  if (role === "treasury") {
+    return "&status=pending";
+  } else if (role === "sales-admin") {
+    return "&status=confirmed";
+  }
+  return "";
+}
+
+export default function OrdersPage() {
+  const { data: session } = useSession()
+  const { toast } = useToast()
+  const router = useRouter()
+  const dataTableRef = useRef<{ refresh: () => void }>(null)
+
+  const user = session?.user
+  const role = user?.role
+  const statusFilter = getStatusFilter(role)
 
   const refreshTable = () => {
-    dataTableRef.current?.refresh();
-  };
+    dataTableRef.current?.refresh()
+  }
 
   const columns = React.useMemo(
     () => getColumns(session, router, toast, refreshTable),
     [session, router, toast]
-  );
+  )
 
   return (
     <div className="space-y-6">
@@ -55,10 +60,10 @@ export default function OrdersPage() {
         exportFileName="orders.xlsx"
       />
     </div>
-  );
+  )
 }
 
-function getColumns(session: any, router: any, toast: any, refreshTable: () => void): ColumnDef<Order>[] {
+export function getColumns(session: any, router: any, toast: any, refreshTable: () => void): ColumnDef<Order>[] {
   return [
     {
       accessorKey: "ref",

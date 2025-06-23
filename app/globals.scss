@@ -192,6 +192,11 @@ body {
   }
 }
 
+.no-card{
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .dashboard {
   .card.card-hover:hover {
     box-shadow:

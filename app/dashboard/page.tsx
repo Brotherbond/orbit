@@ -1,13 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
-import { TrendingUp, Users, ShoppingCart, DollarSign, Package, AlertCircle, Plus } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-import type { Order } from "@/types/order"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { TrendingUp, Users, ShoppingCart, DollarSign, Package, Plus } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
+import { useToast } from "@/hooks/use-toast";
+import type { Order } from "@/types/order";
+import { DataTable } from "@/components/ui/data-table";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { getColumns, getStatusFilter } from "./orders/page";
 
 interface DashboardStats {
   totalRevenue: number
@@ -57,32 +61,20 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   const { toast } = useToast()
+  const { data: session } = useSession()
+  const router = useRouter()
+  const user = session?.user
+  const role = user?.role
+  const statusFilter = getStatusFilter(role)
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
-
-  const fetchDashboardData = async () => {
-    try {
-      setIsLoading(true)
-
-      // Fetch dashboard stats
-      const { data: statsData } = await apiClient.get<{ items: any }>("/orders/dashboard-stats")
-      let stats: DashboardStats = {
-        totalRevenue: 0,
-        totalOrders: 0,
-        totalDistributors: 0,
-        totalBrands: 0,
-        revenueGrowth: 0,
-        ordersGrowth: 0,
-        distributorsGrowth: 0,
-        brandsGrowth: 0,
-      }
-      if (statsData && statsData.items) {
-        const items = statsData.items
-        stats = {
+    const fetchDashboardStats = async () => {
+      try {
+        setIsLoading(true)
+        const { data: statsData } = await apiClient.get<{ items: any }>("/orders/dashboard-stats")
+        let stats: DashboardStats = {
           totalRevenue: 0,
-          totalOrders: (items.pending ?? 0) + (items.confirmed ?? 0) + (items.fulfilled ?? 0),
+          totalOrders: 0,
           totalDistributors: 0,
           totalBrands: 0,
           revenueGrowth: 0,
@@ -90,32 +82,32 @@ export default function DashboardPage() {
           distributorsGrowth: 0,
           brandsGrowth: 0,
         }
+        if (statsData && statsData.items) {
+          const items = statsData.items
+          stats = {
+            totalRevenue: 0,
+            totalOrders: (items.pending ?? 0) + (items.confirmed ?? 0) + (items.fulfilled ?? 0),
+            totalDistributors: 0,
+            totalBrands: 0,
+            revenueGrowth: 0,
+            ordersGrowth: 0,
+            distributorsGrowth: 0,
+            brandsGrowth: 0,
+          }
+        }
+        setStats(stats)
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard stats",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
       }
-      setStats(stats)
-
-      // Fetch recent orders
-      const { data: ordersData } = await apiClient.get<{ items: any }>("/orders/recent?recent_orders_count=5")
-      if (ordersData && ordersData.items) {
-        const mappedOrders: RecentOrder[] = ordersData.items.map((order: any) => ({
-          id: order.uuid ?? "",
-          ref: order.ref ?? "",
-          distributor: order.distributor_user?.distributor_details?.business_name ?? order.distributor_user?.full_name ?? "Unknown",
-          amount: Number(order.total_amount ?? 0),
-          status: order.status ?? "unknown",
-          createdAt: order.created_at ?? "",
-        }))
-        setRecentOrders(mappedOrders)
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard data",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
     }
-  }
+    fetchDashboardStats()
+  }, [])
 
   if (isLoading) {
     return (
@@ -245,31 +237,21 @@ export default function DashboardPage() {
           <CardTitle className="text-[#444444]">Recent Orders</CardTitle>
         </CardHeader>
         <CardContent>
-          {recentOrders.length > 0 ? (
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div key={order.ref} className="flex items-center justify-between p-4 bg-[#f2f2f2] rounded-lg">
-                  <div>
-                    <p className="font-medium text-[#444444]">{order.distributor}</p>
-                    <p className="text-sm text-[#ababab]">Order #{order.ref}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-[#444444]">₦{order.amount.toLocaleString()}</p>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full status ${order.status} `}
-                    >
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+          <div style={{ margin: "-1.5rem -1.5rem 0 -1.5rem" }}>
+            <style>{`
+              .dashboard-hide-header .flex.items-center.justify-between.py-4 {
+                display: none !important;
+              }
+            `}</style>
+            <div className="dashboard-hide-header">
+              <DataTable className="no-card"
+                columns={getColumns(session, router, toast, () => {}) as unknown as import("@tanstack/react-table").ColumnDef<unknown, unknown>[]}
+                url={`/orders?${statusFilter}`}
+                perPage={5}
+                exportFileName="recent-orders.xlsx"
+              />
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <AlertCircle className="h-12 w-12 text-[#ababab] mx-auto mb-4" />
-              <p className="text-[#ababab]">No recent orders found</p>
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
     </div>

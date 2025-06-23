@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUser = async () => {
     try {
-      const { data } = await apiClient.get<ApiResponse<any>>("/auth/me")
+      const { data } = await apiClient.get<any>("/auth/me")
       setUser(data.item)
     } catch (error) {
       localStorage.removeItem("token")
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const login = async (email: string, password: string) => {
-    const { data } = await apiClient.post<ApiResponse<any>>("/auth/login", { email, password })
+    const { data } = await apiClient.post<any>("/auth/login", { email, password })
     const { token, user } = data.item
 
     localStorage.setItem("token", token)

@@ -36,6 +36,8 @@ interface DataTableProps<TData, TValue> {
   onRowClick?: (row: TData) => void
   url?: string
   exportFileName?: string
+  className?: string
+  perPage?: number
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 100, 1000]
@@ -63,6 +65,8 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     onRowClick,
     url,
     exportFileName = "export.xlsx",
+    className,
+    perPage,
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
 ) {
@@ -71,7 +75,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const [pageIndex, setPageIndex] = React.useState(0)
-  const [pageSize, setPageSize] = React.useState(PAGE_SIZE_OPTIONS[0])
+  const [pageSize, setPageSize] = React.useState(perPage ?? PAGE_SIZE_OPTIONS[0])
   const [tableData, setTableData] = React.useState<TData[]>(dataProp ?? [])
   const [total, setTotal] = React.useState(0)
   const [pageCount, setPageCount] = React.useState(1)
@@ -110,7 +114,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
         }
         const searchParams = new URLSearchParams(params).toString()
         const endpoint = `${base}?${searchParams}`
-        const res = await apiClient.get<ApiResponse<any>>(endpoint)
+        const res = await apiClient.get<any>(endpoint)
         let items = res.data.items ?? []
         items = items.map((item: any) => ({
           ...item,
@@ -169,7 +173,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   }
 
   return (
-    <div className="w-full card bg-white shadow-md rounded-lg p-4">
+    <div className={`w-full card bg-white shadow-md rounded-lg p-4${className ? " " + className : ""}`}>
       <div className="flex items-center justify-between py-4">
         <div className="flex items-center space-x-2">
           {searchKey && (
@@ -243,7 +247,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                       }
                       const searchParams = new URLSearchParams(params).toString()
                       const endpoint = `${base}?${searchParams}`
-                      const res = await apiClient.get<ApiResponse<any>>(endpoint)
+                      const res = await apiClient.get<any>(endpoint)
                       allRows = res.data.items ?? []
                       // Ensure each item has an 'id' property for export consistency
                       allRows = allRows.map((item: any) => ({
