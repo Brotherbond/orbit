@@ -24,11 +24,6 @@ interface DashboardStats {
   brandsGrowth: number
 }
 
-interface RecentOrder extends Order {
-  distributor: string
-  amount: number
-
-}
 
 const chartData = [
   { name: "Jan", revenue: 45000, orders: 120 },
@@ -57,7 +52,6 @@ export default function DashboardPage() {
     distributorsGrowth: 0,
     brandsGrowth: 0,
   })
-  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   const { toast } = useToast()
