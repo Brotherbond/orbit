@@ -55,14 +55,12 @@ export default function AuthForm() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (isLogin: boolean) => {
+  const handleSubmit = (isLogin: boolean) => (e: React.FormEvent) => {
+    e.preventDefault();
     if (validateForm(isLogin)) {
-      // Here you would typically handle the authentication
-      console.log("Form submitted:", { isLogin, formData })
-      // Show success notification (simulated)
-      alert(isLogin ? "Login successful!" : "Account created successfully!")
+      alert(isLogin ? "Login successful!" : "Account created successfully!");
     }
-  }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -89,147 +87,151 @@ export default function AuthForm() {
             </TabsList>
 
             <TabsContent value="login" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="login-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    className="pl-10"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                  />
+              <form onSubmit={handleSubmit(true)} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      className="pl-10"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                    />
+                  </div>
+                  {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                 </div>
-                {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="login-password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
-                  <Input
-                    id="login-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    className="pl-10 pr-10"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
+                    <Input
+                      id="login-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      className="pl-10 pr-10"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange("password", e.target.value)}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+                </div>
+
+                <Button type="submit" className="w-full bg-[#ff6600] hover:bg-[#ff6b00]">
+                  Sign In
+                </Button>
+
+                <div className="text-center">
+                  <Button variant="link" className="text-[#ff6600]">
+                    Forgot your password?
                   </Button>
                 </div>
-                {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
-              </div>
-
-              <Button className="w-full bg-[#ff6600] hover:bg-[#ff6b00]" onClick={() => handleSubmit(true)}>
-                Sign In
-              </Button>
-
-              <div className="text-center">
-                <Button variant="link" className="text-[#ff6600]">
-                  Forgot your password?
-                </Button>
-              </div>
+              </form>
             </TabsContent>
 
             <TabsContent value="register" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
+              <form onSubmit={handleSubmit(false)} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
+                      <Input
+                        id="firstName"
+                        placeholder="First name"
+                        className="pl-10"
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      />
+                    </div>
+                    {errors.firstName && <p className="text-sm text-red-500">{errors.firstName}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
                     <Input
-                      id="firstName"
-                      placeholder="First name"
+                      id="lastName"
+                      placeholder="Last name"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    />
+                    {errors.lastName && <p className="text-sm text-red-500">{errors.lastName}</p>}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
+                    <Input
+                      id="register-email"
+                      type="email"
+                      placeholder="Enter your email"
                       className="pl-10"
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
                     />
                   </div>
-                  {errors.firstName && <p className="text-sm text-red-500">{errors.firstName}</p>}
+                  {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Last name"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
-                  />
-                  {errors.lastName && <p className="text-sm text-red-500">{errors.lastName}</p>}
+                  <Label htmlFor="register-password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
+                    <Input
+                      id="register-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password"
+                      className="pl-10 pr-10"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange("password", e.target.value)}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="register-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
-                  <Input
-                    id="register-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    className="pl-10"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                  />
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm your password"
+                      className="pl-10"
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                    />
+                  </div>
+                  {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
                 </div>
-                {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="register-password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
-                  <Input
-                    id="register-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
-                    className="pl-10 pr-10"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-                {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your password"
-                    className="pl-10"
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                  />
-                </div>
-                {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
-              </div>
-
-              <Button className="w-full bg-[#ff6600] hover:bg-[#ff6b00]" onClick={() => handleSubmit(false)}>
-                Create Account
-              </Button>
+                <Button type="submit" className="w-full bg-[#ff6600] hover:bg-[#ff6b00]">
+                  Create Account
+                </Button>
+              </form>
             </TabsContent>
           </Tabs>
         </CardContent>

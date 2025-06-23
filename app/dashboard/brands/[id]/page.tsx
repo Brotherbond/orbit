@@ -43,16 +43,15 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
   }, [params.id])
 
   const fetchBrand = async () => {
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const response = await apiClient.get(`/brands/${params.id}`)
-      if (response.data.status === "success") {
-        setBrand(response.data.data.item)
-      }
+      const { data } = await apiClient.get<{ item: BrandDetail }>(`/brands/${params.id}`);
+      setBrand(data.item ?? null)
     } catch (error: any) {
+      setBrand(null)
       toast({
         title: "Error",
-        description: "Failed to fetch brand details",
+        description: error?.message || "Failed to fetch brand details",
         variant: "destructive",
       })
     } finally {
@@ -246,7 +245,7 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
               <Separator />
               <div className="flex justify-between items-center">
                 <span className="text-[#ababab]">Created</span>
-                <span className="font-medium text-[#444444]">{new Date(brand.created_at).toLocaleDateString()}</span>
+                <span className="font-medium text-[#444444]">{brand.created_at}</span>
               </div>
             </CardContent>
           </Card>

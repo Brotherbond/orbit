@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@tanstack/react-table"
 import { MoreHorizontal, Plus, Eye, Edit, Trash2, MapPin, Users } from "lucide-react"
@@ -24,15 +23,6 @@ interface Market {
 }
 
 export default function MarketsPage() {
-  const [markets, setMarkets] = useState<Market[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-    pageCount: 0,
-    total: 0,
-  })
-
   const router = useRouter()
   const { toast } = useToast()
 
@@ -77,24 +67,13 @@ export default function MarketsPage() {
       ),
     },
     {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => (
-        <Badge
-          variant={row.original.status === "active" ? "default" : "destructive"}
-          className={row.original.status === "active" ? "status-active" : "status-inactive"}
-        >
-          {row.original.status}
-        </Badge>
-      ),
-    },
-    {
       accessorKey: "created_at",
       header: "Created",
-      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+      cell: ({ row }) => row.original.created_at,
     },
     {
       id: "actions",
+      header: "Actions",
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -121,35 +100,6 @@ export default function MarketsPage() {
     },
   ]
 
-  useEffect(() => {
-    fetchMarkets()
-  }, [pagination.pageIndex, pagination.pageSize])
-
-  const fetchMarkets = async () => {
-    try {
-      setIsLoading(true)
-      const response = await apiClient.get(`/markets?page=${pagination.pageIndex + 1}&per_page=${pagination.pageSize}`)
-
-      if (response.data.status === "success") {
-        setMarkets(response.data.data.items)
-        if (response.data.meta.pagination) {
-          setPagination((prev) => ({
-            ...prev,
-            pageCount: response.data.meta.pagination.totalPages,
-            total: response.data.meta.pagination.total,
-          }))
-        }
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch markets",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const handleDelete = async (uuid: string) => {
     if (!confirm("Are you sure you want to delete this market?")) return
@@ -160,7 +110,6 @@ export default function MarketsPage() {
         title: "Success",
         description: "Market deleted successfully",
       })
-      fetchMarkets()
     } catch (error: any) {
       toast({
         title: "Error",
@@ -168,29 +117,6 @@ export default function MarketsPage() {
         variant: "destructive",
       })
     }
-  }
-
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, pageIndex: page }))
-  }
-
-  const handlePageSizeChange = (size: number) => {
-    setPagination((prev) => ({ ...prev, pageSize: size, pageIndex: 0 }))
-  }
-
-  if (isLoading && markets.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-[#444444]">Markets</h1>
-        </div>
-        <div className="animate-pulse space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-gray-200 rounded"></div>
-          ))}
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -207,18 +133,11 @@ export default function MarketsPage() {
       </div>
 
       <DataTable
-        columns={columns}
-        data={markets}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="name"
         searchPlaceholder="Search markets..."
-        pagination={{
-          pageIndex: pagination.pageIndex,
-          pageSize: pagination.pageSize,
-          pageCount: pagination.pageCount,
-          total: pagination.total,
-          onPageChange: handlePageChange,
-          onPageSizeChange: handlePageSizeChange,
-        }}
+        url="/markets"
+        exportFileName="markets.xlsx"
       />
     </div>
   )

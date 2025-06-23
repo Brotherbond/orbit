@@ -1,54 +1,63 @@
 // Validation utilities similar to Formik
 export interface ValidationRule {
-  required?: boolean
-  minLength?: number
-  maxLength?: number
-  pattern?: RegExp
-  custom?: (value: any) => string | undefined
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  custom?: (value: any) => string | undefined;
 }
 
 export interface ValidationSchema {
-  [key: string]: ValidationRule
+  [key: string]: ValidationRule;
 }
 
-export const validateField = (value: any, rules: ValidationRule): string | undefined => {
-  if (rules.required && (!value || (typeof value === "string" && !value.trim()))) {
-    return "This field is required"
+export const validateField = (
+  value: any,
+  rules: ValidationRule,
+): string | undefined => {
+  if (
+    rules.required &&
+    (!value || (typeof value === "string" && !value.trim()))
+  ) {
+    return "This field is required";
   }
 
   if (value && typeof value === "string") {
     if (rules.minLength && value.length < rules.minLength) {
-      return `Minimum length is ${rules.minLength} characters`
+      return `Minimum length is ${rules.minLength} characters`;
     }
 
     if (rules.maxLength && value.length > rules.maxLength) {
-      return `Maximum length is ${rules.maxLength} characters`
+      return `Maximum length is ${rules.maxLength} characters`;
     }
 
     if (rules.pattern && !rules.pattern.test(value)) {
-      return "Invalid format"
+      return "Invalid format";
     }
   }
 
   if (rules.custom) {
-    return rules.custom(value)
+    return rules.custom(value);
   }
 
-  return undefined
-}
+  return undefined;
+};
 
-export const validateForm = (data: Record<string, any>, schema: ValidationSchema): Record<string, string> => {
-  const errors: Record<string, string> = {}
+export const validateForm = (
+  data: Record<string, any>,
+  schema: ValidationSchema,
+): Record<string, string> => {
+  const errors: Record<string, string> = {};
 
   Object.keys(schema).forEach((field) => {
-    const error = validateField(data[field], schema[field])
+    const error = validateField(data[field], schema[field]);
     if (error) {
-      errors[field] = error
+      errors[field] = error;
     }
-  })
+  });
 
-  return errors
-}
+  return errors;
+};
 
 // Common validation schemas
 export const userValidationSchema: ValidationSchema = {
@@ -58,7 +67,7 @@ export const userValidationSchema: ValidationSchema = {
     pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     custom: (value) => {
       if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        return "Please enter a valid email address"
+        return "Please enter a valid email address";
       }
     },
   },
@@ -68,8 +77,8 @@ export const userValidationSchema: ValidationSchema = {
     pattern: /^[+]?[1-9][\d]{0,15}$/,
     custom: (value) => {
       if (value && !/^[+]?[1-9][\d]{0,15}$/.test(value)) {
-        return "Please enter a valid phone number"
+        return "Please enter a valid phone number";
       }
     },
   },
-}
+};

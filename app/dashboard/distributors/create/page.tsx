@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { Formik, Form, ErrorMessage } from "formik"
+import * as Yup from "yup"
 
 interface User {
   id: string
@@ -22,20 +24,8 @@ interface User {
 }
 
 export default function CreateDistributorPage() {
-  const [formData, setFormData] = useState({
-    user_id: "",
-    business_name: "",
-    address: "",
-    business_type: "",
-    registration_number: "",
-    tax_id: "",
-    bank_name: "",
-    account_number: "",
-    account_name: "",
-  })
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const router = useRouter()
   const { toast } = useToast()
@@ -47,48 +37,45 @@ export default function CreateDistributorPage() {
   const fetchUsers = async () => {
     try {
       const response = await apiClient.get("/users?role=distributor")
-      if (response.data.status === "success") {
-        setUsers(response.data.data.items)
+      const data = response.data as { status: string; data: { items: User[] } }
+      if (data.status === "success") {
+        setUsers(data.data.items)
       }
     } catch (error) {
       console.error("Failed to fetch users:", error)
     }
   }
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.user_id) {
-      newErrors.user_id = "User is required"
-    }
-
-    if (!formData.business_name.trim()) {
-      newErrors.business_name = "Business name is required"
-    }
-
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required"
-    }
-
-    if (!formData.business_type) {
-      newErrors.business_type = "Business type is required"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  const initialValues = {
+    user_id: "",
+    business_name: "",
+    address: "",
+    business_type: "",
+    registration_number: "",
+    tax_id: "",
+    bank_name: "",
+    account_number: "",
+    account_name: "",
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const validationSchema = Yup.object({
+    user_id: Yup.string().required("User is required"),
+    business_name: Yup.string().required("Business name is required"),
+    address: Yup.string().required("Address is required"),
+    business_type: Yup.string().required("Business type is required"),
+    registration_number: Yup.string(),
+    tax_id: Yup.string(),
+    bank_name: Yup.string(),
+    account_number: Yup.string(),
+    account_name: Yup.string(),
+  })
 
-    if (!validateForm()) return
-
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
-
     try {
-      const response = await apiClient.post("/distributors", formData)
-
-      if (response.data.status === "success") {
+      const response = await apiClient.post("/distributors", values)
+      const data = response.data as { status: string }
+      if (data.status === "success") {
         toast({
           title: "Success",
           description: "Distributor created successfully",
@@ -101,15 +88,10 @@ export default function CreateDistributorPage() {
         description: error.response?.data?.message || "Failed to create distributor",
         variant: "destructive",
       })
+      setFieldError("business_name", error.response?.data?.errors?.business_name || "")
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setSubmitting(false)
     }
   }
 
@@ -132,162 +114,169 @@ export default function CreateDistributorPage() {
           <CardDescription className="text-[#ababab]">Enter the details for the new distributor</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-[#444444]">Basic Information</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="user_id" className="text-[#444444]">
-                    Associated User *
-                  </Label>
-                  <Select value={formData.user_id} onValueChange={(value) => handleInputChange("user_id", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select user" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.first_name} {user.last_name} ({user.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.user_id && <p className="text-sm text-red-500">{errors.user_id}</p>}
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
+              <Form className="space-y-8">
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-[#444444]">Basic Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="user_id" className="text-[#444444]">
+                        Associated User *
+                      </Label>
+                      <Select
+                        value={values.user_id}
+                        onValueChange={(value) => setFieldValue("user_id", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select user" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.first_name} {user.last_name} ({user.email})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <ErrorMessage name="user_id" component="p" className="text-sm text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="business_name" className="text-[#444444]">
+                        Business Name *
+                      </Label>
+                      <Input
+                        id="business_name"
+                        name="business_name"
+                        value={values.business_name}
+                        onChange={handleChange}
+                        placeholder="Enter business name"
+                      />
+                      <ErrorMessage name="business_name" component="p" className="text-sm text-red-500" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="address" className="text-[#444444]">
+                      Business Address *
+                    </Label>
+                    <Textarea
+                      id="address"
+                      name="address"
+                      value={values.address}
+                      onChange={handleChange}
+                      placeholder="Enter complete business address"
+                      rows={3}
+                    />
+                    <ErrorMessage name="address" component="p" className="text-sm text-red-500" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="business_type" className="text-[#444444]">
+                        Business Type *
+                      </Label>
+                      <Select
+                        value={values.business_type}
+                        onValueChange={(value) => setFieldValue("business_type", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select business type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="retail">Retail</SelectItem>
+                          <SelectItem value="wholesale">Wholesale</SelectItem>
+                          <SelectItem value="supermarket">Supermarket</SelectItem>
+                          <SelectItem value="pharmacy">Pharmacy</SelectItem>
+                          <SelectItem value="restaurant">Restaurant</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <ErrorMessage name="business_type" component="p" className="text-sm text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="registration_number" className="text-[#444444]">
+                        Registration Number
+                      </Label>
+                      <Input
+                        id="registration_number"
+                        name="registration_number"
+                        value={values.registration_number}
+                        onChange={handleChange}
+                        placeholder="Enter business registration number"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tax_id" className="text-[#444444]">
+                      Tax ID
+                    </Label>
+                    <Input
+                      id="tax_id"
+                      name="tax_id"
+                      value={values.tax_id}
+                      onChange={handleChange}
+                      placeholder="Enter tax identification number"
+                    />
+                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="business_name" className="text-[#444444]">
-                    Business Name *
-                  </Label>
-                  <Input
-                    id="business_name"
-                    value={formData.business_name}
-                    onChange={(e) => handleInputChange("business_name", e.target.value)}
-                    placeholder="Enter business name"
-                  />
-                  {errors.business_name && <p className="text-sm text-red-500">{errors.business_name}</p>}
+                {/* Banking Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-[#444444]">Banking Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bank_name" className="text-[#444444]">
+                        Bank Name
+                      </Label>
+                      <Input
+                        id="bank_name"
+                        name="bank_name"
+                        value={values.bank_name}
+                        onChange={handleChange}
+                        placeholder="Enter bank name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="account_number" className="text-[#444444]">
+                        Account Number
+                      </Label>
+                      <Input
+                        id="account_number"
+                        name="account_number"
+                        value={values.account_number}
+                        onChange={handleChange}
+                        placeholder="Enter account number"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="account_name" className="text-[#444444]">
+                        Account Name
+                      </Label>
+                      <Input
+                        id="account_name"
+                        name="account_name"
+                        value={values.account_name}
+                        onChange={handleChange}
+                        placeholder="Enter account name"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address" className="text-[#444444]">
-                  Business Address *
-                </Label>
-                <Textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
-                  placeholder="Enter complete business address"
-                  rows={3}
-                />
-                {errors.address && <p className="text-sm text-red-500">{errors.address}</p>}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="business_type" className="text-[#444444]">
-                    Business Type *
-                  </Label>
-                  <Select
-                    value={formData.business_type}
-                    onValueChange={(value) => handleInputChange("business_type", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select business type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="wholesale">Wholesale</SelectItem>
-                      <SelectItem value="supermarket">Supermarket</SelectItem>
-                      <SelectItem value="pharmacy">Pharmacy</SelectItem>
-                      <SelectItem value="restaurant">Restaurant</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.business_type && <p className="text-sm text-red-500">{errors.business_type}</p>}
+                <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
+                  <Button type="button" variant="outline" onClick={() => router.back()}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isLoading || isSubmitting ? "Creating..." : "Create Distributor"}
+                  </Button>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="registration_number" className="text-[#444444]">
-                    Registration Number
-                  </Label>
-                  <Input
-                    id="registration_number"
-                    value={formData.registration_number}
-                    onChange={(e) => handleInputChange("registration_number", e.target.value)}
-                    placeholder="Enter business registration number"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tax_id" className="text-[#444444]">
-                  Tax ID
-                </Label>
-                <Input
-                  id="tax_id"
-                  value={formData.tax_id}
-                  onChange={(e) => handleInputChange("tax_id", e.target.value)}
-                  placeholder="Enter tax identification number"
-                />
-              </div>
-            </div>
-
-            {/* Banking Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-[#444444]">Banking Information</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bank_name" className="text-[#444444]">
-                    Bank Name
-                  </Label>
-                  <Input
-                    id="bank_name"
-                    value={formData.bank_name}
-                    onChange={(e) => handleInputChange("bank_name", e.target.value)}
-                    placeholder="Enter bank name"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="account_number" className="text-[#444444]">
-                    Account Number
-                  </Label>
-                  <Input
-                    id="account_number"
-                    value={formData.account_number}
-                    onChange={(e) => handleInputChange("account_number", e.target.value)}
-                    placeholder="Enter account number"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="account_name" className="text-[#444444]">
-                    Account Name
-                  </Label>
-                  <Input
-                    id="account_name"
-                    value={formData.account_name}
-                    onChange={(e) => handleInputChange("account_name", e.target.value)}
-                    placeholder="Enter account name"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
-              <Button type="button" variant="outline" onClick={() => router.back()}>
-                Cancel
-              </Button>
-              <Button type="submit" className="btn-primary" disabled={isLoading}>
-                <Save className="mr-2 h-4 w-4" />
-                {isLoading ? "Creating..." : "Create Distributor"}
-              </Button>
-            </div>
-          </form>
+              </Form>
+            )}
+          </Formik>
         </CardContent>
       </Card>
     </div>

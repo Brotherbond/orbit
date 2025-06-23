@@ -14,6 +14,7 @@ const nextConfig = {
     domains: ['localhost', process.env.NEXT_PUBLIC_API_URL],
     unoptimized: true,
   },
+  reactStrictMode: false,
 }
 
 export default nextConfig

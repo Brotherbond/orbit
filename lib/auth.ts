@@ -1,5 +1,7 @@
-import type { NextAuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
+import type { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { apiClient } from "./api-client";
+import { User } from "@/app/dashboard/users/page";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -11,39 +13,39 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required")
+          throw new Error("Email and password are required");
         }
 
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
-          const response = await fetch(`${apiUrl}/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
+          const { data } = await apiClient.post<{item: {user: User, token: string}}>(
+            "/auth/login",
+            {
               email: credentials.email,
               password: credentials.password,
-            }),
-          })
+            },
+          );
 
-          const data = await response.json()
-
-          if (response.ok && data.status === "success") {
-            const { user, token } = data.data.item
+          const { user, token } = data.item;
+          if (user && token) {
+            if (["distributor"].includes(user.role?.name)) {
+              throw new Error("You're not allowed to login");
+            }
             return {
               id: user.id,
+              uuid: user.uuid,
               email: user.email,
               name: `${user.first_name} ${user.last_name}`,
-              role: user.role?.name,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              role: user.role?.name || "",
               accessToken: token,
-            }
+            };
           } else {
-            throw new Error(data.message || "Invalid credentials")
+            throw new Error("Invalid credentials");
           }
         } catch (error) {
-          console.error("Auth error:", error)
-          throw new Error("Authentication failed")
+          // console.error("Auth error:", error);
+          throw new Error(error?.message || "Authentication failed");
         }
       },
     }),
@@ -51,17 +53,19 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = user.accessToken
-        token.role = user.role
+        token.accessToken = user.accessToken;
+        token.role = user.role;
+        token.uuid = user.uuid;
       }
-      return token
+      return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.accessToken = token.accessToken as string
-        session.user.role = token.role as string
+        session.accessToken = token.accessToken as string;
+        session.user.role = token.role as string;
+        session.user.uuid = token.uuid as string;
       }
-      return session
+      return session;
     },
   },
   pages: {
@@ -74,4 +78,4 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
-}
+};

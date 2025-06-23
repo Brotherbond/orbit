@@ -42,16 +42,15 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
   }, [params.id])
 
   const fetchUser = async () => {
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const response = await apiClient.get(`/users/${params.id}`)
-      if (response.data.status === "success") {
-        setUser(response.data.data.item)
-      }
+      const { data } = await apiClient.get<{ item: UserDetail }>(`/users/${params.id}`)
+      setUser(data.item ?? null)
     } catch (error: any) {
+      setUser(null)
       toast({
         title: "Error",
-        description: "Failed to fetch user details",
+        description: error?.message || "Failed to fetch user details",
         variant: "destructive",
       })
     } finally {
@@ -182,7 +181,7 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
                   <p className="text-sm text-[#ababab]">Status</p>
                   <Badge
                     variant={user.status === "active" ? "default" : "destructive"}
-                    className={`mt-1 ${user.status === "active" ? "status-active" : "status-inactive"}`}
+                    className={`mt-1 status ${user.status === "active" ? "active" : "inactive"}`}
                   >
                     {user.status}
                   </Badge>
@@ -191,7 +190,7 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
                   <Calendar className="h-5 w-5 text-[#ababab]" />
                   <div>
                     <p className="text-sm text-[#ababab]">Created</p>
-                    <p className="font-medium text-[#444444]">{new Date(user.created_at).toLocaleDateString()}</p>
+                    <p className="font-medium text-[#444444]">{user.created_at}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -199,7 +198,7 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
                   <div>
                     <p className="text-sm text-[#ababab]">Last Login</p>
                     <p className="font-medium text-[#444444]">
-                      {user.last_login ? new Date(user.last_login).toLocaleDateString() : "Never"}
+                      {user.last_login ? user.last_login : "Never"}
                     </p>
                   </div>
                 </div>
@@ -239,7 +238,7 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
               <div className="flex justify-between">
                 <span className="text-[#ababab]">Last Activity</span>
                 <span className="font-medium text-[#444444]">
-                  {user.updated_at ? new Date(user.updated_at).toLocaleDateString() : "N/A"}
+                  {user.updated_at ? user.updated_at : "N/A"}
                 </span>
               </div>
             </CardContent>

@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { apiClient } from "./api-client"
+import { apiClient, ApiResponse } from "./api-client"
 
 interface User {
   id: string
@@ -44,8 +44,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUser = async () => {
     try {
-      const response = await apiClient.get("/auth/me")
-      setUser(response.data.item)
+      const { data } = await apiClient.get<ApiResponse<any>>("/auth/me")
+      setUser(data.item)
     } catch (error) {
       localStorage.removeItem("token")
     } finally {
@@ -54,8 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const login = async (email: string, password: string) => {
-    const response = await apiClient.post("/auth/login", { email, password })
-    const { token, user } = response.data.item
+    const { data } = await apiClient.post<ApiResponse<any>>("/auth/login", { email, password })
+    const { token, user } = data.item
 
     localStorage.setItem("token", token)
     setUser(user)

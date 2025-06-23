@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -32,19 +32,69 @@ interface Brand {
 }
 
 export default function BrandsPage() {
-  const [brands, setBrands] = useState<Brand[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-    pageCount: 0,
-    total: 0,
-  })
-
   const router = useRouter()
   const { toast } = useToast()
+  const dataTableRef = useRef<{ refresh: () => void }>(null)
 
-  const columns: ColumnDef<Brand>[] = [
+  const refreshTable = () => {
+    dataTableRef.current?.refresh()
+  }
+
+  const columns = React.useMemo(
+    () => getColumns(router, toast, refreshTable),
+    [router, toast]
+  )
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-[#444444]">Brands</h1>
+          <p className="text-[#ababab]">Manage product brands and their packages</p>
+        </div>
+        <Button className="btn-primary" onClick={() => router.push("/dashboard/brands/create")}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Brand
+        </Button>
+      </div>
+
+      <DataTable
+        ref={dataTableRef}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
+        searchKey="name"
+        searchPlaceholder="Search brands..."
+        url="/brands"
+        exportFileName="brands.xlsx"
+      />
+    </div>
+  )
+}
+
+function getColumns(
+  router: any,
+  toast: any,
+  refreshTable: () => void
+): ColumnDef<Brand>[] {
+  const handleDelete = async (uuid: string) => {
+    if (!confirm("Are you sure you want to delete this brand?")) return
+
+    try {
+      await apiClient.delete(`/brands/${uuid}`)
+      toast({
+        title: "Success",
+        description: "Brand deleted successfully",
+      })
+      refreshTable()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to delete brand",
+        variant: "destructive",
+      })
+    }
+  }
+
+  return [
     {
       accessorKey: "image",
       header: "Image",
@@ -109,10 +159,11 @@ export default function BrandsPage() {
     {
       accessorKey: "created_at",
       header: "Created",
-      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+      cell: ({ row }) => row.original.created_at,
     },
     {
       id: "actions",
+      header: "Actions",
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -138,106 +189,4 @@ export default function BrandsPage() {
       ),
     },
   ]
-
-  useEffect(() => {
-    fetchBrands()
-  }, [pagination.pageIndex, pagination.pageSize])
-
-  const fetchBrands = async () => {
-    try {
-      setIsLoading(true)
-      const response = await apiClient.get(`/brands?page=${pagination.pageIndex + 1}&per_page=${pagination.pageSize}`)
-
-      if (response.data.status === "success") {
-        setBrands(response.data.data.items)
-        if (response.data.meta.pagination) {
-          setPagination((prev) => ({
-            ...prev,
-            pageCount: response.data.meta.pagination.totalPages,
-            total: response.data.meta.pagination.total,
-          }))
-        }
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch brands",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this brand?")) return
-
-    try {
-      await apiClient.delete(`/brands/${uuid}`)
-      toast({
-        title: "Success",
-        description: "Brand deleted successfully",
-      })
-      fetchBrands()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete brand",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, pageIndex: page }))
-  }
-
-  const handlePageSizeChange = (size: number) => {
-    setPagination((prev) => ({ ...prev, pageSize: size, pageIndex: 0 }))
-  }
-
-  if (isLoading && brands.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-[#444444]">Brands</h1>
-        </div>
-        <div className="animate-pulse space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-gray-200 rounded"></div>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Brands</h1>
-          <p className="text-[#ababab]">Manage product brands and their packages</p>
-        </div>
-        <Button className="btn-primary" onClick={() => router.push("/dashboard/brands/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Brand
-        </Button>
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={brands}
-        searchKey="name"
-        searchPlaceholder="Search brands..."
-        pagination={{
-          pageIndex: pagination.pageIndex,
-          pageSize: pagination.pageSize,
-          pageCount: pagination.pageCount,
-          total: pagination.total,
-          onPageChange: handlePageChange,
-          onPageSizeChange: handlePageSizeChange,
-        }}
-      />
-    </div>
-  )
 }

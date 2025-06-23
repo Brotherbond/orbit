@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +15,7 @@ interface Distributor {
   id: string
   uuid: string
   user: {
+    uuid: string
     first_name: string
     last_name: string
     email: string
@@ -31,20 +32,31 @@ interface Distributor {
   created_at: string
 }
 
-export default function DistributorsPage() {
-  const [distributors, setDistributors] = useState<Distributor[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-    pageCount: 0,
-    total: 0,
-  })
+function getColumns(
+  router: any,
+  toast: any,
+  refreshTable: () => void
+): ColumnDef<Distributor>[] {
+  const handleDelete = async (uuid: string) => {
+    if (!confirm("Are you sure you want to delete this distributor?")) return
 
-  const router = useRouter()
-  const { toast } = useToast()
+    try {
+      await apiClient.delete(`/distributors/${uuid}`)
+      toast({
+        title: "Success",
+        description: "Distributor deleted successfully",
+      })
+      refreshTable()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to delete distributor",
+        variant: "destructive",
+      })
+    }
+  }
 
-  const columns: ColumnDef<Distributor>[] = [
+  return [
     {
       accessorKey: "business_name",
       header: "Business",
@@ -100,7 +112,7 @@ export default function DistributorsPage() {
       cell: ({ row }) => (
         <Badge
           variant={row.original.user.status === "active" ? "default" : "destructive"}
-          className={row.original.user.status === "active" ? "status-active" : "status-inactive"}
+          className={`status ${row.original.user.status === "active" ? "active" : "inactive"}`}
         >
           {row.original.user.status}
         </Badge>
@@ -109,10 +121,11 @@ export default function DistributorsPage() {
     {
       accessorKey: "created_at",
       header: "Joined",
-      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+      cell: ({ row }) => row.original.created_at,
     },
     {
       id: "actions",
+      header: "Actions",
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -129,7 +142,7 @@ export default function DistributorsPage() {
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${row.original.uuid}/orders`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${row.original.user.uuid}/orders`)}>
               <Eye className="mr-2 h-4 w-4" />
               View Orders
             </DropdownMenuItem>
@@ -142,80 +155,21 @@ export default function DistributorsPage() {
       ),
     },
   ]
+}
 
-  useEffect(() => {
-    fetchDistributors()
-  }, [pagination.pageIndex, pagination.pageSize])
+export default function DistributorsPage() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const dataTableRef = useRef<{ refresh: () => void }>(null)
 
-  const fetchDistributors = async () => {
-    try {
-      setIsLoading(true)
-      const response = await apiClient.get(
-        `/distributors?page=${pagination.pageIndex + 1}&per_page=${pagination.pageSize}`,
-      )
-
-      if (response.data.status === "success") {
-        setDistributors(response.data.data.items)
-        if (response.data.meta.pagination) {
-          setPagination((prev) => ({
-            ...prev,
-            pageCount: response.data.meta.pagination.totalPages,
-            total: response.data.meta.pagination.total,
-          }))
-        }
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch distributors",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+  const refreshTable = () => {
+    dataTableRef.current?.refresh()
   }
 
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this distributor?")) return
-
-    try {
-      await apiClient.delete(`/distributors/${uuid}`)
-      toast({
-        title: "Success",
-        description: "Distributor deleted successfully",
-      })
-      fetchDistributors()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete distributor",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, pageIndex: page }))
-  }
-
-  const handlePageSizeChange = (size: number) => {
-    setPagination((prev) => ({ ...prev, pageSize: size, pageIndex: 0 }))
-  }
-
-  if (isLoading && distributors.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-[#444444]">Distributors</h1>
-        </div>
-        <div className="animate-pulse space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-gray-200 rounded"></div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+  const columns = React.useMemo(
+    () => getColumns(router, toast, refreshTable),
+    [router, toast]
+  )
 
   return (
     <div className="space-y-6">
@@ -231,18 +185,12 @@ export default function DistributorsPage() {
       </div>
 
       <DataTable
-        columns={columns}
-        data={distributors}
+        ref={dataTableRef}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="business_name"
         searchPlaceholder="Search distributors..."
-        pagination={{
-          pageIndex: pagination.pageIndex,
-          pageSize: pagination.pageSize,
-          pageCount: pagination.pageCount,
-          total: pagination.total,
-          onPageChange: handlePageChange,
-          onPageSizeChange: handlePageSizeChange,
-        }}
+        url="/distributors"
+        exportFileName="distributors.xlsx"
       />
     </div>
   )

@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { Formik, Form, ErrorMessage } from "formik"
+import * as Yup from "yup"
 
 interface Role {
   id: string
@@ -34,7 +36,7 @@ interface UserData {
 }
 
 export default function EditUserPage({ params }: { params: { id: string } }) {
-  const [formData, setFormData] = useState<UserData>({
+  const [initialValues, setInitialValues] = useState<UserData>({
     first_name: "",
     last_name: "",
     email: "",
@@ -46,7 +48,6 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
   const [roles, setRoles] = useState<Role[]>([])
   const [markets, setMarkets] = useState<Market[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const router = useRouter()
   const { toast } = useToast()
@@ -55,14 +56,16 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     fetchUser()
     fetchRoles()
     fetchMarkets()
+    // eslint-disable-next-line
   }, [params.id])
 
   const fetchUser = async () => {
     try {
       const response = await apiClient.get(`/users/${params.id}`)
-      if (response.data.status === "success") {
-        const user = response.data.data.item
-        setFormData({
+      const data = response.data as { status: string; data: { item: UserData & { market?: Market; role?: Role } } }
+      if (data.status === "success") {
+        const user = data.data.item
+        setInitialValues({
           first_name: user.first_name,
           last_name: user.last_name,
           email: user.email,
@@ -84,8 +87,9 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
   const fetchRoles = async () => {
     try {
       const response = await apiClient.get("/roles")
-      if (response.data.status === "success") {
-        setRoles(response.data.data.items)
+      const data = response.data as { status: string; data: { items: Role[] } }
+      if (data.status === "success") {
+        setRoles(data.data.items)
       }
     } catch (error) {
       console.error("Failed to fetch roles:", error)
@@ -95,54 +99,31 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
   const fetchMarkets = async () => {
     try {
       const response = await apiClient.get("/markets")
-      if (response.data.status === "success") {
-        setMarkets(response.data.data.items)
+      const data = response.data as { status: string; data: { items: Market[] } }
+      if (data.status === "success") {
+        setMarkets(data.data.items)
       }
     } catch (error) {
       console.error("Failed to fetch markets:", error)
     }
   }
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
+  const validationSchema = Yup.object({
+    first_name: Yup.string().required("First name is required"),
+    last_name: Yup.string().required("Last name is required"),
+    email: Yup.string().email("Please enter a valid email").required("Email is required"),
+    phone: Yup.string().required("Phone number is required"),
+    market_id: Yup.string(),
+    role_id: Yup.string().required("Role is required"),
+    status: Yup.string().oneOf(["active", "inactive"]).required(),
+  })
 
-    if (!formData.first_name.trim()) {
-      newErrors.first_name = "First name is required"
-    }
-
-    if (!formData.last_name.trim()) {
-      newErrors.last_name = "Last name is required"
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email"
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required"
-    }
-
-    if (!formData.role_id) {
-      newErrors.role_id = "Role is required"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validateForm()) return
-
+  const handleSubmit = async (values: UserData, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
-
     try {
-      const response = await apiClient.put(`/users/${params.id}`, formData)
-
-      if (response.data.status === "success") {
+      const response = await apiClient.put(`/users/${params.id}`, values)
+      const data = response.data as { status: string }
+      if (data.status === "success") {
         toast({
           title: "Success",
           description: "User updated successfully",
@@ -155,15 +136,10 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
         description: error.response?.data?.message || "Failed to update user",
         variant: "destructive",
       })
+      setFieldError("email", error.response?.data?.errors?.email || "")
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+      setSubmitting(false)
     }
   }
 
@@ -186,128 +162,144 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
           <CardDescription className="text-[#ababab]">Update the user details below</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="first_name" className="text-[#444444]">
-                  First Name *
-                </Label>
-                <Input
-                  id="first_name"
-                  value={formData.first_name}
-                  onChange={(e) => handleInputChange("first_name", e.target.value)}
-                  placeholder="Enter first name"
-                />
-                {errors.first_name && <p className="text-sm text-red-500">{errors.first_name}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="last_name" className="text-[#444444]">
-                  Last Name *
-                </Label>
-                <Input
-                  id="last_name"
-                  value={formData.last_name}
-                  onChange={(e) => handleInputChange("last_name", e.target.value)}
-                  placeholder="Enter last name"
-                />
-                {errors.last_name && <p className="text-sm text-red-500">{errors.last_name}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-[#444444]">
-                  Email Address *
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  placeholder="Enter email address"
-                />
-                {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-[#444444]">
-                  Phone Number *
-                </Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange("phone", e.target.value)}
-                  placeholder="Enter phone number"
-                />
-                {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="role_id" className="text-[#444444]">
-                  Role *
-                </Label>
-                <Select value={formData.role_id} onValueChange={(value) => handleInputChange("role_id", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.role_id && <p className="text-sm text-red-500">{errors.role_id}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="market_id" className="text-[#444444]">
-                  Market
-                </Label>
-                <Select value={formData.market_id} onValueChange={(value) => handleInputChange("market_id", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select market" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {markets.map((market) => (
-                      <SelectItem key={market.id} value={market.id}>
-                        {market.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-[#444444]">
-                Status
-              </Label>
-              <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
-              <Button type="button" variant="outline" onClick={() => router.back()}>
-                Cancel
-              </Button>
-              <Button type="submit" className="btn-primary" disabled={isLoading}>
-                <Save className="mr-2 h-4 w-4" />
-                {isLoading ? "Updating..." : "Update User"}
-              </Button>
-            </div>
-          </form>
+          <Formik
+            enableReinitialize
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
+              <Form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name" className="text-[#444444]">
+                      First Name *
+                    </Label>
+                    <Input
+                      id="first_name"
+                      name="first_name"
+                      value={values.first_name}
+                      onChange={handleChange}
+                      placeholder="Enter first name"
+                    />
+                    <ErrorMessage name="first_name" component="p" className="text-sm text-red-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name" className="text-[#444444]">
+                      Last Name *
+                    </Label>
+                    <Input
+                      id="last_name"
+                      name="last_name"
+                      value={values.last_name}
+                      onChange={handleChange}
+                      placeholder="Enter last name"
+                    />
+                    <ErrorMessage name="last_name" component="p" className="text-sm text-red-500" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-[#444444]">
+                      Email Address *
+                    </Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={values.email}
+                      onChange={handleChange}
+                      placeholder="Enter email address"
+                    />
+                    <ErrorMessage name="email" component="p" className="text-sm text-red-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-[#444444]">
+                      Phone Number *
+                    </Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={values.phone}
+                      onChange={handleChange}
+                      placeholder="Enter phone number"
+                    />
+                    <ErrorMessage name="phone" component="p" className="text-sm text-red-500" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="role_id" className="text-[#444444]">
+                      Role *
+                    </Label>
+                    <Select
+                      value={values.role_id}
+                      onValueChange={(value) => setFieldValue("role_id", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles.map((role) => (
+                          <SelectItem key={role.id} value={role.id}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <ErrorMessage name="role_id" component="p" className="text-sm text-red-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="market_id" className="text-[#444444]">
+                      Market
+                    </Label>
+                    <Select
+                      value={values.market_id}
+                      onValueChange={(value) => setFieldValue("market_id", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select market" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {markets.map((market) => (
+                          <SelectItem key={market.id} value={market.id}>
+                            {market.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status" className="text-[#444444]">
+                    Status
+                  </Label>
+                  <Select
+                    value={values.status}
+                    onValueChange={(value) => setFieldValue("status", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
+                </div>
+                <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
+                  <Button type="button" variant="outline" onClick={() => router.back()}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isLoading || isSubmitting ? "Updating..." : "Update User"}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
         </CardContent>
       </Card>
     </div>

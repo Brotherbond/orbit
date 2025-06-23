@@ -1,18 +1,18 @@
-"use client"
-
-import type React from "react"
-
+"use client";
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Plus, Trash2, Upload } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { apiClient } from "@/lib/api-client"
+import { ErrorMessage, FieldArray, Form, Formik } from "formik"
+import { ArrowLeft, Plus, Save, Trash2, Upload } from "lucide-react"
+import { useRouter } from "next/navigation"
+
+import * as Yup from "yup"
 
 interface BrandPackage {
   type: string
@@ -23,62 +23,55 @@ interface BrandPackage {
 }
 
 export default function CreateBrandPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    description: "",
-    image: "",
-  })
-  const [packages, setPackages] = useState<BrandPackage[]>([
-    {
-      type: "",
-      quantity: 0,
-      wholesale_price: 0,
-      retail_price: 0,
-      retail_price_with_markup: 0,
-    },
-  ])
   const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
 
   const router = useRouter()
   const { toast } = useToast()
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Brand name is required"
-    }
-
-    if (!formData.category) {
-      newErrors.category = "Category is required"
-    }
-
-    if (packages.some((pkg) => !pkg.type || pkg.quantity <= 0 || pkg.wholesale_price <= 0)) {
-      newErrors.packages = "All package fields are required and must be valid"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+  const initialValues = {
+    name: "",
+    category: "",
+    description: "",
+    image: "",
+    packages: [
+      {
+        type: "",
+        quantity: 0,
+        wholesale_price: 0,
+        retail_price: 0,
+        retail_price_with_markup: 0,
+      },
+    ] as BrandPackage[],
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Brand name is required"),
+    category: Yup.string().required("Category is required"),
+    description: Yup.string(),
+    image: Yup.string(),
+    packages: Yup.array()
+      .of(
+        Yup.object({
+          type: Yup.string().required("Type is required"),
+          quantity: Yup.number().min(1, "Quantity must be greater than 0").required("Quantity is required"),
+          wholesale_price: Yup.number().min(0.01, "Wholesale price must be greater than 0").required("Wholesale price is required"),
+          retail_price: Yup.number().min(0.01, "Retail price must be greater than 0").required("Retail price is required"),
+          retail_price_with_markup: Yup.number().min(0, "Price with markup must be at least 0"),
+        })
+      )
+      .min(1, "At least one package is required"),
+  })
 
-    if (!validateForm()) return
-
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
-
     try {
       const payload = {
-        ...formData,
-        packages: packages.filter((pkg) => pkg.type && pkg.quantity > 0),
+        ...values,
+        packages: values.packages.filter((pkg) => pkg.type && pkg.quantity > 0),
       }
-
       const response = await apiClient.post("/brands", payload)
-
-      if (response.data.status === "success") {
+      const data = response.data as { status: string }
+      if (data.status === "success") {
         toast({
           title: "Success",
           description: "Brand created successfully",
@@ -91,49 +84,10 @@ export default function CreateBrandPage() {
         description: error.response?.data?.message || "Failed to create brand",
         variant: "destructive",
       })
+      setFieldError("name", error.response?.data?.errors?.name || "")
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
-    }
-  }
-
-  const handlePackageChange = (index: number, field: keyof BrandPackage, value: string | number) => {
-    const updatedPackages = [...packages]
-    updatedPackages[index] = { ...updatedPackages[index], [field]: value }
-
-    // Auto-calculate retail price with markup (assuming 20% markup)
-    if (field === "retail_price") {
-      updatedPackages[index].retail_price_with_markup = Number(value) * 1.2
-    }
-
-    setPackages(updatedPackages)
-    if (errors.packages) {
-      setErrors((prev) => ({ ...prev, packages: "" }))
-    }
-  }
-
-  const addPackage = () => {
-    setPackages([
-      ...packages,
-      {
-        type: "",
-        quantity: 0,
-        wholesale_price: 0,
-        retail_price: 0,
-        retail_price_with_markup: 0,
-      },
-    ])
-  }
-
-  const removePackage = (index: number) => {
-    if (packages.length > 1) {
-      setPackages(packages.filter((_, i) => i !== index))
+      setSubmitting(false)
     }
   }
 
@@ -156,185 +110,226 @@ export default function CreateBrandPage() {
           <CardDescription className="text-[#ababab]">Enter the details for the new brand</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-[#444444]">Basic Information</h3>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-[#444444]">
-                    Brand Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="Enter brand name"
-                  />
-                  {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+          <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
+              <Form className="space-y-8">
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium text-[#444444]">Basic Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-[#444444]">
+                        Brand Name *
+                      </Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        value={values.name}
+                        onChange={handleChange}
+                        placeholder="Enter brand name"
+                      />
+                      <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="category" className="text-[#444444]">
+                        Category *
+                      </Label>
+                      <Select
+                        value={values.category}
+                        onValueChange={(value) => setFieldValue("category", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="beverages">Beverages</SelectItem>
+                          <SelectItem value="snacks">Snacks</SelectItem>
+                          <SelectItem value="dairy">Dairy</SelectItem>
+                          <SelectItem value="household">Household</SelectItem>
+                          <SelectItem value="personal_care">Personal Care</SelectItem>
+                          <SelectItem value="electronics">Electronics</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <ErrorMessage name="category" component="p" className="text-sm text-red-500" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description" className="text-[#444444]">
+                      Description
+                    </Label>
+                    <Textarea
+                      id="description"
+                      name="description"
+                      value={values.description}
+                      onChange={handleChange}
+                      placeholder="Enter brand description"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="image" className="text-[#444444]">
+                      Brand Image URL
+                    </Label>
+                    <div className="flex space-x-2">
+                      <Input
+                        id="image"
+                        name="image"
+                        value={values.image}
+                        onChange={handleChange}
+                        placeholder="Enter image URL"
+                      />
+                      <Button type="button" variant="outline">
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-[#444444]">
-                    Category *
-                  </Label>
-                  <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="beverages">Beverages</SelectItem>
-                      <SelectItem value="snacks">Snacks</SelectItem>
-                      <SelectItem value="dairy">Dairy</SelectItem>
-                      <SelectItem value="household">Household</SelectItem>
-                      <SelectItem value="personal_care">Personal Care</SelectItem>
-                      <SelectItem value="electronics">Electronics</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.category && <p className="text-sm text-red-500">{errors.category}</p>}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-[#444444]">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
-                  placeholder="Enter brand description"
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="image" className="text-[#444444]">
-                  Brand Image URL
-                </Label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="image"
-                    value={formData.image}
-                    onChange={(e) => handleInputChange("image", e.target.value)}
-                    placeholder="Enter image URL"
-                  />
-                  <Button type="button" variant="outline">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Package Information */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-[#444444]">Package Information</h3>
-                <Button type="button" variant="outline" onClick={addPackage}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Package
-                </Button>
-              </div>
-
-              {errors.packages && <p className="text-sm text-red-500">{errors.packages}</p>}
-
-              <div className="space-y-4">
-                {packages.map((pkg, index) => (
-                  <Card key={index} className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium text-[#444444]">Package {index + 1}</h4>
-                      {packages.length > 1 && (
-                        <Button type="button" variant="ghost" size="sm" onClick={() => removePackage(index)}>
-                          <Trash2 className="h-4 w-4" />
+                {/* Package Information */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-[#444444]">Package Information</h3>
+                    <FieldArray
+                      name="packages"
+                      render={arrayHelpers => (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            arrayHelpers.push({
+                              type: "",
+                              quantity: 0,
+                              wholesale_price: 0,
+                              retail_price: 0,
+                              retail_price_with_markup: 0,
+                            })
+                          }
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Package
                         </Button>
                       )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-[#444444]">Package Type *</Label>
-                        <Select value={pkg.type} onValueChange={(value) => handlePackageChange(index, "type", value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="bottle">Bottle</SelectItem>
-                            <SelectItem value="can">Can</SelectItem>
-                            <SelectItem value="pack">Pack</SelectItem>
-                            <SelectItem value="carton">Carton</SelectItem>
-                            <SelectItem value="box">Box</SelectItem>
-                            <SelectItem value="sachet">Sachet</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-[#444444]">Quantity *</Label>
-                        <Input
-                          type="number"
-                          value={pkg.quantity}
-                          onChange={(e) => handlePackageChange(index, "quantity", Number(e.target.value))}
-                          placeholder="0"
-                          min="1"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-[#444444]">Wholesale Price *</Label>
-                        <Input
-                          type="number"
-                          value={pkg.wholesale_price}
-                          onChange={(e) => handlePackageChange(index, "wholesale_price", Number(e.target.value))}
-                          placeholder="0.00"
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-[#444444]">Retail Price *</Label>
-                        <Input
-                          type="number"
-                          value={pkg.retail_price}
-                          onChange={(e) => handlePackageChange(index, "retail_price", Number(e.target.value))}
-                          placeholder="0.00"
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="text-[#444444]">Price with Markup</Label>
-                        <Input
-                          type="number"
-                          value={pkg.retail_price_with_markup}
-                          onChange={(e) =>
-                            handlePackageChange(index, "retail_price_with_markup", Number(e.target.value))
-                          }
-                          placeholder="0.00"
-                          min="0"
-                          step="0.01"
-                        />
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
-              <Button type="button" variant="outline" onClick={() => router.back()}>
-                Cancel
-              </Button>
-              <Button type="submit" className="btn-primary" disabled={isLoading}>
-                <Save className="mr-2 h-4 w-4" />
-                {isLoading ? "Creating..." : "Create Brand"}
-              </Button>
-            </div>
-          </form>
+                    />
+                  </div>
+                  <ErrorMessage name="packages" component="p" className="text-sm text-red-500" />
+                  <div className="space-y-4">
+                    {values.packages.map((pkg, index) => (
+                      <Card key={index} className="p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-medium text-[#444444]">Package {index + 1}</h4>
+                          {values.packages.length > 1 && (
+                            <FieldArray
+                              name="packages"
+                              render={arrayHelpers => (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => arrayHelpers.remove(index)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            />
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Package Type *</Label>
+                            <Select
+                              value={pkg.type}
+                              onValueChange={value => setFieldValue(`packages[${index}].type`, value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="bottle">Bottle</SelectItem>
+                                <SelectItem value="can">Can</SelectItem>
+                                <SelectItem value="pack">Pack</SelectItem>
+                                <SelectItem value="carton">Carton</SelectItem>
+                                <SelectItem value="box">Box</SelectItem>
+                                <SelectItem value="sachet">Sachet</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <ErrorMessage name={`packages[${index}].type`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Quantity *</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].quantity`}
+                              value={pkg.quantity}
+                              onChange={e => setFieldValue(`packages[${index}].quantity`, Number(e.target.value))}
+                              placeholder="0"
+                              min="1"
+                            />
+                            <ErrorMessage name={`packages[${index}].quantity`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Wholesale Price *</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].wholesale_price`}
+                              value={pkg.wholesale_price}
+                              onChange={e => setFieldValue(`packages[${index}].wholesale_price`, Number(e.target.value))}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].wholesale_price`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Retail Price *</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].retail_price`}
+                              value={pkg.retail_price}
+                              onChange={e => {
+                                setFieldValue(`packages[${index}].retail_price`, Number(e.target.value))
+                                setFieldValue(`packages[${index}].retail_price_with_markup`, Number(e.target.value) * 1.2)
+                              }}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].retail_price`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Price with Markup</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].retail_price_with_markup`}
+                              value={pkg.retail_price_with_markup}
+                              onChange={e => setFieldValue(`packages[${index}].retail_price_with_markup`, Number(e.target.value))}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].retail_price_with_markup`} component="p" className="text-sm text-red-500" />
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
+                  <Button type="button" variant="outline" onClick={() => router.back()}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isLoading || isSubmitting ? "Creating..." : "Create Brand"}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
         </CardContent>
       </Card>
     </div>

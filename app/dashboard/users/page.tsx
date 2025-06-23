@@ -1,17 +1,16 @@
-"use client"
+"use client";
+import React, { useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/ui/data-table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { apiClient } from "@/lib/api-client";
+import { useToast } from "@/hooks/use-toast";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-
-interface User {
+export interface User {
   id: string
   uuid: string
   first_name: string
@@ -27,21 +26,33 @@ interface User {
   status: string
   created_at: string
 }
+const roles = "sales-admin,manager,operations,treasury"
 
-export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-    pageCount: 0,
-    total: 0,
-  })
+function getColumns(
+  router: any,
+  toast: any,
+  refreshTable: () => void
+): ColumnDef<User>[] {
+  const handleDelete = async (uuid: string) => {
+    if (!confirm("Are you sure you want to delete this user?")) return
 
-  const router = useRouter()
-  const { toast } = useToast()
+    try {
+      await apiClient.delete(`/users/${uuid}`)
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      })
+      refreshTable()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      })
+    }
+  }
 
-  const columns: ColumnDef<User>[] = [
+  return [
     {
       accessorKey: "first_name",
       header: "Name",
@@ -61,7 +72,7 @@ export default function UsersPage() {
     {
       accessorKey: "role",
       header: "Role",
-      cell: ({ row }) => <Badge variant="secondary">{row.original.role?.name || "No Role"}</Badge>,
+      cell: ({ row }) => <Badge variant="secondary">{row.original.role?.name?.toUpperCase() || "No Role"}</Badge>,
     },
     {
       accessorKey: "market",
@@ -74,7 +85,7 @@ export default function UsersPage() {
       cell: ({ row }) => (
         <Badge
           variant={row.original.status === "active" ? "default" : "destructive"}
-          className={row.original.status === "active" ? "status-active" : "status-inactive"}
+          className={`status ${row.original.status === "active" ? "active" : "inactive"}`}
         >
           {row.original.status}
         </Badge>
@@ -83,10 +94,11 @@ export default function UsersPage() {
     {
       accessorKey: "created_at",
       header: "Created",
-      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+      cell: ({ row }) => row.original.created_at,
     },
     {
       id: "actions",
+      header: "Actions",
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -112,78 +124,21 @@ export default function UsersPage() {
       ),
     },
   ]
+}
 
-  useEffect(() => {
-    fetchUsers()
-  }, [pagination.pageIndex, pagination.pageSize])
+export default function UsersPage() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const dataTableRef = useRef<{ refresh: () => void }>(null)
 
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true)
-      const response = await apiClient.get(`/users?page=${pagination.pageIndex + 1}&per_page=${pagination.pageSize}`)
-
-      if (response.data.status === "success") {
-        setUsers(response.data.data.items)
-        if (response.data.meta.pagination) {
-          setPagination((prev) => ({
-            ...prev,
-            pageCount: response.data.meta.pagination.totalPages,
-            total: response.data.meta.pagination.total,
-          }))
-        }
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch users",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+  const refreshTable = () => {
+    dataTableRef.current?.refresh()
   }
 
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return
-
-    try {
-      await apiClient.delete(`/users/${uuid}`)
-      toast({
-        title: "Success",
-        description: "User deleted successfully",
-      })
-      fetchUsers()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, pageIndex: page }))
-  }
-
-  const handlePageSizeChange = (size: number) => {
-    setPagination((prev) => ({ ...prev, pageSize: size, pageIndex: 0 }))
-  }
-
-  if (isLoading && users.length === 0) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-[#444444]">Users</h1>
-        </div>
-        <div className="animate-pulse space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-gray-200 rounded"></div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+  const columns = React.useMemo(
+    () => getColumns(router, toast, refreshTable),
+    [router, toast]
+  )
 
   return (
     <div className="space-y-6">
@@ -199,18 +154,12 @@ export default function UsersPage() {
       </div>
 
       <DataTable
-        columns={columns}
-        data={users}
+        ref={dataTableRef}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="first_name"
         searchPlaceholder="Search users..."
-        pagination={{
-          pageIndex: pagination.pageIndex,
-          pageSize: pagination.pageSize,
-          pageCount: pagination.pageCount,
-          total: pagination.total,
-          onPageChange: handlePageChange,
-          onPageSizeChange: handlePageSizeChange,
-        }}
+        url={`/users?roles=${roles}`}
+        exportFileName="users.xlsx"
       />
     </div>
   )

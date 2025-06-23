@@ -25,6 +25,7 @@ interface DistributorDetail {
   id: string
   uuid: string
   user: {
+    uuid: string
     first_name: string
     last_name: string
     email: string
@@ -59,16 +60,15 @@ export default function DistributorDetailPage({ params }: { params: { id: string
   }, [params.id])
 
   const fetchDistributor = async () => {
+    setIsLoading(true)
     try {
-      setIsLoading(true)
-      const response = await apiClient.get(`/distributors/${params.id}`)
-      if (response.data.status === "success") {
-        setDistributor(response.data.data.item)
-      }
+      const {data} = await apiClient.get<{ item: DistributorDetail }>(`/distributors/${params.id}`)
+      setDistributor(data.item ?? null)
     } catch (error: any) {
+      setDistributor(null)
       toast({
         title: "Error",
-        description: "Failed to fetch distributor details",
+        description: error?.message || "Failed to fetch distributor details",
         variant: "destructive",
       })
     } finally {
@@ -132,7 +132,7 @@ export default function DistributorDetailPage({ params }: { params: { id: string
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
-          <Button variant="outline" onClick={() => router.push(`/dashboard/distributors/${distributor.uuid}/orders`)}>
+          <Button variant="outline" onClick={() => router.push(`/dashboard/distributors/${distributor.user.uuid}/orders`)}>
             <ShoppingCart className="mr-2 h-4 w-4" />
             View Orders
           </Button>
@@ -214,7 +214,7 @@ export default function DistributorDetailPage({ params }: { params: { id: string
                   <p className="text-sm text-[#ababab]">Status</p>
                   <Badge
                     variant={distributor.user.status === "active" ? "default" : "destructive"}
-                    className={distributor.user.status === "active" ? "status-active" : "status-inactive"}
+                    className={`status ${distributor.user.status === "active" ? "active" : "inactive"}`}
                   >
                     {distributor.user.status}
                   </Badge>
@@ -287,7 +287,7 @@ export default function DistributorDetailPage({ params }: { params: { id: string
                 <span className="text-[#ababab]">Last Order</span>
                 <span className="font-medium text-[#444444]">
                   {distributor.performance?.last_order_date
-                    ? new Date(distributor.performance.last_order_date).toLocaleDateString()
+                    ? distributor.performance.last_order_date
                     : "No orders yet"}
                 </span>
               </div>
