@@ -193,7 +193,7 @@ export default function CreateDistributorPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="ime_vss_user_id" className="text-[#444444]">
-                        IME VSS User *
+                        Assign IME/VSS Team *
                       </Label>
                       <SelectWithFetch
                         fetchUrl="/users?roles=ime,vss"

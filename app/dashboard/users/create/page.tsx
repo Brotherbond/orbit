@@ -17,51 +17,27 @@ import { Formik, Form, ErrorMessage } from "formik"
 import * as Yup from "yup"
 
 interface Role {
-  id: string
-  name: string
-}
-
-interface Market {
-  id: string
+  uuid: string
   name: string
 }
 
 export default function CreateUserPage() {
   const [roles, setRoles] = useState<Role[]>([])
-  const [markets, setMarkets] = useState<Market[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
   const { toast } = useToast()
 
   useEffect(() => {
-    fetchRoles()
-    fetchMarkets()
+    apiClient.get<{ items: Role[] }>("/roles")
+      .then(({data}) => {
+        setRoles(data.items|| [])
+      })
+      .catch((error) => {
+        console.error("Failed to fetch roles:", error)
+        setRoles([])
+      })
   }, [])
-
-  const fetchRoles = async () => {
-    try {
-      const response = await apiClient.get("/roles")
-      const data = response.data as { status: string; data: { items: Role[] } }
-      if (data.status === "success") {
-        setRoles(data.data.items)
-      }
-    } catch (error) {
-      console.error("Failed to fetch roles:", error)
-    }
-  }
-
-  const fetchMarkets = async () => {
-    try {
-      const response = await apiClient.get("/markets")
-      const data = response.data as { status: string; data: { items: Market[] } }
-      if (data.status === "success") {
-        setMarkets(data.data.items)
-      }
-    } catch (error) {
-      console.error("Failed to fetch markets:", error)
-    }
-  }
 
   const initialValues = {
     first_name: "",
@@ -208,32 +184,18 @@ export default function CreateUserPage() {
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role.id} value={role.id}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
+                        {roles
+                          .filter((role) =>
+                            !["vss", "ime", "distributor"].includes(role.name.toLowerCase())
+                          )
+                          .map((role) => (
+                            <SelectItem key={role.uuid} value={role.uuid}>
+                              {role.name}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                     <ErrorMessage name="role_id" component="p" className="text-sm text-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="market_id">Market</Label>
-                    <Select
-                      value={values.market_id}
-                      onValueChange={(value) => setFieldValue("market_id", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select market" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {markets.map((market) => (
-                          <SelectItem key={market.id} value={market.id}>
-                            {market.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
