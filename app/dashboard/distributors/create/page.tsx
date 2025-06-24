@@ -2,97 +2,21 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { SelectWithFetch } from "@/components/ui/select"
 import { ArrowLeft, Save } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import { Formik, Form, ErrorMessage } from "formik"
 import * as Yup from "yup"
-import { User } from "../../users/page"
 import { Distributor } from "../page"
 
-function ImeVssUserSelect({
-  value,
-  onChange,
-}: {
-  value: string
-  onChange: (uuid: string) => void
-}) {
-  const [options, setOptions] = useState<User[]>([])
-  const [search, setSearch] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [debouncedSearch, setDebouncedSearch] = useState("")
-
-  useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearch(search), 300)
-    return () => clearTimeout(handler)
-  }, [search])
-
-  useEffect(() => {
-    setLoading(true)
-    apiClient
-      .get<{ items: User[] }>(`/users?roles=ime,vss&search=${encodeURIComponent(debouncedSearch)}`)
-      .then(({ data }) => setOptions(data.items))
-      .finally(() => setLoading(false))
-  }, [debouncedSearch])
-
-  const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined)
-
-  useEffect(() => {
-    if (value) {
-      // Try to find in options first
-      const found = options.find((u) => u.id === value)
-      if (found) setSelectedUser(found)
-    }
-  }, [value, options])
-
-  const handleSelect = (uuid: string) => {
-    if (!uuid) return;
-    const found = options.find((u) => u.id === uuid)
-    if (found) setSelectedUser(found)
-    onChange(uuid)
-  }
-
-  return (
-    <Select value={value || ''} onValueChange={handleSelect}>
-      <SelectTrigger>
-        <SelectValue
-          placeholder={loading ? "Loading..." : "Select IME/VSS user"}
-        >
-          {selectedUser
-            ? `${selectedUser.first_name} ${selectedUser.last_name} (${selectedUser.email})`
-            : undefined}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        <div className="p-2">
-          <Input
-            placeholder="Search user..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            autoFocus
-          />
-        </div>
-        {loading && <div className="px-3 py-2 text-gray-400">Searching...</div>}
-        {options.length === 0 && !loading && (
-          <div className="px-3 py-2 text-gray-400">No users found</div>
-        )}
-        {options.map(user => (
-          <SelectItem key={user.uuid} value={user.uuid}>
-            {user.first_name} {user.last_name} ({user.email})
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
 
 
 export default function CreateDistributorPage() {
@@ -100,13 +24,13 @@ export default function CreateDistributorPage() {
   const router = useRouter()
   const { toast } = useToast()
 
+
   const initialValues = {
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
     password: "",
-    market_id: "",
     business_name: "",
     address: "",
     ime_vss_user_id: "",
@@ -119,7 +43,6 @@ export default function CreateDistributorPage() {
     email: Yup.string().email("Invalid email").required("Email is required"),
     phone: Yup.string(),
     password: Yup.string().required("Password is required"),
-    market_id: Yup.string(),
     business_name: Yup.string().required("Business name is required"),
     address: Yup.string().required("Address is required"),
     ime_vss_user_id: Yup.string().required("IME VSS User is required"),
@@ -255,19 +178,21 @@ export default function CreateDistributorPage() {
                       />
                       <ErrorMessage name="password" component="p" className="text-sm text-red-500" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="market_id" className="text-[#444444]">
-                        Market
-                      </Label>
-                      <Input
-                        id="market_id"
-                        name="market_id"
-                        value={values.market_id}
-                        onChange={handleChange}
-                        placeholder="Enter market ID"
-                      />
-                      <ErrorMessage name="market_id" component="p" className="text-sm text-red-500" />
-                    </div>
+                                      <div className="space-y-2">
+                    <Label htmlFor="ime_vss_user_id" className="text-[#444444]">
+                      IME VSS User *
+                    </Label>
+                    <SelectWithFetch
+                      fetchUrl="/users?roles=ime,vss"
+                      value={values.ime_vss_user_id}
+                      onChange={uuid => setFieldValue("ime_vss_user_id", uuid)}
+                      valueKey="uuid"
+                      labelKey="email"
+                      placeholder="Select IME/VSS user"
+                    />
+                    <ErrorMessage name="ime_vss_user_id" component="p" className="text-sm text-red-500" />
+                  </div>
+
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="business_name" className="text-[#444444]">
@@ -295,16 +220,6 @@ export default function CreateDistributorPage() {
                       rows={3}
                     />
                     <ErrorMessage name="address" component="p" className="text-sm text-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ime_vss_user_id" className="text-[#444444]">
-                      IME VSS User *
-                    </Label>
-                    <ImeVssUserSelect
-                      value={values.ime_vss_user_id}
-                      onChange={(uuid: string) => setFieldValue("ime_vss_user_id", uuid)}
-                    />
-                    <ErrorMessage name="ime_vss_user_id" component="p" className="text-sm text-red-500" />
                   </div>
                   <div className="flex items-center space-x-2">
                     <input

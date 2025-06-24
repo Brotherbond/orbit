@@ -3,8 +3,22 @@
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
-
 import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import { apiClient } from "@/lib/api-client"
+
+interface SelectWithFetchProps<T = any> {
+  fetchUrl: string
+  value: string
+  onChange: (value: string) => void
+  valueKey?: string
+  labelKey?: string
+  searchParam?: string
+  placeholder?: string
+  disabled?: boolean
+}
+
 
 const Select = SelectPrimitive.Root
 
@@ -146,6 +160,65 @@ const SelectSeparator = React.forwardRef<
 ))
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
+function SelectWithFetch<T = any>({
+  fetchUrl,
+  value,
+  onChange,
+  valueKey = "uuid",
+  labelKey = "name",
+  searchParam = "search",
+  placeholder = "Select...",
+  disabled = false,
+}: SelectWithFetchProps<T>) {
+  const [options, setOptions] = useState<T[]>([])
+  const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(handler)
+  }, [search])
+
+  useEffect(() => {
+    setLoading(true)
+    apiClient
+      .get<{ items: T[] }>(
+        `${fetchUrl}?${searchParam}=${encodeURIComponent(debouncedSearch)}`
+      )
+      .then(({ data }) => setOptions(data.items || []))
+      .catch(() => setOptions([]))
+      .finally(() => setLoading(false))
+  }, [fetchUrl, debouncedSearch, searchParam])
+
+  return (
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+      <SelectTrigger>
+        <SelectValue placeholder={loading ? "Loading..." : placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <div className="p-2">
+          <Input
+            placeholder="Search..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            autoFocus
+          />
+        </div>
+        {loading && <div className="px-3 py-2 text-gray-400">Searching...</div>}
+        {options.length === 0 && !loading && (
+          <div className="px-3 py-2 text-gray-400">No options found</div>
+        )}
+        {options.map((item: any) => (
+          <SelectItem key={item[valueKey as keyof typeof item]} value={item[valueKey as keyof typeof item]}>
+            {item[labelKey as keyof typeof item]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
 export {
   Select,
   SelectGroup,
@@ -157,4 +230,5 @@ export {
   SelectSeparator,
   SelectScrollUpButton,
   SelectScrollDownButton,
+  SelectWithFetch,
 }
