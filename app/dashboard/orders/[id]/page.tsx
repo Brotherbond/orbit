@@ -32,7 +32,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const fetchOrder = async () => {
     setIsLoading(true);
     try {
-      const response  = await apiClient.get(`/orders/${params.id}`);
+      const response  = await apiClient.get<{ item: Order }>(`/orders/${params.id}`);
       setOrder(response.data.item ?? null);
     } catch (error: any) {
       toast({
@@ -54,7 +54,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const fetchMessages = async () => {
     setIsMessagesLoading(true);
     try {
-      const response = await apiClient.get(`/orders/${params.id}/messages`);
+      const response = await apiClient.get<{ items: any[] }>(`/orders/${params.id}/messages`);
       setMessages(response.data.items ?? []);
     } catch (error: any) {
       toast({

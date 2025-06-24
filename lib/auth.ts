@@ -17,13 +17,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const { data } = await apiClient.post<{item: {user: User, token: string}}>(
-            "/auth/login",
-            {
-              email: credentials.email,
-              password: credentials.password,
-            },
-          );
+          const { data } = await apiClient.post<{
+            item: { user: User; token: string };
+          }>("/auth/login", {
+            email: credentials.email,
+            password: credentials.password,
+          });
 
           const { user, token } = data.item;
           if (user && token) {

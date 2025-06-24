@@ -19,7 +19,12 @@ export async function middleware(request: NextRequest) {
 
     // Role-based access control
     let role = "";
-    if (typeof token?.user === "object" && token.user && "role" in token.user && typeof token.user.role === "string") {
+    if (
+      typeof token?.user === "object" &&
+      token.user &&
+      "role" in token.user &&
+      typeof token.user.role === "string"
+    ) {
       role = token.user.role.toLowerCase();
     } else if (typeof token?.role === "string") {
       role = token.role.toLowerCase();
@@ -30,20 +35,37 @@ export async function middleware(request: NextRequest) {
     const routeRoles = [
       { pattern: /^\/dashboard$/, roles: ["everybody"] },
       { pattern: /^\/dashboard\/orders(\/.*)?$/, roles: ["everybody"] },
-      { pattern: /^\/dashboard\/distributors(\/.*)?$/, roles: ["super-admin", "operations", "sales-admin"] },
-      { pattern: /^\/dashboard\/ime-vss(\/.*)?$/, roles: ["super-admin", "operations", "sales-admin"] },
+      {
+        pattern: /^\/dashboard\/distributors(\/.*)?$/,
+        roles: ["super-admin", "operations", "sales-admin"],
+      },
+      {
+        pattern: /^\/dashboard\/ime-vss(\/.*)?$/,
+        roles: ["super-admin", "operations", "sales-admin"],
+      },
       { pattern: /^\/dashboard\/users(\/.*)?$/, roles: ["super-admin"] },
-      { pattern: /^\/dashboard\/brands(\/.*)?$/, roles: ["super-admin", "operations"] },
-      { pattern: /^\/dashboard\/markets(\/.*)?$/, roles: ["super-admin", "operations", "sales-admin"] },
-      { pattern: /^\/dashboard\/locations(\/.*)?$/, roles: ["super-admin", "operations"] },
+      {
+        pattern: /^\/dashboard\/brands(\/.*)?$/,
+        roles: ["super-admin", "operations"],
+      },
+      {
+        pattern: /^\/dashboard\/markets(\/.*)?$/,
+        roles: ["super-admin", "operations", "sales-admin"],
+      },
+      {
+        pattern: /^\/dashboard\/locations(\/.*)?$/,
+        roles: ["super-admin", "operations"],
+      },
       { pattern: /^\/dashboard\/roles(\/.*)?$/, roles: ["super-admin"] },
       { pattern: /^\/dashboard\/reports(\/.*)?$/, roles: ["everybody"] },
       { pattern: /^\/dashboard\/settings(\/.*)?$/, roles: ["everybody"] },
     ];
 
-    const matched = routeRoles.find(r => r.pattern.test(pathname));
+    const matched = routeRoles.find((r) => r.pattern.test(pathname));
     if (matched) {
-      if (!(matched.roles.includes("everybody") || matched.roles.includes(role))) {
+      if (
+        !(matched.roles.includes("everybody") || matched.roles.includes(role))
+      ) {
         // Redirect to dashboard if not authorized
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }

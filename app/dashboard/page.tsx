@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ShoppingCart, DollarSign, Package } from "lucide-react";
@@ -10,6 +10,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getColumns, getStatusFilter } from "./orders/page";
+import { ColumnDef } from "@tanstack/react-table";
 
 interface BrandCategoryPriceData {
   category: string;
@@ -61,13 +62,23 @@ interface DashboardData {
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true)
+  const dataTableRef = useRef<{ refresh: () => void }>(null)
+
 
   const { toast } = useToast()
   const { data: session } = useSession()
   const router = useRouter()
   const user = session?.user
   const role = user?.role
-  const statusFilter = getStatusFilter(role)
+  const statusFilter = getStatusFilter(role);
+  const refreshTable = () => {
+    dataTableRef.current?.refresh()
+  }
+
+  const columns = useMemo(
+    () => getColumns(session, router, toast, refreshTable),
+    [session, router, toast]
+  )
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -201,7 +212,8 @@ export default function DashboardPage() {
             `}</style>
             <div className="dashboard-hide-header">
               <DataTable className="no-card"
-                columns={getColumns(session, router, toast, () => {}) as unknown as import("@tanstack/react-table").ColumnDef<unknown, unknown>[]}
+                ref={dataTableRef}
+                columns={columns as unknown as ColumnDef<unknown, unknown>[]}
                 url={`/orders?${statusFilter}`}
                 perPage={5}
                 exportFileName="recent-orders.xlsx"

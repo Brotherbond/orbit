@@ -16,7 +16,7 @@ import type { Order } from "@/types/order"
 
 
 export function getStatusFilter(role?: string): string {
-  if (role === "treasury") {
+  if (role && ["treasury", "sales-admin"].includes(role)) {
     return "&status=pending";
   } else if (role === "sales-admin") {
     return "&status=confirmed";
@@ -157,7 +157,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              {userRole === "treasury" ? (
+              {["sales-admin","treasury"].includes(userRole) ? (
                 <DropdownMenuItem onClick={handleConfirmPayment}>
                   <Edit className="mr-2 h-4 w-4" />
                   Confirm Payment
