@@ -106,6 +106,19 @@ export default function CreateDistributorPage() {
                 {/* Distributor Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-[#444444]">Distributor Information</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="business_name" className="text-[#444444]">
+                        Business Name *
+                      </Label>
+                      <Input
+                        id="business_name"
+                        name="business_name"
+                        value={values.business_name}
+                        onChange={handleChange}
+                        placeholder="Enter business name"
+                      />
+                      <ErrorMessage name="business_name" component="p" className="text-sm text-red-500" />
+                    </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="first_name" className="text-[#444444]">
@@ -178,34 +191,21 @@ export default function CreateDistributorPage() {
                       />
                       <ErrorMessage name="password" component="p" className="text-sm text-red-500" />
                     </div>
-                                      <div className="space-y-2">
-                    <Label htmlFor="ime_vss_user_id" className="text-[#444444]">
-                      IME VSS User *
-                    </Label>
-                    <SelectWithFetch
-                      fetchUrl="/users?roles=ime,vss"
-                      value={values.ime_vss_user_id}
-                      onChange={uuid => setFieldValue("ime_vss_user_id", uuid)}
-                      valueKey="uuid"
-                      labelKey="email"
-                      placeholder="Select IME/VSS user"
-                    />
-                    <ErrorMessage name="ime_vss_user_id" component="p" className="text-sm text-red-500" />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="ime_vss_user_id" className="text-[#444444]">
+                        IME VSS User *
+                      </Label>
+                      <SelectWithFetch
+                        fetchUrl="/users?roles=ime,vss"
+                        value={values.ime_vss_user_id}
+                        onChange={uuid => setFieldValue("ime_vss_user_id", uuid)}
+                        valueKey="uuid"
+                        labelKey="email"
+                        placeholder="Select IME/VSS user"
+                      />
+                      <ErrorMessage name="ime_vss_user_id" component="p" className="text-sm text-red-500" />
+                    </div>
 
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="business_name" className="text-[#444444]">
-                      Business Name *
-                    </Label>
-                    <Input
-                      id="business_name"
-                      name="business_name"
-                      value={values.business_name}
-                      onChange={handleChange}
-                      placeholder="Enter business name"
-                    />
-                    <ErrorMessage name="business_name" component="p" className="text-sm text-red-500" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="address" className="text-[#444444]">
