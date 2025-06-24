@@ -54,7 +54,7 @@ export default function CreateImeVssPage() {
         title: "Success",
         description: "IME-VSS user created successfully",
       })
-      router.push("/dashboard/ime-vss")
+      // router.push("/dashboard/ime-vss")
     } catch (error: any) {
       toast({
         title: "Error",

@@ -47,15 +47,12 @@ export default function CreateUserPage() {
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.post("/users", values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
-        toast({
-          title: "Success",
-          description: "User created successfully",
-        })
-        router.push("/dashboard/users")
-      }
+      await apiClient.post("/users", values)
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      })
+      // router.push("/dashboard/users")
     } catch (error: any) {
       toast({
         title: "Error",
