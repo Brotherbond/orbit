@@ -1,3 +1,4 @@
+import { User } from "@/app/dashboard/users/page";
 import { StatusBadgeProps } from "@/components/ui/status-badge";
 
 export interface OrderBrand {
@@ -14,21 +15,8 @@ export interface OrderBrand {
 export interface Order {
   uuid: string;
   ref: string;
-  ime_vss: {
-    uuid: string;
-    first_name: string;
-    last_name: string;
-    full_name: string;
-    email: string;
-    phone: string;
-  };
-  distributor_user: {
-    uuid: string;
-    first_name: string;
-    last_name: string;
-    full_name: string;
-    email: string;
-    phone: string;
+  ime_vss: User;
+  distributor_user: User & {
     distributor_details: {
       uuid: string;
       business_name: string;

@@ -255,7 +255,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               </p>
             </div>
             <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Field Agent [IME]</p>
+              <p className="text-medium font-semibold text-[#333333] mb-1">Field Agent [{order.ime_vss?.role?.name.toUpperCase()}]</p>
               <p className="font-sm text-sm text-[#666666]">
                 {order.ime_vss?.full_name || 'N/A'}
               </p>
