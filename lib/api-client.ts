@@ -3,6 +3,7 @@ import { getSession, signOut } from "next-auth/react";
 import { showError } from "./notifications";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY
 
 /**
  * ApiResponse<T>:
@@ -41,6 +42,7 @@ class ApiClient {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        "x-api-key": API_KEY,
       },
     });
 

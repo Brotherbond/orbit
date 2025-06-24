@@ -30,7 +30,6 @@ export default function CreateUserPage() {
     email: "",
     phone: "",
     password: "",
-    market_id: "",
     role_id: "",
     send_notification: false,
   }
@@ -41,7 +40,6 @@ export default function CreateUserPage() {
     email: Yup.string().email("Please enter a valid email").required("Email is required"),
     phone: Yup.string().required("Phone number is required"),
     password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
-    market_id: Yup.string(),
     role_id: Yup.string().required("Role is required"),
     send_notification: Yup.boolean(),
   })
