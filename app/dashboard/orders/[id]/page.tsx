@@ -32,7 +32,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const fetchOrder = async () => {
     setIsLoading(true);
     try {
-      const response  = await apiClient.get<{ item: Order }>(`/orders/${params.id}`);
+      const response = await apiClient.get<{ item: Order }>(`/orders/${params.id}`);
       setOrder(response.data.item ?? null);
     } catch (error: any) {
       toast({
@@ -174,7 +174,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     handleConfirmPayment: () => void;
     handleApproveOrder: () => void;
   }) {
-    if (userRole === "treasury") {
+    if (["treasury", "sales-admin"].includes(userRole)) {
       if (orderStatus === "pending") {
         return (
           <>
@@ -196,7 +196,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         <Badge className="text-[#12B636] bg-[#1CD34412] border-none p-3 rounded-[10px]">Payment Confirmed <Image src={SuccessIcon} alt="Success" width={16} height={16} className="inline mx-2" /></Badge>
       )
     }
-    if (userRole === "sales-admin") {
+   else if (userRole === "sales-admin") {
       if (orderStatus === "confirmed") {
         return (
           <>
