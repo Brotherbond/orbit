@@ -17,7 +17,7 @@ import type { Order } from "@/types/order"
 
 export function getStatusFilter(role?: string): string {
   if (role && ["treasury", "sales-admin"].includes(role)) {
-    return "&status=pending";
+    return "";
   } else if (role === "sales-admin") {
     return "&status=confirmed";
   }
