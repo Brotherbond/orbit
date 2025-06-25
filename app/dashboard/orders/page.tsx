@@ -153,22 +153,26 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/orders/${row.original.uuid}`)}>
+              <DropdownMenuItem className="cursor-pointer"onClick={() => router.push(`/dashboard/orders/${row.original.uuid}`)}>
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
-              {["sales-admin","treasury"].includes(userRole) ? (
-                <DropdownMenuItem onClick={handleConfirmPayment}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`/dashboard/orders/${row.original.uuid}/tracks`)}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Track
+              </DropdownMenuItem>
+              {["sales-admin","treasury"].includes(userRole) && row.original.status === "pending" ? (
+                <DropdownMenuItem className="cursor-pointer"onClick={handleConfirmPayment}>
                   <Edit className="mr-2 h-4 w-4" />
                   Confirm Payment
                 </DropdownMenuItem>
-              ) : userRole === "sales-admin" ? (
-                <DropdownMenuItem onClick={handleConfirmOrder}>
+              ) : userRole === "admin" ? (
+                <DropdownMenuItem className="cursor-pointer"onClick={handleConfirmOrder}>
                   <Edit className="mr-2 h-4 w-4" />
                   Approve Order
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem onClick={() => router.push(`/dashboard/orders/${row.original.uuid}/edit`)}>
+                <DropdownMenuItem className="cursor-pointer"onClick={() => router.push(`/dashboard/orders/${row.original.uuid}/edit`)}>
                   <Edit className="mr-2 h-4 w-4" />
                   Update Order
                 </DropdownMenuItem>

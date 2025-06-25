@@ -15,6 +15,7 @@ export interface OrderBrand {
 export interface Order {
   uuid: string;
   ref: string;
+  fulfilled_token: string;
   ime_vss: User;
   distributor_user: User & {
     distributor_details: {

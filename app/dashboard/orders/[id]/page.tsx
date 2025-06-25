@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Order } from "@/types/order";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
@@ -196,7 +197,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         <Badge className="text-[#12B636] bg-[#1CD34412] border-none p-3 rounded-[10px]">Payment Confirmed <Image src={SuccessIcon} alt="Success" width={16} height={16} className="inline mx-2" /></Badge>
       )
     }
-   else if (userRole === "sales-admin") {
+    else if (userRole === "sales-admin") {
       if (orderStatus === "confirmed") {
         return (
           <>
@@ -243,8 +244,25 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       {/* Main Content */}
       <Card className="w-full max-w-3xl">
         <CardContent className="p-6">
-          <div className="mb-6 text-[#FF6600] font-bold text-lg">
-            #{order.ref}
+          <div className="flex items-center justify-between mb-4">
+            <div className="mb-6 text-[#FF6600] font-bold text-lg">
+              #{order.ref}
+            </div>
+            <div className="operations flex items-center space-x-2">
+              {["operations", 'super-admin'].includes(userRole) && (
+                <div className="flex items-center gap-1 text-sm text-[#444] bg-[#F8F8F8] px-3 py-1 rounded">
+                  <span className="font-medium text-[#12B636]">Order Token:</span>
+                  <span className="font-mono text-xs text-[#333]">{order.fulfilled_token || 'N/A'}</span>
+                </div>
+              )}
+              <Link
+                href={`/dashboard/orders/${order.uuid}/tracks`}
+                className="ml-2 px-3 py-1 rounded bg-[#FF6600] text-white text-sm font-semibold hover:bg-[#ff6b00] transition-colors"
+                style={{ textDecoration: "none" }}
+              >
+                View Tracks
+              </Link>
+            </div>
           </div>
           {/* Order Information Grid */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
