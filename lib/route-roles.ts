@@ -67,10 +67,10 @@ export const routeRoles: RouteRole[] = [
     pattern: /^\/dashboard\/reports(\/.*)?$/,
     roles: ["everybody"],
   },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    pattern: /^\/dashboard\/settings(\/.*)?$/,
-    roles: ["everybody"],
-  },
+  // {
+  //   title: "Settings",
+  //   href: "/dashboard/settings",
+  //   pattern: /^\/dashboard\/settings(\/.*)?$/,
+  //   roles: ["everybody"],
+  // },
 ];
