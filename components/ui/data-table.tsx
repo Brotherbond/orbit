@@ -316,19 +316,35 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
       </div>
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
+<TableHeader>
+  {table.getHeaderGroups().map((headerGroup) => (
+    <TableRow key={headerGroup.id}>
+      {headerGroup.headers.map((header) => {
+        return (
+          <TableHead
+            key={header.id}
+            onClick={header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}
+            className={header.column.getCanSort() ? "cursor-pointer select-none" : ""}
+          >
+            {header.isPlaceholder ? null : (
+              <span className="flex items-center">
+                {flexRender(header.column.columnDef.header, header.getContext())}
+                {header.column.getCanSort() && (
+                  <span className="ml-1">
+                    {{
+                      asc: "▲",
+                      desc: "▼"
+                    }[header.column.getIsSorted() as string] ?? ""}
+                  </span>
+                )}
+              </span>
+            )}
+          </TableHead>
+        )
+      })}
+    </TableRow>
+  ))}
+</TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
