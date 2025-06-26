@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,18 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { User } from "@/types/user"
+import { Role } from "@/types/role"
+import { Market } from "@/types/market"
 import { Formik, Form, ErrorMessage } from "formik"
 import * as Yup from "yup"
-
-interface Role {
-  id: string
-  name: string
-}
-
-interface Market {
-  id: string
-  name: string
-}
 
 interface UserData {
   first_name: string
@@ -34,7 +26,6 @@ interface UserData {
   role_id: string
   status: string
 }
-
 export default function EditUserPage({ params }: { params: { id: string } }) {
   const [initialValues, setInitialValues] = useState<UserData>({
     first_name: "",
@@ -61,20 +52,17 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
 
   const fetchUser = async () => {
     try {
-      const response = await apiClient.get(`/users/${params.id}`)
-      const data = response.data as { status: string; data: { item: UserData & { market?: Market; role?: Role } } }
-      if (data.status === "success") {
-        const user = data.data.item
-        setInitialValues({
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          phone: user.phone,
-          market_id: user.market?.id || "",
-          role_id: user.role?.id || "",
-          status: user.status,
-        })
-      }
+      const { data } = await apiClient.get<{ item: User }>(`/users/${params.id}`)
+      const user = data.item
+      setInitialValues({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        phone: user.phone,
+        market_id: user.market?.uuid || "",
+        role_id: user.role?.uuid || "",
+        status: user.status,
+      })
     } catch (error) {
       toast({
         title: "Error",

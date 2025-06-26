@@ -10,25 +10,7 @@ import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
-
-interface Location {
-  id: string
-  uuid: string
-  name: string
-  address: string
-  city: string
-  state: string
-  country: string
-  postal_code: string
-  latitude: number
-  longitude: number
-  market: {
-    id: string
-    name: string
-  }
-  status: string
-  created_at: string
-}
+import { Location } from "@/types/location"
 
 function getColumns(
   router: any,

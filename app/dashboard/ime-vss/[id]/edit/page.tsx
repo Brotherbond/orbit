@@ -14,17 +14,9 @@ import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import { Formik, Form, ErrorMessage } from "formik"
 import * as Yup from "yup"
-
-interface Role {
-  id: string
-  name: string
-}
-
-interface Market {
-  id: string
-  name: string
-}
-
+import { User } from "@/types/user"
+import { Role } from "@/types/role"
+import { Market } from "@/types/market"
 interface ImeVssData {
   first_name: string
   last_name: string
@@ -64,20 +56,17 @@ export default function EditImeVssPage({ params }: { params: Promise<{ id: strin
 
   const fetchImeVss = async (id: string) => {
     try {
-      const response = await apiClient.get(`/ime-vss/${id}`)
-      const data = response.data as { status: string; data: { item: ImeVssData & { market?: Market; role?: Role } } }
-      if (data.status === "success") {
-        const imeVss = data.data.item
-        setInitialValues({
-          first_name: imeVss.first_name,
-          last_name: imeVss.last_name,
-          email: imeVss.email,
-          phone: imeVss.phone,
-          market_id: imeVss.market?.id || "",
-          role_id: imeVss.role?.id || "",
-          status: imeVss.status,
-        })
-      }
+      const { data } = await apiClient.get<{ item: User }>(`/users/${id}`)
+      const imeVss = data.item
+      setInitialValues({
+        first_name: imeVss.first_name,
+        last_name: imeVss.last_name,
+        email: imeVss.email,
+        phone: imeVss.phone,
+        market_id: imeVss.market?.uuid || "",
+        role_id: imeVss.role?.uuid || "",
+        status: imeVss.status,
+      })
     } catch (error) {
       toast({
         title: "Error",
@@ -89,11 +78,8 @@ export default function EditImeVssPage({ params }: { params: Promise<{ id: strin
 
   const fetchRoles = async () => {
     try {
-      const response = await apiClient.get("/roles")
-      const data = response.data as { status: string; data: { items: Role[] } }
-      if (data.status === "success") {
-        setRoles(data.data.items)
-      }
+      const { data } = await apiClient.get<{ items: Role[] }>("/roles")
+      setRoles(data.items)
     } catch (error) {
       console.error("Failed to fetch roles:", error)
     }
@@ -101,11 +87,8 @@ export default function EditImeVssPage({ params }: { params: Promise<{ id: strin
 
   const fetchMarkets = async () => {
     try {
-      const response = await apiClient.get("/markets")
-      const data = response.data as { status: string; data: { items: Market[] } }
-      if (data.status === "success") {
-        setMarkets(data.data.items)
-      }
+      const { data } = await apiClient.get<{ items: Market[] }>("/markets");
+      setMarkets(data.items)
     } catch (error) {
       console.error("Failed to fetch markets:", error)
     }

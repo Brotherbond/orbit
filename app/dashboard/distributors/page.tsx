@@ -10,27 +10,8 @@ import { MoreHorizontal, Plus, Eye, Edit, Trash2, TrendingUp } from "lucide-reac
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { Distributor } from "@/types/distributor"
 
-export interface Distributor {
-  id: string
-  uuid: string
-  user: {
-    uuid: string
-    first_name: string
-    last_name: string
-    email: string
-    phone: string
-    status: string
-  }
-  business_name: string
-  address: string
-  performance?: {
-    total_orders: number
-    total_value: number
-    growth_rate: number
-  }
-  created_at: string
-}
 
 function getColumns(
   router: any,

@@ -9,24 +9,8 @@ import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
+import { User } from "@/types/user";
 
-export interface User {
-  id: string
-  uuid: string
-  first_name: string
-  full_name: string
-  last_name: string
-  email: string
-  phone: string
-  role: {
-    name: string
-  }
-  market: {
-    name: string
-  }
-  status: string
-  created_at: string
-}
 const roles = "sales-admin,manager,operations,treasury"
 
 function getColumns(

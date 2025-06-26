@@ -9,14 +9,8 @@ import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { Role } from "@/types/role"
 
-interface Role {
-  uuid: string
-  name: string
-  description: string
-  status: string
-  created_at: string
-}
 
 export default function RolesPage() {
   const router = useRouter()

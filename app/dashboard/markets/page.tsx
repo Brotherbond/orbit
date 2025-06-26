@@ -9,18 +9,8 @@ import { MoreHorizontal, Plus, Eye, Edit, Trash2, MapPin, Users } from "lucide-r
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { Market } from "@/types/market"
 
-interface Market {
-  id: string
-  uuid: string
-  name: string
-  description: string
-  region: string
-  status: string
-  user_count: number
-  location_count: number
-  created_at: string
-}
 
 export default function MarketsPage() {
   const router = useRouter()
