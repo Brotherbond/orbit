@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -12,10 +12,12 @@ import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
 
 interface BrandPackage {
-  id: string
+  uuid: string
   type: string
   quantity: number
+  og_price: number
   wholesale_price: number
+  distributor_price: number
   retail_price: number
   retail_price_with_markup: number
 }
@@ -38,11 +40,7 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
   const router = useRouter()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchBrand()
-  }, [params.id])
-
-  const fetchBrand = async () => {
+  const fetchBrand = React.useCallback(async () => {
     setIsLoading(true)
     try {
       const { data } = await apiClient.get<{ item: BrandDetail }>(`/brands/${params.id}`);
@@ -57,7 +55,11 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [params.id, toast])
+
+  useEffect(() => {
+    fetchBrand()
+  }, [fetchBrand])
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this brand?")) return
@@ -180,7 +182,7 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
               {brand.packages && brand.packages.length > 0 ? (
                 <div className="space-y-4">
                   {brand.packages.map((pkg, index) => (
-                    <Card key={pkg.id} className="p-4 bg-[#f8f8f8]">
+                    <Card key={pkg.uuid || pkg.uuid} className="p-4 bg-[#f8f8f8]">
                       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div>
                           <p className="text-sm text-[#ababab]">Type</p>
@@ -191,16 +193,34 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                           <p className="font-medium text-[#444444]">{pkg.quantity}</p>
                         </div>
                         <div>
+                          <p className="text-sm text-[#ababab]">Original Price</p>
+                          <p className="font-medium text-[#444444]">
+                            ₦{Number(pkg.og_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                        <div>
                           <p className="text-sm text-[#ababab]">Wholesale Price</p>
-                          <p className="font-medium text-[#444444]">₦{pkg.wholesale_price.toLocaleString()}</p>
+                          <p className="font-medium text-[#444444]">
+                            {pkg.wholesale_price !== undefined
+                              ? `₦${Number(pkg.wholesale_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                              : <span className="text-[#ababab]">N/A</span>}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-[#ababab]">Retail Price</p>
-                          <p className="font-medium text-[#444444]">₦{pkg.retail_price.toLocaleString()}</p>
+                          <p className="font-medium text-[#444444]">
+                            {pkg.retail_price !== undefined
+                              ? `₦${Number(pkg.retail_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                              : <span className="text-[#ababab]">N/A</span>}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm text-[#ababab]">Price with Markup</p>
-                          <p className="font-medium text-[#444444]">₦{pkg.retail_price_with_markup.toLocaleString()}</p>
+                          <p className="text-sm text-[#ababab]">Distributor Price</p>
+                          <p className="font-medium text-[#444444]">
+                            {pkg.distributor_price !== undefined
+                              ? `₦${Number(pkg.distributor_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                              : <span className="text-[#ababab]">N/A</span>}
+                          </p>
                         </div>
                       </div>
                     </Card>
@@ -233,8 +253,15 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                   {brand.packages && brand.packages.length > 0 ? (
                     <div className="text-sm">
                       <div className="font-medium text-[#444444]">
-                        ₦{Math.min(...brand.packages.map((p) => p.retail_price)).toLocaleString()} - ₦
-                        {Math.max(...brand.packages.map((p) => p.retail_price)).toLocaleString()}
+                        {(() => {
+                          const prices = brand.packages
+                            .map((p: any) => Number(p.og_price))
+                            .filter((n: number) => !isNaN(n))
+                          if (prices.length === 0) return <span className="text-[#ababab]">No pricing</span>
+                          const minPrice = Math.min(...prices)
+                          const maxPrice = Math.max(...prices)
+                          return <>₦{minPrice.toLocaleString()} - ₦{maxPrice.toLocaleString()}</>
+                        })()}
                       </div>
                     </div>
                   ) : (
@@ -255,9 +282,6 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
               <CardTitle className="text-[#444444]">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full" variant="outline">
-                Add to Order
-              </Button>
               <Button className="w-full" variant="outline">
                 View Sales History
               </Button>

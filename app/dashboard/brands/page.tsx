@@ -145,7 +145,11 @@ function getColumns(
         const packages = row.original.packages || []
         if (packages.length === 0) return <span className="text-muted-foreground">No pricing</span>
 
-        const prices = packages.map((p) => p.retail_price)
+        const prices = packages
+          .map((p: any) => Number(p.og_price))
+          .filter((n: number) => !isNaN(n))
+        if (prices.length === 0) return <span className="text-muted-foreground">No pricing</span>
+
         const minPrice = Math.min(...prices)
         const maxPrice = Math.max(...prices)
 
