@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useRoles } from "@/components/dashboard/RolesContext"
 import { useRouter } from "next/navigation"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
@@ -13,16 +14,10 @@ interface Role {
 }
 
 export default function CreateImeVssPage() {
-  const [roles, setRoles] = useState<Role[]>([])
+  const { roles, isLoading: isRolesLoading } = useRoles()
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-
-  useEffect(() => {
-    apiClient.get<{ items: Role[] }>("/roles")
-      .then(({ data }) => setRoles(data.items || []))
-      .catch(() => setRoles([]))
-  }, [])
 
   const initialValues = {
     first_name: "",
@@ -157,7 +152,7 @@ export default function CreateImeVssPage() {
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
-        isLoading={isLoading}
+        isLoading={isLoading || isRolesLoading}
         onSubmit={handleSubmit}
         submitLabel="Create IME-VSS User"
         onCancel={() => router.back()}

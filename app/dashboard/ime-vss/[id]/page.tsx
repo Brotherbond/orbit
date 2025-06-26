@@ -67,7 +67,7 @@ export default function ImeVssDetailPage({ params }: { params: Promise<{ id: str
 
     try {
       const resolvedParams = await params
-      await apiClient.delete(`/ime-vss/${resolvedParams.id}`)
+      await apiClient.delete(`/users/${resolvedParams.id}`)
       toast({
         title: "Success",
         description: "IME-VSS user deleted successfully",

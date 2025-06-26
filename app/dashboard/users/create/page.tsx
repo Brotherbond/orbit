@@ -1,28 +1,19 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useRoles } from "@/components/dashboard/RolesContext"
 import { useRouter } from "next/navigation"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import * as Yup from "yup"
 import UserForm from "@/components/dashboard/UserForm"
-
-interface Role {
-  uuid: string
-  name: string
-}
+import { Role } from "@/types/role"
 
 export default function CreateUserPage() {
-  const [roles, setRoles] = useState<Role[]>([])
+  const { roles, isLoading: isRolesLoading } = useRoles()
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-
-  useEffect(() => {
-    apiClient.get<{ items: Role[] }>("/roles")
-      .then(({ data }) => setRoles(data.items || []))
-      .catch(() => setRoles([]))
-  }, [])
 
   const initialValues = {
     first_name: "",
@@ -147,7 +138,7 @@ export default function CreateUserPage() {
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
-        isLoading={isLoading}
+        isLoading={isLoading || isRolesLoading}
         onSubmit={handleSubmit}
         submitLabel="Create User"
         onCancel={() => router.back()}

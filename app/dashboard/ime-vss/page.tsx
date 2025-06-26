@@ -25,7 +25,7 @@ function getColumns(
     if (!confirm("Are you sure you want to delete this IME-VSS user?")) return
 
     try {
-      await apiClient.delete(`/ime-vss/${uuid}`)
+      await apiClient.delete(`/users/${uuid}`)
       toast({
         title: "Success",
         description: "IME-VSS user deleted successfully",

@@ -1,34 +1,16 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
+import { useRoles } from "@/components/dashboard/RolesContext"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
-import { Formik, Form, ErrorMessage } from "formik"
 import * as Yup from "yup"
+import UserForm from "@/components/dashboard/UserForm"
 import { User } from "@/types/user"
-import { Role } from "@/types/role"
-import { Market } from "@/types/market"
-interface ImeVssData {
-  first_name: string
-  last_name: string
-  email: string
-  phone: string
-  market_id: string
-  role_id: string
-  status: string
-}
 
-export default function EditImeVssPage({ params }: { params: Promise<{ id: string }> }) {
-  const [initialValues, setInitialValues] = useState<ImeVssData>({
+export default function EditImeVssPage({ params }: { params: { id: string } }) {
+  const [initialValues, setInitialValues] = useState({
     first_name: "",
     last_name: "",
     email: "",
@@ -37,36 +19,21 @@ export default function EditImeVssPage({ params }: { params: Promise<{ id: strin
     role_id: "",
     status: "active",
   })
-  const [roles, setRoles] = useState<Role[]>([])
-  const [markets, setMarkets] = useState<Market[]>([])
+  const [userData, setUserData] = useState<User | null>(null)
+  const { roles, isLoading: isRolesLoading } = useRoles()
   const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
   const { toast } = useToast()
 
   useEffect(() => {
-    const fetchData = async () => {
-      const resolvedParams = await params
-      fetchImeVss(resolvedParams.id)
-      fetchRoles()
-      fetchMarkets()
-    }
-    fetchData()
-  }, [params])
+    fetchImeVss()
+  }, [params.id])
 
-  const fetchImeVss = async (id: string) => {
+  const fetchImeVss = async () => {
     try {
-      const { data } = await apiClient.get<{ item: User }>(`/users/${id}`)
-      const imeVss = data.item
-      setInitialValues({
-        first_name: imeVss.first_name,
-        last_name: imeVss.last_name,
-        email: imeVss.email,
-        phone: imeVss.phone,
-        market_id: imeVss.market?.uuid || "",
-        role_id: imeVss.role?.uuid || "",
-        status: imeVss.status,
-      })
+      const { data } = await apiClient.get<{ item: User }>(`/users/${params.id}`)
+      setUserData(data.item)
     } catch (error) {
       toast({
         title: "Error",
@@ -76,23 +43,19 @@ export default function EditImeVssPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const fetchRoles = async () => {
-    try {
-      const { data } = await apiClient.get<{ items: Role[] }>("/roles")
-      setRoles(data.items)
-    } catch (error) {
-      console.error("Failed to fetch roles:", error)
+  useEffect(() => {
+    if (userData && roles.length > 0) {
+      setInitialValues({
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        email: userData.email,
+        phone: userData.phone,
+        market_id: userData.market?.uuid || "",
+        role_id: userData.role?.uuid || "",
+        status: userData.status,
+      })
     }
-  }
-
-  const fetchMarkets = async () => {
-    try {
-      const { data } = await apiClient.get<{ items: Market[] }>("/markets");
-      setMarkets(data.items)
-    } catch (error) {
-      console.error("Failed to fetch markets:", error)
-    }
-  }
+  }, [userData, roles])
 
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
@@ -104,18 +67,82 @@ export default function EditImeVssPage({ params }: { params: Promise<{ id: strin
     status: Yup.string().oneOf(["active", "inactive"]).required(),
   })
 
-  const handleSubmit = async (values: ImeVssData, { setSubmitting, setFieldError }: any) => {
+  const fields = [
+    {
+      name: "first_name",
+      label: "First Name",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter first name",
+    },
+    {
+      name: "last_name",
+      label: "Last Name",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter last name",
+    },
+    {
+      name: "email",
+      label: "Email Address",
+      type: "email" as const,
+      required: true,
+      placeholder: "Enter email address",
+    },
+    {
+      name: "phone",
+      label: "Phone Number",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter phone number",
+    },
+    {
+      name: "role_id",
+      label: "Role",
+      type: "select" as const,
+      required: true,
+      placeholder: "Select role",
+      options: roles
+        .filter((role) => ["vss", "ime"].includes(role.name.toLowerCase()))
+        .map((role) => ({
+          label: role.name,
+          value: role.uuid,
+        })),
+    },
+    {
+      name: "market_id",
+      label: "Market",
+      type: "selectWithFetch" as const,
+      required: false,
+      placeholder: "Select market",
+      fetchUrl: "/markets",
+      valueKey: "uuid",
+      labelKey: "name",
+    },
+    {
+      name: "status",
+      label: "Status",
+      type: "select" as const,
+      required: true,
+      placeholder: "Select status",
+      options: [
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" },
+      ],
+    },
+  ]
+
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const resolvedParams = await params
-      const response = await apiClient.put(`/ime-vss/${resolvedParams.id}`, values)
+      const response = await apiClient.put(`/users/${params.id}`, values)
       const data = response.data as { status: string }
       if (data.status === "success") {
         toast({
           title: "Success",
           description: "IME-VSS user updated successfully",
         })
-        router.push(`/dashboard/ime-vss/${resolvedParams.id}`)
+        router.push(`/dashboard/ime-vss/${params.id}`)
       }
     } catch (error: any) {
       toast({
@@ -133,162 +160,30 @@ export default function EditImeVssPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <button
+          type="button"
+          className="btn btn-ghost flex items-center"
+          onClick={() => router.back()}
+        >
+          <span className="mr-2">←</span>
           Back
-        </Button>
+        </button>
         <div>
           <h1 className="text-3xl font-bold text-[#444444]">Edit IME-VSS User</h1>
           <p className="text-[#ababab]">Update IME-VSS user information</p>
         </div>
       </div>
-
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-[#444444]">IME-VSS User Information</CardTitle>
-          <CardDescription className="text-[#ababab]">Update the IME-VSS user details below</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Formik
-            enableReinitialize
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
-              <Form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name" className="text-[#444444]">
-                      First Name *
-                    </Label>
-                    <Input
-                      id="first_name"
-                      name="first_name"
-                      value={values.first_name}
-                      onChange={handleChange}
-                      placeholder="Enter first name"
-                    />
-                    <ErrorMessage name="first_name" component="p" className="text-sm text-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="last_name" className="text-[#444444]">
-                      Last Name *
-                    </Label>
-                    <Input
-                      id="last_name"
-                      name="last_name"
-                      value={values.last_name}
-                      onChange={handleChange}
-                      placeholder="Enter last name"
-                    />
-                    <ErrorMessage name="last_name" component="p" className="text-sm text-red-500" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-[#444444]">
-                      Email Address *
-                    </Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={values.email}
-                      onChange={handleChange}
-                      placeholder="Enter email address"
-                    />
-                    <ErrorMessage name="email" component="p" className="text-sm text-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-[#444444]">
-                      Phone Number *
-                    </Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      value={values.phone}
-                      onChange={handleChange}
-                      placeholder="Enter phone number"
-                    />
-                    <ErrorMessage name="phone" component="p" className="text-sm text-red-500" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="role_id" className="text-[#444444]">
-                      Role *
-                    </Label>
-                    <Select
-                      value={values.role_id}
-                      onValueChange={(value) => setFieldValue("role_id", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role.id} value={role.id}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <ErrorMessage name="role_id" component="p" className="text-sm text-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="market_id" className="text-[#444444]">
-                      Market
-                    </Label>
-                    <Select
-                      value={values.market_id}
-                      onValueChange={(value) => setFieldValue("market_id", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select market" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {markets.map((market) => (
-                          <SelectItem key={market.id} value={market.id}>
-                            {market.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status" className="text-[#444444]">
-                    Status
-                  </Label>
-                  <Select
-                    value={values.status}
-                    onValueChange={(value) => setFieldValue("status", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
-                  <Button type="button" variant="outline" onClick={() => router.back()}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
-                    <Save className="mr-2 h-4 w-4" />
-                    {isLoading || isSubmitting ? "Updating..." : "Update IME-VSS User"}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </CardContent>
-      </Card>
+      <UserForm
+        title="IME-VSS User Information"
+        description="Update the IME-VSS user details below"
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        fields={fields}
+        isLoading={false}
+        onSubmit={handleSubmit}
+        submitLabel="Update IME-VSS User"
+        onCancel={() => router.back()}
+      />
     </div>
   )
 }

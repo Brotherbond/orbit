@@ -154,7 +154,7 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
                     <p className="font-medium text-[#444444]">{user.phone}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="hidden items-center space-x-3">
                   <MapPin className="h-5 w-5 text-[#ababab]" />
                   <div>
                     <p className="text-sm text-[#ababab]">Market</p>

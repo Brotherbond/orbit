@@ -1,8 +1,7 @@
-// components/dashboard/UserForm.tsx
-
 "use client"
 
 import React, { useEffect, useState } from "react"
+import { apiClient } from "@/lib/api-client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -73,9 +72,8 @@ export function UserForm({
   useEffect(() => {
     fields.forEach(field => {
       if (field.type === "selectWithFetch" && field.fetchUrl) {
-        fetch(field.fetchUrl)
-          .then(res => res.json())
-          .then(data => {
+        apiClient.get(field.fetchUrl)
+          .then(({ data }: any) => {
             setFetchedOptions(prev => ({
               ...prev,
               [field.name]: (data.items || []).map((item: any) => ({
@@ -100,6 +98,7 @@ export function UserForm({
       <CardContent>
         <Formik
           initialValues={initialValues}
+          enableReinitialize={true}
           validationSchema={validationSchema}
           onSubmit={onSubmit}
         >
