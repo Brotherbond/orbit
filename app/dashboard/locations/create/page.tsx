@@ -19,33 +19,38 @@ export default function CreateLocationPage() {
   const { toast } = useToast()
 
   const initialValues = {
-    name: "",
-    address: "",
-    status: "active",
+    city: "",
+    state: "",
+    region: "",
+    country: "",
   }
 
   const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-    address: Yup.string().required("Address is required"),
-    status: Yup.string().oneOf(["active", "inactive"]).required(),
+    city: Yup.string().required("City is required"),
+    state: Yup.string().required("State is required"),
+    region: Yup.string().required("Region is required"),
+    country: Yup.string().required("Country is required"),
   })
 
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.post("/locations", values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
-        toast({ title: "Success", description: "Location created successfully" })
-        router.push("/dashboard/locations")
-      }
+      await apiClient.post("/locations", values)
+      toast({
+        title: "Success",
+        description: "Location created successfully",
+      })
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to create location",
         variant: "destructive",
       })
-      setFieldError("name", error.response?.data?.errors?.name || "")
+      if (error.response?.data?.errors) {
+        Object.entries(error.response.data.errors).forEach(([field, message]) => {
+          setFieldError(field, message as string)
+        })
+      }
     } finally {
       setIsLoading(false)
       setSubmitting(false)
@@ -78,26 +83,48 @@ export default function CreateLocationPage() {
             {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
               <Form className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="city">City *</Label>
                   <Input
-                    id="name"
-                    name="name"
-                    value={values.name}
+                    id="city"
+                    name="city"
+                    value={values.city}
                     onChange={handleChange}
-                    placeholder="Enter location name"
+                    placeholder="Enter city"
                   />
-                  <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
+                  <ErrorMessage name="city" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="address">Address *</Label>
+                  <Label htmlFor="state">State *</Label>
                   <Input
-                    id="address"
-                    name="address"
-                    value={values.address}
+                    id="state"
+                    name="state"
+                    value={values.state}
                     onChange={handleChange}
-                    placeholder="Enter address"
+                    placeholder="Enter state"
                   />
-                  <ErrorMessage name="address" component="p" className="text-sm text-red-500" />
+                  <ErrorMessage name="state" component="p" className="text-sm text-red-500" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="region">Region *</Label>
+                  <Input
+                    id="region"
+                    name="region"
+                    value={values.region}
+                    onChange={handleChange}
+                    placeholder="Enter region"
+                  />
+                  <ErrorMessage name="region" component="p" className="text-sm text-red-500" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country *</Label>
+                  <Input
+                    id="country"
+                    name="country"
+                    value={values.country}
+                    onChange={handleChange}
+                    placeholder="Enter country"
+                  />
+                  <ErrorMessage name="country" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="flex items-center justify-end space-x-4 pt-6 border-t">
                   <Button type="button" variant="outline" onClick={() => router.back()}>

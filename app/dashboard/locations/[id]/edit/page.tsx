@@ -14,16 +14,18 @@ import { Formik, Form, ErrorMessage } from "formik"
 import * as Yup from "yup"
 
 interface LocationData {
-  name: string
-  address: string
-  status: string
+  city: string
+  state: string
+  region: string
+  country: string
 }
 
 export default function EditLocationPage({ params }: { params: { id: string } }) {
   const [initialValues, setInitialValues] = useState<LocationData>({
-    name: "",
-    address: "",
-    status: "active",
+    city: "",
+    state: "",
+    region: "",
+    country: "",
   })
   const [isLoading, setIsLoading] = useState(false)
 
@@ -38,13 +40,14 @@ export default function EditLocationPage({ params }: { params: { id: string } })
   const fetchLocation = async () => {
     try {
       const response = await apiClient.get(`/locations/${params.id}`)
-      const data = response.data as { status: string; data: { item: LocationData } }
-      if (data.status === "success") {
-        const location = data.data.item
+      const data = response.data as { status: string; data?: { item: any }; item?: any }
+      const item = data.data?.item || data.item
+      if (item) {
         setInitialValues({
-          name: location.name,
-          address: location.address,
-          status: location.status,
+          city: item.city || "",
+          state: item.state || "",
+          region: item.region || "",
+          country: item.country || "",
         })
       }
     } catch (error) {
@@ -57,27 +60,31 @@ export default function EditLocationPage({ params }: { params: { id: string } })
   }
 
   const validationSchema = Yup.object({
-    name: Yup.string().required("Name is required"),
-    address: Yup.string().required("Address is required"),
-    status: Yup.string().oneOf(["active", "inactive"]).required(),
+    city: Yup.string().required("City is required"),
+    state: Yup.string().required("State is required"),
+    region: Yup.string().required("Region is required"),
+    country: Yup.string().required("Country is required"),
   })
 
   const handleSubmit = async (values: LocationData, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.put(`/locations/${params.id}`, values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
-        toast({ title: "Success", description: "Location updated successfully" })
-        router.push(`/dashboard/locations/${params.id}`)
-      }
+      await apiClient.put(`/locations/${params.id}`, values)
+      toast({
+        title: "Success",
+        description: "Location updated successfully",
+      })
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to update location",
         variant: "destructive",
       })
-      setFieldError("name", error.response?.data?.errors?.name || "")
+      if (error.response?.data?.errors) {
+        Object.entries(error.response.data.errors).forEach(([field, message]) => {
+          setFieldError(field, message as string)
+        })
+      }
     } finally {
       setIsLoading(false)
       setSubmitting(false)
@@ -111,42 +118,48 @@ export default function EditLocationPage({ params }: { params: { id: string } })
             {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
               <Form className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="city">City *</Label>
                   <Input
-                    id="name"
-                    name="name"
-                    value={values.name}
+                    id="city"
+                    name="city"
+                    value={values.city}
                     onChange={handleChange}
-                    placeholder="Enter location name"
+                    placeholder="Enter city"
                   />
-                  <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
+                  <ErrorMessage name="city" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="address">Address *</Label>
+                  <Label htmlFor="state">State *</Label>
                   <Input
-                    id="address"
-                    name="address"
-                    value={values.address}
+                    id="state"
+                    name="state"
+                    value={values.state}
                     onChange={handleChange}
-                    placeholder="Enter address"
+                    placeholder="Enter state"
                   />
-                  <ErrorMessage name="address" component="p" className="text-sm text-red-500" />
+                  <ErrorMessage name="state" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={values.status}
-                    onValueChange={(value) => setFieldValue("status", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
+                  <Label htmlFor="region">Region *</Label>
+                  <Input
+                    id="region"
+                    name="region"
+                    value={values.region}
+                    onChange={handleChange}
+                    placeholder="Enter region"
+                  />
+                  <ErrorMessage name="region" component="p" className="text-sm text-red-500" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country *</Label>
+                  <Input
+                    id="country"
+                    name="country"
+                    value={values.country}
+                    onChange={handleChange}
+                    placeholder="Enter country"
+                  />
+                  <ErrorMessage name="country" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="flex items-center justify-end space-x-4 pt-6 border-t">
                   <Button type="button" variant="outline" onClick={() => router.back()}>

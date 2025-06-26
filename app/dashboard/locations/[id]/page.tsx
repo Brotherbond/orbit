@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -18,35 +18,20 @@ interface LocationDetail {
   markets_count: number
   markets: Array<{
     uuid: string
-    location_id: number
+    location: {
+      uuid: string
+      city: string
+      state: string
+      region: string
+      country: string
+      full_location: string
+      created_at: string
+    }
     name: string
     type: string
     full_name: string
-    users: Array<{
-      uuid: string
-      first_name: string
-      last_name: string
-      full_name: string
-      email: string
-      phone: string
-      market_id: number
-      email_verified_at: string
-      deleted: boolean
-      status: string
-      role_id: number
-      is_active: boolean
-      created_at: string
-      updated_at: string
-      distributor_details?: {
-        uuid: string
-        business_name: string
-        address: string
-        created_at: string
-        updated_at: string
-      }
-    }>
+    users: Array<any>
     created_at: string
-    updated_at: string
   }>
   created_at: string
   updated_at: string
@@ -58,14 +43,10 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
   const router = useRouter()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchLocation()
-  }, [params.id])
-
-  const fetchLocation = async () => {
+  const fetchLocation = React.useCallback(async () => {
     try {
       setIsLoading(true)
-      const {data} = await apiClient.get<{ item: LocationDetail }>(`/locations/${params.id}`)
+      const { data } = await apiClient.get<{ item: LocationDetail }>(`/locations/${params.id}`)
       setLocation(data.item ?? null)
     } catch (error: any) {
       toast({
@@ -76,7 +57,11 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [params.id, toast])
+
+  useEffect(() => {
+    fetchLocation()
+  }, [fetchLocation])
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this location?")) return
@@ -132,7 +117,7 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => router.push(`/dashboard/locations/${location.id}/edit`)}>
+          <Button variant="outline" onClick={() => router.push(`/dashboard/locations/${location.uuid}/edit`)}>
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>

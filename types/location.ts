@@ -4,14 +4,14 @@ export interface Location {
   id: string;
   uuid: string;
   name: string;
-  address: string;
+  full_location: string;
   city: string;
   state: string;
   country: string;
   postal_code: string;
   latitude: number;
   longitude: number;
-  market: Market;
+  markets: Market[];
   status: string;
   created_at: string;
 }

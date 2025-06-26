@@ -15,7 +15,6 @@ import { Market } from "@/types/market"
 export default function MarketsPage() {
   const router = useRouter()
   const { toast } = useToast()
-
   const columns: ColumnDef<Market>[] = [
     {
       accessorKey: "name",
@@ -37,22 +36,22 @@ export default function MarketsPage() {
       ),
     },
     {
-      accessorKey: "user_count",
+      accessorKey: "users_count",
       header: "Users",
       cell: ({ row }) => (
         <div className="flex items-center space-x-1">
           <Users className="h-4 w-4 text-[#ababab]" />
-          <span className="text-[#444444]">{row.original.user_count || 0}</span>
+          <span className="text-[#444444]">{row.original.users_count || 0}</span>
         </div>
       ),
     },
     {
-      accessorKey: "location_count",
-      header: "Locations",
+      accessorKey: "location.full_location",
+      header: "Location",
       cell: ({ row }) => (
         <div className="flex items-center space-x-1">
           <MapPin className="h-4 w-4 text-[#ababab]" />
-          <span className="text-[#444444]">{row.original.location_count || 0}</span>
+          <span className="text-[#444444]">{row.original.location?.full_location || "—"}</span>
         </div>
       ),
     },
@@ -96,6 +95,7 @@ export default function MarketsPage() {
 
     try {
       await apiClient.delete(`/markets/${uuid}`)
+      router.refresh()
       toast({
         title: "Success",
         description: "Market deleted successfully",

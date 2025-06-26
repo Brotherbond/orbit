@@ -50,18 +50,27 @@ function getColumns(
       ),
     },
     {
-      accessorKey: "address",
+      accessorKey: "full_location",
       header: "Address",
       cell: ({ row }) => (
-        <div className="max-w-[200px] truncate" title={row.original.address}>
-          {row.original.address}
+        <div className="max-w-[200px] truncate" title={row.original.full_location}>
+          {row.original.full_location}
         </div>
       ),
     },
     {
-      accessorKey: "market",
-      header: "Market",
-      cell: ({ row }) => <Badge variant="secondary">{row.original.market?.name || "No Market"}</Badge>,
+      accessorKey: "markets",
+      header: "Markets",
+      cell: ({ row }) =>
+        row.original.markets && row.original.markets.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {row.original.markets.map((m: any) => (
+              <Badge key={m.uuid} variant="secondary">{m.name}</Badge>
+            ))}
+          </div>
+        ) : (
+          <span className="text-[#ababab]">No Markets</span>
+        ),
     },
     {
       accessorKey: "coordinates",

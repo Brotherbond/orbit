@@ -16,15 +16,18 @@ import * as Yup from "yup"
 interface MarketData {
   name: string
   description: string
-  status: string
+  type: string
+  location_id: string
 }
 
 export default function EditMarketPage({ params }: { params: { id: string } }) {
   const [initialValues, setInitialValues] = useState<MarketData>({
     name: "",
     description: "",
-    status: "active",
+    type: "",
+    location_id: "",
   })
+  const [locations, setLocations] = useState<{ uuid: string; full_location: string }[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
@@ -32,19 +35,23 @@ export default function EditMarketPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchMarket()
+    apiClient.get("/locations").then((res: any) => {
+      setLocations(res.data.items || [])
+    })
     // eslint-disable-next-line
   }, [params.id])
 
   const fetchMarket = async () => {
     try {
       const response = await apiClient.get(`/markets/${params.id}`)
-      const data = response.data as { status: string; data: { item: MarketData } }
-      if (data.status === "success") {
-        const market = data.data.item
+      const data = response.data as { status: string; data?: { item: any }; item?: any }
+      const item = data.data?.item || data.item
+      if (item) {
         setInitialValues({
-          name: market.name,
-          description: market.description,
-          status: market.status,
+          name: item.name || "",
+          description: item.description || "",
+          type: item.type || "",
+          location_id: item.location?.uuid || "",
         })
       }
     } catch (error) {
@@ -59,25 +66,29 @@ export default function EditMarketPage({ params }: { params: { id: string } }) {
   const validationSchema = Yup.object({
     name: Yup.string().required("Name is required"),
     description: Yup.string(),
-    status: Yup.string().oneOf(["active", "inactive"]).required(),
+    type: Yup.string().oneOf(["InMarket", "OutMarket"]).required("Type is required"),
+    location_id: Yup.string().required("Location is required"),
   })
 
   const handleSubmit = async (values: MarketData, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.put(`/markets/${params.id}`, values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
-        toast({ title: "Success", description: "Market updated successfully" })
-        router.push(`/dashboard/markets/${params.id}`)
-      }
+      await apiClient.put(`/markets/${params.id}`, values)
+      toast({
+        title: "Success",
+        description: "Market updated successfully",
+      })
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.response?.data?.message || "Failed to update market",
         variant: "destructive",
       })
-      setFieldError("name", error.response?.data?.errors?.name || "")
+      if (error.response?.data?.errors) {
+        Object.entries(error.response.data.errors).forEach(([field, message]) => {
+          setFieldError(field, message as string)
+        })
+      }
     } finally {
       setIsLoading(false)
       setSubmitting(false)
@@ -133,20 +144,37 @@ export default function EditMarketPage({ params }: { params: { id: string } }) {
                   <ErrorMessage name="description" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={values.status}
-                    onValueChange={(value) => setFieldValue("status", value)}
+                  <Label htmlFor="type">Type *</Label>
+                  <select
+                    id="type"
+                    name="type"
+                    value={values.type}
+                    onChange={handleChange}
+                    className="w-full border rounded px-3 py-2"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
+                    <option value="">Select type</option>
+                    <option value="InMarket">InMarket</option>
+                    <option value="OutMarket">OutMarket</option>
+                  </select>
+                  <ErrorMessage name="type" component="p" className="text-sm text-red-500" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location_id">Location *</Label>
+                  <select
+                    id="location_id"
+                    name="location_id"
+                    value={values.location_id}
+                    onChange={handleChange}
+                    className="w-full border rounded px-3 py-2"
+                  >
+                    <option value="">Select location</option>
+                    {locations.map(loc => (
+                      <option key={loc.uuid} value={loc.uuid}>
+                        {loc.full_location}
+                      </option>
+                    ))}
+                  </select>
+                  <ErrorMessage name="location_id" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="flex items-center justify-end space-x-4 pt-6 border-t">
                   <Button type="button" variant="outline" onClick={() => router.back()}>

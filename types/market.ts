@@ -7,7 +7,7 @@ export interface Market {
   description: string;
   region: string;
   status: string;
-  user_count: number;
+  users_count: number;
   location: Location;
   location_count: number;
   created_at: string;

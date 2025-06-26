@@ -1,21 +1,28 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Edit, Trash2, Calendar } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 
 interface MarketDetail {
-  id: string
+  uuid: string
   name: string
-  description: string
-  status: string
+  type: string
+  full_name: string
   created_at: string
-  updated_at: string
+  location: {
+    uuid: string
+    city: string
+    state: string
+    region: string
+    country: string
+    full_location: string
+    created_at: string
+  }
 }
 
 export default function MarketDetailPage({ params }: { params: { id: string } }) {
@@ -24,14 +31,10 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
   const router = useRouter()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchMarket()
-  }, [params.id])
-
-  const fetchMarket = async () => {
+  const fetchMarket = React.useCallback(async () => {
     try {
       setIsLoading(true)
-      const {data} = await apiClient.get<{ item: MarketDetail }>(`/markets/${params.id}`)
+      const { data } = await apiClient.get<{ item: MarketDetail }>(`/markets/${params.id}`)
       setMarket(data.item ?? null)
     } catch (error: any) {
       toast({
@@ -42,7 +45,11 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [params.id, toast])
+
+  useEffect(() => {
+    fetchMarket()
+  }, [fetchMarket])
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this market?")) return
@@ -62,6 +69,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
       })
     }
   }
+
 
   if (isLoading) {
     return (
@@ -98,7 +106,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => router.push(`/dashboard/markets/${market.id}/edit`)}>
+          <Button variant="outline" onClick={() => router.push(`/dashboard/markets/${market.uuid}/edit`)}>
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
@@ -116,14 +124,16 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <span className="text-[#ababab]">Description</span>
-              <div className="font-medium text-[#444444]">{market.description}</div>
+              <span className="text-[#ababab]">Full Name</span>
+              <div className="font-medium text-[#444444]">{market.full_name}</div>
             </div>
-            <div className="flex items-center space-x-3">
-              <span className="text-[#ababab]">Status</span>
-              <Badge variant={market.status === "active" ? "default" : "secondary"}>
-                {market.status}
-              </Badge>
+            <div className="space-y-2">
+              <span className="text-[#ababab]">Type</span>
+              <div className="font-medium text-[#444444]">{market.type}</div>
+            </div>
+            <div className="space-y-2">
+              <span className="text-[#ababab]">Location</span>
+              <div className="font-medium text-[#444444]">{market.location?.full_location}</div>
             </div>
             <div className="flex items-center space-x-3">
               <Calendar className="h-5 w-5 text-[#ababab]" />
