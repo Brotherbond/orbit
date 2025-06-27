@@ -11,7 +11,7 @@ export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
 
   return (
     <Badge variant={variant} className={badgeClass.trim()}>
-      {status.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())}
+      {status?.replace(/_/g, " ")?.replace(/^\w/, (c) => c.toUpperCase())}
     </Badge>
   );
 }

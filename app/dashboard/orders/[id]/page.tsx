@@ -79,7 +79,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       await apiClient.put<{ status: string }>(`/orders/${params.id}`, { status, ...extra });
       toast({
         title: "Success",
-        description: `Order ${status.replace("_", " ")} successfully`,
+        description: `Order ${status?.replace("_", " ")} successfully`,
       });
       fetchOrder();
     } catch (error: any) {
