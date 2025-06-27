@@ -32,6 +32,10 @@ export interface ApiResponse<T> {
   };
 }
 
+interface ApiRequestConfig extends AxiosRequestConfig {
+  showToast?: boolean;
+}
+
 class ApiClient {
   private axiosInstance: AxiosInstance;
 
@@ -64,12 +68,18 @@ class ApiClient {
         } else {
           const message =
             response.data?.message || "API returned an error status";
-          showError(message, "API Error");
+          // Only show toast if showToast is not false
+          const showToast =
+            (response.config as ApiRequestConfig)?.showToast !== false;
+          if (showToast) {
+            showError(message, "API Error");
+          }
           return Promise.reject(new Error(message));
         }
       },
       (error) => {
         let message = "An error occurred";
+        const config = (error.config || {}) as ApiRequestConfig;
         if (error.response) {
           message = error.response.data?.message || message;
         } else if (error.request) {
@@ -80,7 +90,11 @@ class ApiClient {
         if (message === "Unauthenticated.") {
           signOut();
         }
-        showError(message, "API Error");
+        // Only show toast if showToast is not false
+        const showToast = config.showToast !== false;
+        if (showToast) {
+          showError(message, "API Error");
+        }
         return Promise.reject(new Error(message));
       },
     );
@@ -88,7 +102,7 @@ class ApiClient {
 
   async get<T>(
     endpoint: string,
-    config?: AxiosRequestConfig,
+    config?: ApiRequestConfig,
   ): Promise<ApiResponse<T>> {
     return await this.axiosInstance.get(endpoint, config);
   }
@@ -96,7 +110,7 @@ class ApiClient {
   async post<T>(
     endpoint: string,
     data?: any,
-    config?: AxiosRequestConfig,
+    config?: ApiRequestConfig,
   ): Promise<ApiResponse<T>> {
     return await this.axiosInstance.post(endpoint, data, config);
   }
@@ -104,14 +118,14 @@ class ApiClient {
   async put<T>(
     endpoint: string,
     data?: any,
-    config?: AxiosRequestConfig,
+    config?: ApiRequestConfig,
   ): Promise<ApiResponse<T>> {
     return await this.axiosInstance.put(endpoint, data, config);
   }
 
   async delete<T>(
     endpoint: string,
-    config?: AxiosRequestConfig,
+    config?: ApiRequestConfig,
   ): Promise<ApiResponse<T>> {
     return await this.axiosInstance.delete(endpoint, config);
   }
