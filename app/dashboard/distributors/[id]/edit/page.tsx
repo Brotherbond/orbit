@@ -60,15 +60,12 @@ export default function EditDistributorPage({ params }: { params: { id: string }
   const handleSubmit = async (values: DistributorData, { setSubmitting }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.put(`/distributors/${params.id}`, values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
+      await apiClient.put(`/distributors/${params.id}`, values)
         toast({
           title: "Success",
           description: "Distributor updated successfully",
         })
         router.push(`/dashboard/distributors/${params.id}`)
-      }
     } catch (error: any) {
       toast({
         title: "Error",

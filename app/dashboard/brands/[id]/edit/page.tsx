@@ -59,15 +59,12 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
   const handleSubmit = async (values: BrandData, { setSubmitting }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.put(`/brands/${params.id}`, values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
-        toast({
-          title: "Success",
-          description: "Brand updated successfully",
-        })
-        router.push(`/dashboard/brands/${params.id}`)
-      }
+      await apiClient.put(`/brands/${params.id}`, values)
+      toast({
+        title: "Success",
+        description: "Brand updated successfully",
+      })
+      router.push(`/dashboard/brands/${params.id}`);
     } catch (error: any) {
       toast({
         title: "Error",

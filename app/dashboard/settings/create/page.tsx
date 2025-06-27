@@ -36,12 +36,9 @@ export default function CreateSettingPage() {
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.post("/settings", values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
+      await apiClient.post("/settings", values)
         toast({ title: "Success", description: "Setting created successfully" })
         router.push("/dashboard/settings")
-      }
     } catch (error: any) {
       toast({
         title: "Error",

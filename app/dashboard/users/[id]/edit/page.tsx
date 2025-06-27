@@ -123,15 +123,12 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.put(`/users/${params.id}`, values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
-        toast({
-          title: "Success",
-          description: "User updated successfully",
-        })
-        router.push(`/dashboard/users/${params.id}`)
-      }
+      await apiClient.put(`/users/${params.id}`, values)
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      })
+      router.push(`/dashboard/users/${params.id}`)
     } catch (error: any) {
       toast({
         title: "Error",

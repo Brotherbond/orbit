@@ -69,15 +69,12 @@ export default function CreateBrandPage() {
         ...values,
         packages: values.packages.filter((pkg) => pkg.type && pkg.quantity > 0),
       }
-      const response = await apiClient.post("/brands", payload)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
-        toast({
-          title: "Success",
-          description: "Brand created successfully",
-        })
-        router.push("/dashboard/brands")
-      }
+      await apiClient.post("/brands", payload)
+      toast({
+        title: "Success",
+        description: "Brand created successfully",
+      })
+      router.push("/dashboard/brands")
     } catch (error: any) {
       toast({
         title: "Error",

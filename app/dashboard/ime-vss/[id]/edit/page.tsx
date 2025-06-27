@@ -135,15 +135,12 @@ export default function EditImeVssPage({ params }: { params: { id: string } }) {
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const response = await apiClient.put(`/users/${params.id}`, values)
-      const data = response.data as { status: string }
-      if (data.status === "success") {
+      await apiClient.put(`/users/${params.id}`, values)
         toast({
           title: "Success",
           description: "IME-VSS user updated successfully",
         })
         router.push(`/dashboard/ime-vss/${params.id}`)
-      }
     } catch (error: any) {
       toast({
         title: "Error",
