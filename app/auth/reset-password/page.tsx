@@ -3,10 +3,9 @@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ErrorMessage, Field, Form, Formik } from "formik"
-import { ArrowLeft, CheckCircle, Lock } from "lucide-react"
+import { PasswordField } from "@/components/ui/password-field"
+import { Form, Formik } from "formik"
+import { ArrowLeft, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { AuthCard } from "@/components/auth-card"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -104,45 +103,26 @@ export default function ResetPasswordPage() {
                   </Alert>
                 )}
 
-                <div>
-                  <Label htmlFor="password">New Password</Label>
-                  <div className="mt-1 relative">
-                    <Field
-                      as={Input}
-                      id="password"
-                      name="password"
-                      type="password"
-                      autoComplete="new-password"
-                      className="pl-10"
-                      placeholder="Enter new password"
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      value={values.password}
-                    />
-                    <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                  </div>
-                  <ErrorMessage name="password" component="div" className="text-red-500 text-xs mt-1" />
-                </div>
-
-                <div>
-                  <Label htmlFor="confirm">Confirm Password</Label>
-                  <div className="mt-1 relative">
-                    <Field
-                      as={Input}
-                      id="confirm"
-                      name="confirm"
-                      type="password"
-                      autoComplete="new-password"
-                      className="pl-10"
-                      placeholder="Confirm new password"
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      value={values.confirm}
-                    />
-                    <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                  </div>
-                  <ErrorMessage name="confirm" component="div" className="text-red-500 text-xs mt-1" />
-                </div>
+                <PasswordField
+                  id="password"
+                  name="password"
+                  label="New Password"
+                  placeholder="Enter new password"
+                  value={values.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  autoComplete="new-password"
+                />
+                <PasswordField
+                  id="confirm"
+                  name="confirm"
+                  label="Confirm Password"
+                  placeholder="Confirm new password"
+                  value={values.confirm}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  autoComplete="new-password"
+                />
 
                 <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700" disabled={isLoading}>
                   {isLoading ? "Resetting..." : "Reset Password"}

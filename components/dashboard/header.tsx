@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { Bell, Search, User, Settings, LogOut, } from "lucide-react"
+import { Bell, Search, User, Settings, LogOut, Key } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
 import Image from "next/image"
 import Logo from "@/images/orbit-logo.png"
@@ -60,6 +60,12 @@ export function DashboardHeader() {
                 <Link href="" className="flex items-center cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings/change-password" className="flex items-center cursor-pointer">
+                  <Key className="mr-2 h-4 w-4" />
+                  Change Password
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
