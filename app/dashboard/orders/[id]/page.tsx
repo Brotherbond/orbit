@@ -315,7 +315,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                         </div>
                       </td>
                       <td className="py-3 px-4 font-light text-[#333333]">{brand.quantity}</td>
-                      <td className="py-3 px-4 font-light text-[#333333]">₦{brand.price}</td>
+                      <td className="py-3 px-4 font-light text-[#333333]">₦{parseFloat(brand.price).toLocaleString()}</td>
                       <td className="py-3 px-4 font-light text-[#333333]">
                         ₦{(parseFloat(brand.price) * parseInt(brand.quantity)).toLocaleString()}
                       </td>
