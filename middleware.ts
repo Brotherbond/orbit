@@ -58,7 +58,7 @@ export async function middleware(request: NextRequest) {
       },
       { pattern: /^\/dashboard\/roles(\/.*)?$/, roles: ["super-admin"] },
       { pattern: /^\/dashboard\/reports(\/.*)?$/, roles: ["everybody"] },
-      { pattern: /^\/dashboard\/settings(\/.*)?$/, roles: [] },
+      { pattern: /^\/dashboard\/settings(\/.*)?$/, roles: ["everybody"] },
     ];
 
     const matched = routeRoles.find((r) => r.pattern.test(pathname));
