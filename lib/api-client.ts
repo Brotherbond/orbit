@@ -68,11 +68,18 @@ class ApiClient {
         } else {
           const message =
             response.data?.message || "API returned an error status";
+          const errors = response.data?.errors;
           // Only show toast if showToast is not false
           const showToast =
             (response.config as ApiRequestConfig)?.showToast !== false;
           if (showToast) {
-            showError(message, "API Error");
+            if (Array.isArray(errors) && errors.length > 0) {
+              errors.forEach((err: { message: string }) => {
+                showError(err.message, "Error");
+              });
+            } else {
+              showError(message, "Error");
+            }
           }
           return Promise.reject(new Error(message));
         }
@@ -93,7 +100,14 @@ class ApiClient {
         // Only show toast if showToast is not false
         const showToast = config.showToast !== false;
         if (showToast) {
-          showError(message, "API Error");
+          const errors = error.response?.data?.errors;
+          if (Array.isArray(errors) && errors.length > 0) {
+            errors.forEach((err: { message: string }) => {
+              showError(err.message, "Error");
+            });
+          } else {
+            showError(message, "Error");
+          }
         }
         return Promise.reject(new Error(message));
       },
