@@ -15,10 +15,13 @@ export async function resetPassword({
     const res = await apiClient.post<any>(
       "/auth/reset-password",
       { token, email, password, password_confirmation: password },
-      { showToast: false }
+      { showToast: false },
     );
     return { success: true, message: res.message };
   } catch (error: any) {
-    return { success: false, message: error.message || "Failed to reset password." };
+    return {
+      success: false,
+      message: error.message || "Failed to reset password.",
+    };
   }
 }
