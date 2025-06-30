@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ShoppingCart, DollarSign, Package } from "lucide-react";
@@ -71,35 +71,37 @@ export default function DashboardPage() {
   const user = session?.user
   const role = user?.role
   const statusFilter = getStatusFilter(role);
-  const refreshTable = () => {
-    dataTableRef.current?.refresh()
-  }
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await apiClient.get<{ items: any }>("/admin/dashboard/sales-admin");
+      if (res.data && res.data.items) {
+        setDashboardData(res.data.items);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
+
+  const refreshTable = useCallback(() => {
+    dataTableRef.current?.refresh();
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const columns = useMemo(
     () => getColumns(session, router, toast, refreshTable),
-    [session, router, toast]
+    [session, router, toast, refreshTable]
   )
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        const res = await apiClient.get<{ items: any }>("/admin/dashboard/sales-admin");
-        if (res.data && res.data.items) {
-          setDashboardData(res.data.items);
-        }
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: "Failed to load dashboard data",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchDashboardData();
-  }, []);
+  }, [fetchDashboardData]);
 
   if (isLoading) {
     return (
@@ -214,7 +216,7 @@ export default function DashboardPage() {
               <DataTable className="no-card"
                 ref={dataTableRef}
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
-                url={`/orders?${statusFilter}`}
+                data={dashboardData.recent_orders}
                 perPage={5}
                 exportFileName="recent-orders.xlsx"
               />
