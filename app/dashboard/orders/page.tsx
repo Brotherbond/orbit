@@ -161,22 +161,24 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
                 <Eye className="mr-2 h-4 w-4" />
                 View Track
               </DropdownMenuItem>
-              {["sales-admin","treasury"].includes(userRole) && row.original.status === "pending" ? (
+              {["sales-admin","treasury"].includes(userRole) && row.original.status === "pending" && (
                 <DropdownMenuItem className="cursor-pointer"onClick={handleConfirmPayment}>
                   <Edit className="mr-2 h-4 w-4" />
                   Confirm Payment
                 </DropdownMenuItem>
-              ) : userRole === "admin" ? (
-                <DropdownMenuItem className="cursor-pointer"onClick={handleConfirmOrder}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Approve Order
-                </DropdownMenuItem>
-              ) : (
-                <DropdownMenuItem className="cursor-pointer"onClick={() => router.push(`/dashboard/orders/${row.original.uuid}/edit`)}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  Update Order
-                </DropdownMenuItem>
-              )}
+              ) 
+              // : userRole === "admin" ? (
+              //   <DropdownMenuItem className="cursor-pointer"onClick={handleConfirmOrder}>
+              //     <Edit className="mr-2 h-4 w-4" />
+              //     Approve Order
+              //   </DropdownMenuItem>
+              // ) : (
+              //   <DropdownMenuItem className="cursor-pointer"onClick={() => router.push(`/dashboard/orders/${row.original.uuid}/edit`)}>
+              //     <Edit className="mr-2 h-4 w-4" />
+              //     Update Order
+              //   </DropdownMenuItem>
+              // )
+              }
 
             </DropdownMenuContent>
           </DropdownMenu>
