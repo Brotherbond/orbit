@@ -2,7 +2,7 @@
 import React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
+import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import {
   Home,
@@ -38,7 +38,8 @@ const iconMap: Record<string, IconType> = {
 };
 
 const handleLogout = async () => {
-  await signOut({ callbackUrl: "/auth/login" });
+  // Handle complete sign out process
+  await apiClient.handleSignOut()
 };
 
 function SidebarMenu({

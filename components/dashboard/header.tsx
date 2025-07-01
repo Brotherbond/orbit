@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 import { Bell, Search, User, Settings, LogOut, Key } from "lucide-react"
-import { useSession, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
+import { apiClient } from "@/lib/api-client"
 import Image from "next/image"
 import Logo from "@/images/orbit-logo.png"
 import { Badge } from "@/components/ui/badge"
@@ -21,7 +22,8 @@ export function DashboardHeader() {
   const { data: session } = useSession()
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/auth/login" })
+    // Handle complete sign out process
+    await apiClient.handleSignOut()
   }
 
   return (

@@ -11,6 +11,7 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { AuthCard } from "@/components/auth-card";
+import { apiClient } from "@/lib/api-client";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -41,6 +42,9 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid email or password. Please try again.")
       } else if (result?.ok) {
+        // Refresh the API client session cache after successful login
+        await apiClient.handlePostLogin()
+        
         if (callbackUrl) {
           router.push(callbackUrl)
         } else {
