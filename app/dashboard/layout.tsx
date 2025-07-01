@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { AuthProvider } from "@/lib/auth-context"
 import { RolesProvider } from "@/components/dashboard/RolesContext"
+import { NavigationLoaderProvider, PageTransitionLoader } from "@/components/dashboard/navigation-loader"
 
 export default function DashboardLayout({
   children,
@@ -47,13 +48,16 @@ export default function DashboardLayout({
   return (
     <AuthProvider>
       <RolesProvider>
-        <div className="dashboard min-h-screen bg-[#f8f8f8]">
-          <DashboardHeader />
-          <div className="flex">
-            <DashboardSidebar />
-            <main className="flex-1 p-6">{children}</main>
+        <NavigationLoaderProvider>
+          <div className="dashboard min-h-screen bg-[#f8f8f8]">
+            <DashboardHeader />
+            <div className="flex">
+              <DashboardSidebar />
+              <main className="flex-1 p-6">{children}</main>
+            </div>
+            <PageTransitionLoader />
           </div>
-        </div>
+        </NavigationLoaderProvider>
       </RolesProvider>
     </AuthProvider>
   )

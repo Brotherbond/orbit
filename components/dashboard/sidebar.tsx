@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
+import { NavigationLink } from "@/components/dashboard/navigation-loader"
 import {
   Home,
   Users,
@@ -54,7 +55,7 @@ function SidebarMenu({
         const isActive = activeHref === item.href;
         const Icon = iconMap[item.title] || Home;
         return (
-          <Link key={item.href} href={item.href}>
+          <NavigationLink key={item.href} href={item.href}>
             <Button
               variant={isActive ? "default" : "ghost"}
               className={`w-full justify-start ${isActive ? "btn-primary" : "hover:bg-[#f2f2f2]"}`}
@@ -62,7 +63,7 @@ function SidebarMenu({
               <Icon className="mr-3 h-4 w-4" />
               {item.title}
             </Button>
-          </Link>
+          </NavigationLink>
         );
       })}
     </>
