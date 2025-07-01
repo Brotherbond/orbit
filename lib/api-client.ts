@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { getSession, signOut } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./auth";
 import { showError } from "./notifications";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -38,6 +40,9 @@ interface ApiRequestConfig extends AxiosRequestConfig {
 
 class ApiClient {
   private axiosInstance: AxiosInstance;
+  private cachedToken: string | null = null;
+  private tokenExpiry: number | null = null;
+  private sessionPromise: Promise<any> | null = null;
 
   constructor(baseURL: string) {
     this.axiosInstance = axios.create({
@@ -51,8 +56,7 @@ class ApiClient {
     });
 
     this.axiosInstance.interceptors.request.use(async (config) => {
-      const session = await getSession();
-      const token = session?.accessToken || null;
+      const token = await this.getValidToken();
       if (token) {
         config.headers = config.headers || {};
         config.headers["Authorization"] = `Bearer ${token}`;
@@ -95,7 +99,7 @@ class ApiClient {
           message = error.message;
         }
         if (message === "Unauthenticated.") {
-          signOut();
+          this.handleAuthError();
         }
         // Only show toast if showToast is not false
         const showToast = config.showToast !== false;
@@ -112,6 +116,62 @@ class ApiClient {
         return Promise.reject(new Error(message));
       },
     );
+  }
+
+  private async getValidToken(): Promise<string | null> {
+    // If we have a cached token and it's not expired, use it
+    if (this.cachedToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+      return this.cachedToken;
+    }
+
+    // If there's already a session request in progress, wait for it
+    if (this.sessionPromise) {
+      const session = await this.sessionPromise;
+      return session?.accessToken || null;
+    }
+
+    // Determine if we're on server or client side and use appropriate NextAuth method
+    let sessionPromise: Promise<any>;
+
+    if (typeof window === "undefined") {
+      // Server-side: use getServerSession
+      sessionPromise = getServerSession(authOptions);
+    } else {
+      // Client-side: use getSession (NextAuth handles caching internally)
+      sessionPromise = getSession();
+    }
+
+    this.sessionPromise = sessionPromise;
+
+    try {
+      const session = await this.sessionPromise;
+      const token = session?.accessToken || null;
+
+      if (token) {
+        this.cachedToken = token;
+        // Cache token for 23 hours (NextAuth session is 24 hours, leave 1 hour buffer)
+        this.tokenExpiry = Date.now() + 23 * 60 * 60 * 1000;
+      }
+
+      return token;
+    } finally {
+      this.sessionPromise = null;
+    }
+  }
+
+  /**
+   * Force refresh the cached token on next request
+   */
+  public refreshToken(): void {
+    this.cachedToken = null;
+    this.tokenExpiry = null;
+    this.sessionPromise = null;
+  }
+
+  private handleAuthError(): void {
+    // Clear cached token on auth error
+    this.refreshToken();
+    signOut();
   }
 
   async get<T>(
