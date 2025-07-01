@@ -9,11 +9,12 @@ import { PasswordField } from "@/components/ui/password-field"
 import { Form, Formik } from "formik"
 import * as Yup from "yup"
 import { apiClient } from "@/lib/api-client"
+import { useToast } from "@/hooks/use-toast"
 
 export default function ChangePasswordPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState("")
 
   const initialValues = {
@@ -36,42 +37,19 @@ export default function ChangePasswordPage() {
     try {
       await apiClient.post("/auth/change-password", {
         current_password: values.current_password,
-        password: values.new_password,
-        password_confirmation: values.new_password,
+        new_password: values.new_password,
+        new_password_confirmation: values.new_password,
       })
-      setIsSuccess(true)
-      setTimeout(() => router.push("/dashboard/settings"), 2000)
+      toast({
+        title: "Success",
+        description: "Password changed successfully!",
+      })
+      router.back()
     } catch (err: any) {
       setError(err?.message || "Failed to change password.")
     } finally {
       setIsLoading(false)
     }
-  }
-
-  if (isSuccess) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4 mb-4">
-          <Button
-            type="button"
-            variant="ghost"
-            className="flex items-center"
-            onClick={() => router.back()}
-          >
-            <span className="mr-2">←</span>
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-[#444444]">Change Password</h1>
-            <p className="text-[#ababab]">Update your account password below</p>
-          </div>
-        </div>
-        <div className="text-center text-green-600 font-semibold mb-4">Password changed!</div>
-        <Button className="w-full max-w-md" onClick={() => router.push("/dashboard/settings")}>
-          Back to Settings
-        </Button>
-      </div>
-    )
   }
 
   return (

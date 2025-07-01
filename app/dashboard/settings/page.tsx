@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
@@ -22,7 +22,8 @@ interface Setting {
 
 export default function SettingsPage() {
   const router = useRouter()
-  const { toast } = useToast()
+  const { toast } = useToast();
+  redirect("/dashboard");
 
   const columns: ColumnDef<Setting>[] = [
     {
