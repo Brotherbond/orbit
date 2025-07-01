@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -41,15 +41,12 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid email or password. Please try again.")
       } else if (result?.ok) {
-        const session = await getSession()
-        if (session) {
-          if (callbackUrl) {
-            router.push(callbackUrl)
-          } else {
-            router.push("/dashboard")
-          }
-          router.refresh()
+        if (callbackUrl) {
+          router.push(callbackUrl)
+        } else {
+          router.push("/dashboard")
         }
+        router.refresh()
       }
     } catch (err) {
       setError("An error occurred. Please try again.")
