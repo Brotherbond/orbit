@@ -17,6 +17,7 @@ interface SelectWithFetchProps<T = any> {
   searchParam?: string
   placeholder?: string
   disabled?: boolean
+  labelFormatter?: (item: T) => string
 }
 
 
@@ -89,7 +90,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "relative z-50 max-h-80 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
@@ -169,6 +170,7 @@ function SelectWithFetch<T = any>({
   searchParam = "search",
   placeholder = "Select...",
   disabled = false,
+  labelFormatter,
 }: SelectWithFetchProps<T>) {
   const [options, setOptions] = useState<T[]>([])
   const [search, setSearch] = useState("")
@@ -182,10 +184,17 @@ function SelectWithFetch<T = any>({
 
   useEffect(() => {
     setLoading(true)
+    
+    const url = new URL(fetchUrl, window.location.origin)
+    
+    if (debouncedSearch.trim()) {
+      url.searchParams.set(searchParam, debouncedSearch)
+    }
+    
+    const finalUrl = url.pathname + url.search
+    
     apiClient
-      .get<{ items: T[] }>(
-        `${fetchUrl}?${searchParam}=${encodeURIComponent(debouncedSearch)}`
-      )
+      .get<{ items: T[] }>(finalUrl)
       .then(({ data }) => setOptions(data.items || []))
       .catch(() => setOptions([]))
       .finally(() => setLoading(false))
@@ -209,11 +218,19 @@ function SelectWithFetch<T = any>({
         {options.length === 0 && !loading && (
           <div className="px-3 py-2 text-gray-400">No options found</div>
         )}
-        {options.map((item: any) => (
-          <SelectItem key={item[valueKey as keyof typeof item]} value={item[valueKey as keyof typeof item]}>
-            {item[labelKey as keyof typeof item]}
-          </SelectItem>
-        ))}
+        <div className="max-h-60 overflow-y-auto">
+          {options.map((item: any) => {
+            const displayLabel = labelFormatter 
+              ? labelFormatter(item) 
+              : item[labelKey as keyof typeof item]
+            
+            return (
+              <SelectItem key={item[valueKey as keyof typeof item]} value={item[valueKey as keyof typeof item]}>
+                {displayLabel}
+              </SelectItem>
+            )
+          })}
+        </div>
       </SelectContent>
     </Select>
   )

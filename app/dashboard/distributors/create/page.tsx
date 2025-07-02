@@ -6,6 +6,7 @@ import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import * as Yup from "yup"
 import UserForm from "@/components/dashboard/UserForm"
+import { userFullNameEmailFormatter } from "@/lib/label-formatters"
 
 export default function CreateDistributorPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -114,7 +115,7 @@ export default function CreateDistributorPage() {
       required: true,
       fetchUrl: "/users?roles=ime,vss",
       valueKey: "uuid",
-      labelKey: "email",
+      labelFormatter: userFullNameEmailFormatter,
       placeholder: "Select IME/VSS user",
     },
     {

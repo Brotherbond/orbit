@@ -37,6 +37,7 @@ interface FieldConfig {
   fetchUrl?: string
   valueKey?: string
   labelKey?: string
+  labelFormatter?: (item: any) => string
   rows?: number
   colSpan?: number
 }
@@ -157,6 +158,7 @@ export function UserForm({
                             onChange={uuid => setFieldValue(field.name, uuid)}
                             valueKey={field.valueKey}
                             labelKey={field.labelKey}
+                            labelFormatter={field.labelFormatter}
                             placeholder={field.placeholder}
                           />
                           <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
