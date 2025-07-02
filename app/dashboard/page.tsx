@@ -51,7 +51,6 @@ interface RecentOrder {
 
 interface DashboardData {
   daily_revenue: DailyRevenue[];
-  recent_orders: RecentOrder[];
   total_revenue: string;
   total_volume: number;
   brand_category_price_data: BrandCategoryPriceData[];
@@ -216,7 +215,7 @@ export default function DashboardPage() {
               <DataTable className="no-card"
                 ref={dataTableRef}
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
-                data={dashboardData.recent_orders}
+                url="/orders"
                 perPage={5}
                 exportFileName="recent-orders.xlsx"
               />
