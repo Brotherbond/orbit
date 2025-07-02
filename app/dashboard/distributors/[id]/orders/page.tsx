@@ -47,7 +47,7 @@ export default function DistributorOrdersPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="ref"
         searchPlaceholder="Search orders..."
-        url={`/orders?distributor=${distributorId}${statusFilter}`}
+        url={`/distributors/${distributorId}/orders?${statusFilter}`}
         exportFileName="distributor-orders.xlsx"
       />
     </div>
