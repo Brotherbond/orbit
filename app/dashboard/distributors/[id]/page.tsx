@@ -1,14 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import {
-  ArrowLeft,
-  Edit,
   Trash2,
   Mail,
   Phone,
@@ -16,65 +13,239 @@ import {
   Building,
   CreditCard,
   TrendingUp,
-  ShoppingCart,
 } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { 
+  useDistributor, 
+  useDistributorUser, 
+  useDistributorInfo, 
+  useDistributorPerformance 
+} from "./distributor-context"
+import { memo } from "react"
 
-interface DistributorDetail {
-  id: string
-  uuid: string
-  user: {
-    uuid: string
-    first_name: string
-    last_name: string
-    email: string
-    phone: string
-    status: string
-  }
-  business_name: string
-  address: string
-  business_type: string
-  registration_number: string
-  tax_id: string
-  bank_name: string
-  account_number: string
-  account_name: string
-  performance: {
-    total_orders: number
-    total_value: number
-    growth_rate: number
-    last_order_date: string
-  }
-  created_at: string
-}
+// Memoized components to prevent unnecessary re-renders
+const BusinessInformationCard = memo(() => {
+  const distributorInfo = useDistributorInfo()
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[#444444]">Business Information</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center space-x-3">
+            <Building className="h-5 w-5 text-[#ababab]" />
+            <div>
+              <p className="text-sm text-[#ababab]">Business Name</p>
+              <p className="font-medium text-[#444444]">{distributorInfo.business_name}</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Badge variant="secondary">{distributorInfo.business_type}</Badge>
+          </div>
+          <div className="flex items-start space-x-3 md:col-span-2">
+            <MapPin className="h-5 w-5 text-[#ababab] mt-1" />
+            <div>
+              <p className="text-sm text-[#ababab]">Address</p>
+              <p className="font-medium text-[#444444]">{distributorInfo.address}</p>
+            </div>
+          </div>
+          <RegistrationInfo />
+        </div>
+      </CardContent>
+    </Card>
+  )
+})
+BusinessInformationCard.displayName = 'BusinessInformationCard'
+
+const RegistrationInfo = memo(() => {
+  const { distributor } = useDistributor()
+  
+  if (!distributor?.registration_number && !distributor?.tax_id) return null
+  
+  return (
+    <>
+      {distributor.registration_number && (
+        <div>
+          <p className="text-sm text-[#ababab]">Registration Number</p>
+          <p className="font-medium text-[#444444]">{distributor.registration_number}</p>
+        </div>
+      )}
+      {distributor.tax_id && (
+        <div>
+          <p className="text-sm text-[#ababab]">Tax ID</p>
+          <p className="font-medium text-[#444444]">{distributor.tax_id}</p>
+        </div>
+      )}
+    </>
+  )
+})
+RegistrationInfo.displayName = 'RegistrationInfo'
+
+const ContactInformationCard = memo(() => {
+  const user = useDistributorUser()
+  
+  if (!user) return null
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[#444444]">Contact Information</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center space-x-3">
+            <Mail className="h-5 w-5 text-[#ababab]" />
+            <div>
+              <p className="text-sm text-[#ababab]">Email</p>
+              <p className="font-medium text-[#444444]">{user.email}</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Phone className="h-5 w-5 text-[#ababab]" />
+            <div>
+              <p className="text-sm text-[#ababab]">Phone</p>
+              <p className="font-medium text-[#444444]">{user.phone}</p>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm text-[#ababab]">Contact Person</p>
+            <p className="font-medium text-[#444444]">
+              {user.first_name} {user.last_name}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-[#ababab]">Status</p>
+            <Badge
+              variant={user.status === "active" ? "default" : "destructive"}
+              className={`status ${user.status === "active" ? "active" : "inactive"}`}
+            >
+              {user.status}
+            </Badge>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+})
+ContactInformationCard.displayName = 'ContactInformationCard'
+
+const BankingInformationCard = memo(() => {
+  const { distributor } = useDistributor()
+  
+  if (!distributor?.bank_name && !distributor?.account_number) return null
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[#444444]">Banking Information</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {distributor.bank_name && (
+            <div className="flex items-center space-x-3">
+              <CreditCard className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">Bank Name</p>
+                <p className="font-medium text-[#444444]">{distributor.bank_name}</p>
+              </div>
+            </div>
+          )}
+          {distributor.account_number && (
+            <div>
+              <p className="text-sm text-[#ababab]">Account Number</p>
+              <p className="font-medium text-[#444444]">{distributor.account_number}</p>
+            </div>
+          )}
+          {distributor.account_name && (
+            <div>
+              <p className="text-sm text-[#ababab]">Account Name</p>
+              <p className="font-medium text-[#444444]">{distributor.account_name}</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+})
+BankingInformationCard.displayName = 'BankingInformationCard'
+
+const PerformanceMetricsCard = memo(() => {
+  const performance = useDistributorPerformance()
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[#444444]">Performance Metrics</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex justify-between items-center">
+          <span className="text-[#ababab]">Total Orders</span>
+          <span className="font-bold text-[#444444]">{performance?.total_orders || 0}</span>
+        </div>
+        <Separator />
+        <div className="flex justify-between items-center">
+          <span className="text-[#ababab]">Total Value</span>
+          <span className="font-bold text-[#444444]">
+            ₦{(performance?.total_value || 0).toLocaleString()}
+          </span>
+        </div>
+        <Separator />
+        <div className="flex justify-between items-center">
+          <span className="text-[#ababab]">Growth Rate</span>
+          <div className="flex items-center text-green-600">
+            <TrendingUp className="h-4 w-4 mr-1" />
+            <span className="font-bold">{performance?.growth_rate || 0}%</span>
+          </div>
+        </div>
+        <Separator />
+        <div className="flex justify-between items-center">
+          <span className="text-[#ababab]">Last Order</span>
+          <span className="font-medium text-[#444444]">
+            {performance?.last_order_date || "No orders yet"}
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  )
+})
+PerformanceMetricsCard.displayName = 'PerformanceMetricsCard'
+
+const QuickActionsCard = memo(() => {
+  const router = useRouter()
+  const distributorInfo = useDistributorInfo()
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[#444444]">Quick Actions</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Button
+          className="w-full"
+          variant="outline"
+          onClick={() => router.push(`/dashboard/orders/create?distributor=${distributorInfo.uuid}`)}
+        >
+          Create Order
+        </Button>
+        <Button className="w-full" variant="outline">
+          Send Message
+        </Button>
+        <Button className="w-full" variant="outline">
+          View Reports
+        </Button>
+      </CardContent>
+    </Card>
+  )
+})
+QuickActionsCard.displayName = 'QuickActionsCard'
 
 export default function DistributorDetailPage({ params }: { params: { id: string } }) {
-  const [distributor, setDistributor] = useState<DistributorDetail | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const { toast } = useToast()
-
-  useEffect(() => {
-    fetchDistributor()
-  }, [params.id])
-
-  const fetchDistributor = async () => {
-    setIsLoading(true)
-    try {
-      const {data} = await apiClient.get<{ item: DistributorDetail }>(`/distributors/${params.id}`)
-      setDistributor(data.item ?? null)
-    } catch (error: any) {
-      setDistributor(null)
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to fetch distributor details",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { distributor, isLoading, error } = useDistributor()
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this distributor?")) return
@@ -106,36 +277,18 @@ export default function DistributorDetailPage({ params }: { params: { id: string
     )
   }
 
-  if (!distributor) {
+  if (error || !distributor) {
     return (
       <div className="text-center py-12">
-        <p className="text-[#ababab]">Distributor not found</p>
+        <p className="text-[#ababab]">{error || "Distributor not found"}</p>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-[#444444]">{distributor.business_name}</h1>
-            <p className="text-[#ababab]">Distributor Details</p>
-          </div>
-        </div>
+      <div className="flex items-center justify-end">
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => router.push(`/dashboard/distributors/${distributor.uuid}/edit`)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Button variant="outline" onClick={() => router.push(`/dashboard/distributors/${distributor.user.uuid}/orders`)}>
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            View Orders
-          </Button>
           <Button variant="destructive" onClick={handleDelete}>
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
@@ -145,175 +298,14 @@ export default function DistributorDetailPage({ params }: { params: { id: string
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Business Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3">
-                  <Building className="h-5 w-5 text-[#ababab]" />
-                  <div>
-                    <p className="text-sm text-[#ababab]">Business Name</p>
-                    <p className="font-medium text-[#444444]">{distributor.business_name}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Badge variant="secondary">{distributor.business_type}</Badge>
-                </div>
-                <div className="flex items-start space-x-3 md:col-span-2">
-                  <MapPin className="h-5 w-5 text-[#ababab] mt-1" />
-                  <div>
-                    <p className="text-sm text-[#ababab]">Address</p>
-                    <p className="font-medium text-[#444444]">{distributor.address}</p>
-                  </div>
-                </div>
-                {distributor.registration_number && (
-                  <div>
-                    <p className="text-sm text-[#ababab]">Registration Number</p>
-                    <p className="font-medium text-[#444444]">{distributor.registration_number}</p>
-                  </div>
-                )}
-                {distributor.tax_id && (
-                  <div>
-                    <p className="text-sm text-[#ababab]">Tax ID</p>
-                    <p className="font-medium text-[#444444]">{distributor.tax_id}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-[#ababab]" />
-                  <div>
-                    <p className="text-sm text-[#ababab]">Email</p>
-                    <p className="font-medium text-[#444444]">{distributor.user.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-[#ababab]" />
-                  <div>
-                    <p className="text-sm text-[#ababab]">Phone</p>
-                    <p className="font-medium text-[#444444]">{distributor.user.phone}</p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-[#ababab]">Contact Person</p>
-                  <p className="font-medium text-[#444444]">
-                    {distributor.user.first_name} {distributor.user.last_name}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-[#ababab]">Status</p>
-                  <Badge
-                    variant={distributor.user.status === "active" ? "default" : "destructive"}
-                    className={`status ${distributor.user.status === "active" ? "active" : "inactive"}`}
-                  >
-                    {distributor.user.status}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {(distributor.bank_name || distributor.account_number) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-[#444444]">Banking Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {distributor.bank_name && (
-                    <div className="flex items-center space-x-3">
-                      <CreditCard className="h-5 w-5 text-[#ababab]" />
-                      <div>
-                        <p className="text-sm text-[#ababab]">Bank Name</p>
-                        <p className="font-medium text-[#444444]">{distributor.bank_name}</p>
-                      </div>
-                    </div>
-                  )}
-                  {distributor.account_number && (
-                    <div>
-                      <p className="text-sm text-[#ababab]">Account Number</p>
-                      <p className="font-medium text-[#444444]">{distributor.account_number}</p>
-                    </div>
-                  )}
-                  {distributor.account_name && (
-                    <div>
-                      <p className="text-sm text-[#ababab]">Account Name</p>
-                      <p className="font-medium text-[#444444]">{distributor.account_name}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          <BusinessInformationCard />
+          <ContactInformationCard />
+          <BankingInformationCard />
         </div>
 
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Performance Metrics</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-[#ababab]">Total Orders</span>
-                <span className="font-bold text-[#444444]">{distributor.performance?.total_orders || 0}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center">
-                <span className="text-[#ababab]">Total Value</span>
-                <span className="font-bold text-[#444444]">
-                  ₦{(distributor.performance?.total_value || 0).toLocaleString()}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center">
-                <span className="text-[#ababab]">Growth Rate</span>
-                <div className="flex items-center text-green-600">
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                  <span className="font-bold">{distributor.performance?.growth_rate || 0}%</span>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center">
-                <span className="text-[#ababab]">Last Order</span>
-                <span className="font-medium text-[#444444]">
-                  {distributor.performance?.last_order_date
-                    ? distributor.performance.last_order_date
-                    : "No orders yet"}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button
-                className="w-full"
-                variant="outline"
-                onClick={() => router.push(`/dashboard/orders/create?distributor=${distributor.uuid}`)}
-              >
-                Create Order
-              </Button>
-              <Button className="w-full" variant="outline">
-                Send Message
-              </Button>
-              <Button className="w-full" variant="outline">
-                View Reports
-              </Button>
-            </CardContent>
-          </Card>
+          <PerformanceMetricsCard />
+          <QuickActionsCard />
         </div>
       </div>
     </div>

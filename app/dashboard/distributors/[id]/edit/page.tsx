@@ -1,166 +1,206 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ArrowLeft, Save } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
-import { Formik, Form, ErrorMessage } from "formik"
 import * as Yup from "yup"
+import UserForm from "@/components/dashboard/UserForm"
+import { useDistributor } from "../distributor-context"
 
 interface DistributorData {
-  name: string
-  description: string
-  status: string
+  first_name: string
+  last_name: string
+  email: string
+  phone: string
+  business_name: string
+  address: string
+  ime_vss_user_id: string
+  send_notification: boolean
 }
 
 export default function EditDistributorPage({ params }: { params: { id: string } }) {
-  const [initialValues, setInitialValues] = useState<DistributorData>({
-    name: "",
-    description: "",
-    status: "active",
-  })
   const [isLoading, setIsLoading] = useState(false)
-
   const router = useRouter()
   const { toast } = useToast()
+  const { distributor, isLoading: isDataLoading, error, updateDistributor } = useDistributor()
 
-  useEffect(() => {
-    fetchDistributor()
-    // eslint-disable-next-line
-  }, [params.id])
-
-  const fetchDistributor = async () => {
-    try {
-      const response = await apiClient.get(`/distributors/${params.id}`)
-      const data = response.data as { status: string; data: { item: DistributorData } }
-      if (data.status === "success") {
-        setInitialValues(data.data.item)
+  // Memoize initial values to prevent unnecessary re-renders
+  const initialValues = useMemo<DistributorData>(() => {
+    if (!distributor) {
+      return {
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        business_name: "",
+        address: "",
+        ime_vss_user_id: "",
+        send_notification: false,
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch distributor data",
-        variant: "destructive",
-      })
     }
-  }
 
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Distributor name is required"),
-    description: Yup.string(),
-    status: Yup.string().oneOf(["active", "inactive"]).required(),
-  })
+    return {
+      first_name: distributor.user?.first_name || "",
+      last_name: distributor.user?.last_name || "",
+      email: distributor.user?.email || "",
+      phone: distributor.user?.phone || "",
+      business_name: distributor.business_name || "",
+      address: distributor.address || "",
+      ime_vss_user_id: distributor.ime_vss?.uuid || "",
+      send_notification: false,
+    }
+  }, [distributor])
 
-  const handleSubmit = async (values: DistributorData, { setSubmitting }: any) => {
+  // Memoize validation schema to prevent recreation on every render
+  const validationSchema = useMemo(() => Yup.object({
+    first_name: Yup.string().required("First name is required"),
+    last_name: Yup.string().required("Last name is required"),
+    email: Yup.string().email("Invalid email").required("Email is required"),
+    phone: Yup.string(),
+    business_name: Yup.string().required("Business name is required"),
+    address: Yup.string().required("Address is required"),
+    ime_vss_user_id: Yup.string().required("IME VSS User is required"),
+    send_notification: Yup.boolean(),
+  }), [])
+
+  const handleSubmit = useCallback(async (values: DistributorData, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      await apiClient.put(`/distributors/${params.id}`, values)
+      const { data, status } = await apiClient.put(`/distributors/${params.id}`, values)
+      if (status === "success") {
+        // Update the context with new data
+        updateDistributor({
+          business_name: values.business_name,
+          address: values.address,
+          user: {
+            ...distributor?.user!,
+            first_name: values.first_name,
+            last_name: values.last_name,
+            email: values.email,
+            phone: values.phone,
+          },
+          ime_vss: distributor?.ime_vss // Keep existing ime_vss data
+        })
+        
         toast({
           title: "Success",
           description: "Distributor updated successfully",
         })
         router.push(`/dashboard/distributors/${params.id}`)
+      }
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update distributor",
+        description: error?.message || "Failed to update distributor",
         variant: "destructive",
       })
+      if (error.response?.data?.errors) {
+        Object.entries(error.response.data.errors).forEach(([field, message]) => {
+          setFieldError(field, message as string)
+        })
+      }
     } finally {
       setIsLoading(false)
       setSubmitting(false)
     }
+  }, [params.id, distributor, updateDistributor, toast, router])
+
+  // Memoize fields to prevent recreation on every render
+  const fields = useMemo(() => [
+    {
+      name: "business_name",
+      label: "Business Name",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter business name",
+    },
+    {
+      name: "first_name",
+      label: "First Name",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter first name",
+    },
+    {
+      name: "last_name",
+      label: "Last Name",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter last name",
+    },
+    {
+      name: "email",
+      label: "Email",
+      type: "email" as const,
+      required: true,
+      placeholder: "Enter email",
+    },
+    {
+      name: "phone",
+      label: "Phone",
+      type: "text" as const,
+      required: false,
+      placeholder: "Enter phone number",
+    },
+    {
+      name: "ime_vss_user_id",
+      label: "Assign IME/VSS Team",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/users?roles=ime,vss",
+      valueKey: "uuid",
+      labelKey: "email",
+      placeholder: "Select IME/VSS user",
+    },
+    {
+      name: "address",
+      label: "Address",
+      type: "textarea" as const,
+      required: true,
+      placeholder: "Enter address",
+      rows: 3,
+    },
+    {
+      name: "send_notification",
+      label: "Send Notification",
+      type: "switch" as const,
+    },
+  ], [])
+
+  if (isDataLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !distributor) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-[#ababab]">{error || "Distributor not found"}</p>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Edit Distributor</h1>
-          <p className="text-[#ababab]">Update distributor information</p>
-        </div>
-      </div>
-
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-[#444444]">Distributor Information</CardTitle>
-          <CardDescription className="text-[#ababab]">Update the distributor details below</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Formik
-            enableReinitialize
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
-              <Form className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-[#444444]">
-                    Distributor Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={values.name}
-                    onChange={handleChange}
-                    placeholder="Enter distributor name"
-                  />
-                  <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-[#444444]">
-                    Description
-                  </Label>
-                  <Input
-                    id="description"
-                    name="description"
-                    value={values.description}
-                    onChange={handleChange}
-                    placeholder="Enter description"
-                  />
-                  <ErrorMessage name="description" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status" className="text-[#444444]">
-                    Status
-                  </Label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={values.status}
-                    onChange={handleChange}
-                    className="w-full border rounded px-3 py-2"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                  <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
-                  <Button type="button" variant="outline" onClick={() => router.back()}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
-                    <Save className="mr-2 h-4 w-4" />
-                    {isLoading || isSubmitting ? "Updating..." : "Update Distributor"}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </CardContent>
-      </Card>
+      <UserForm
+        title="Distributor Information"
+        description="Update the distributor details below"
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        fields={fields}
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        submitLabel="Update Distributor"
+        onCancel={() => router.back()}
+        cardClassName="max-w-4xl"
+      />
     </div>
   )
 }

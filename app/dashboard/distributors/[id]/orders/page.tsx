@@ -37,12 +37,6 @@ export default function DistributorOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Distributor Orders</h1>
-          <p className="text-[#ababab]">View and manage orders for this distributor</p>
-        </div>
-      </div>
       <DataTable
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="ref"
