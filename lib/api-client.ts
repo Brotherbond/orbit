@@ -78,14 +78,22 @@ class ApiClient {
             (response.config as ApiRequestConfig)?.showToast !== false;
           if (showToast) {
             if (Array.isArray(errors) && errors.length > 0) {
-              errors.forEach((err: { message: string }) => {
-                showError(err.message, "Error");
+              errors.forEach((err: any) => {
+                if (typeof err === "string") {
+                  showError(err, "Error");
+                } else if (err && typeof err.message === "string") {
+                  showError(err.message, "Error");
+                }
               });
             } else {
               showError(message, "Error");
             }
           }
-          return Promise.reject(new Error(message));
+          const errorObj = new Error(message) as any;
+          if (Array.isArray(errors)) {
+            errorObj.errors = errors;
+          }
+          return Promise.reject(errorObj);
         }
       },
       (error) => {
@@ -106,14 +114,23 @@ class ApiClient {
         if (showToast) {
           const errors = error.response?.data?.errors;
           if (Array.isArray(errors) && errors.length > 0) {
-            errors.forEach((err: { message: string }) => {
-              showError(err.message, "Error");
+            errors.forEach((err: any) => {
+              if (typeof err === "string") {
+                showError(err, "Error");
+              } else if (err && typeof err.message === "string") {
+                showError(err.message, "Error");
+              }
             });
           } else {
             showError(message, "Error");
           }
         }
-        return Promise.reject(new Error(message));
+        const errorObj = new Error(message) as any;
+        const errors = error.response?.data?.errors;
+        if (Array.isArray(errors)) {
+          errorObj.errors = errors;
+        }
+        return Promise.reject(errorObj);
       },
     );
   }

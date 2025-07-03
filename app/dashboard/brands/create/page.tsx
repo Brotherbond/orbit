@@ -20,10 +20,13 @@ interface BrandPackage {
   wholesale_price: number
   retail_price: number
   retail_price_with_markup: number
+  og_price: number
+  distributor_price: number
 }
 
 export default function CreateBrandPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   const router = useRouter()
   const { toast } = useToast()
@@ -31,7 +34,7 @@ export default function CreateBrandPage() {
   const initialValues = {
     name: "",
     category: "",
-    description: "",
+    // description: "",
     image: "",
     packages: [
       {
@@ -40,6 +43,8 @@ export default function CreateBrandPage() {
         wholesale_price: 0,
         retail_price: 0,
         retail_price_with_markup: 0,
+        og_price: 0,
+        distributor_price: 0,
       },
     ] as BrandPackage[],
   }
@@ -47,7 +52,7 @@ export default function CreateBrandPage() {
   const validationSchema = Yup.object({
     name: Yup.string().required("Brand name is required"),
     category: Yup.string().required("Category is required"),
-    description: Yup.string(),
+    // description: Yup.string(),
     image: Yup.string(),
     packages: Yup.array()
       .of(
@@ -57,6 +62,8 @@ export default function CreateBrandPage() {
           wholesale_price: Yup.number().min(0.01, "Wholesale price must be greater than 0").required("Wholesale price is required"),
           retail_price: Yup.number().min(0.01, "Retail price must be greater than 0").required("Retail price is required"),
           retail_price_with_markup: Yup.number().min(0, "Price with markup must be at least 0"),
+          og_price: Yup.number().min(0.01, "OG price must be greater than 0").required("OG price is required"),
+          distributor_price: Yup.number().min(0.01, "Distributor price must be greater than 0").required("Distributor price is required"),
         })
       )
       .min(1, "At least one package is required"),
@@ -65,26 +72,57 @@ export default function CreateBrandPage() {
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-      const payload = {
-        ...values,
-        packages: values.packages.filter((pkg) => pkg.type && pkg.quantity > 0),
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("category", values.category);
+      // formData.append("description", values.description);
+      if (imageFile) {
+        formData.append("image", imageFile);
       }
-      await apiClient.post("/brands", payload)
+      const filteredPackages = values.packages.filter((pkg) => pkg.type && pkg.quantity > 0);
+      filteredPackages.forEach((pkg, idx) => {
+        Object.entries(pkg).forEach(([key, val]) => {
+          formData.append(`packages[${idx}][${key}]`, String(val));
+        });
+      });
+      await apiClient.post("/brands", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       toast({
         title: "Success",
         description: "Brand created successfully",
-      })
-      router.push("/dashboard/brands")
+      });
+      // router.push("/dashboard/brands");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create brand",
-        variant: "destructive",
-      })
-      setFieldError("name", error.response?.data?.errors?.name || "")
+      let errorSet = false;
+      // Handle errors as array of objects (apiClient pattern)
+      if (Array.isArray(error.errors)) {
+        error.errors.forEach((err: any) => {
+          if (err && typeof err.field === "string" && typeof err.message === "string") {
+            setFieldError(err.field, err.message);
+            errorSet = true;
+          }
+        });
+      }
+      // Handle errors as object map (CreateDistributorPage pattern)
+      // if (error.response?.data?.errors && typeof error.response.data.errors === "object" && !Array.isArray(error.response.data.errors)) {
+      //   Object.entries(error.response.data.errors).forEach(([field, message]) => {
+      //     setFieldError(field, message as string);
+      //     errorSet = true;
+      //   });
+      // }
+      if (!errorSet) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create brand",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setIsLoading(false)
-      setSubmitting(false)
+      setIsLoading(false);
+      setSubmitting(false);
     }
   }
 
@@ -155,7 +193,7 @@ export default function CreateBrandPage() {
                       <ErrorMessage name="category" component="p" className="text-sm text-red-500" />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label htmlFor="description" className="text-[#444444]">
                       Description
                     </Label>
@@ -167,23 +205,26 @@ export default function CreateBrandPage() {
                       placeholder="Enter brand description"
                       rows={3}
                     />
-                  </div>
+                  </div> */}
                   <div className="space-y-2">
                     <Label htmlFor="image" className="text-[#444444]">
-                      Brand Image URL
+                      Brand Image *
                     </Label>
                     <div className="flex space-x-2">
                       <Input
                         id="image"
                         name="image"
-                        value={values.image}
-                        onChange={handleChange}
-                        placeholder="Enter image URL"
+                        type="file"
+                        accept="image/*"
+                        onChange={e => {
+                          if (e.target.files && e.target.files[0]) {
+                            setImageFile(e.target.files[0]);
+                          }
+                        }}
                       />
-                      <Button type="button" variant="outline">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Upload
-                      </Button>
+                      {imageFile && (
+                        <span className="text-xs text-[#444444]">{imageFile.name}</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -309,6 +350,32 @@ export default function CreateBrandPage() {
                               step="0.01"
                             />
                             <ErrorMessage name={`packages[${index}].retail_price_with_markup`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">OG Price *</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].og_price`}
+                              value={pkg.og_price}
+                              onChange={e => setFieldValue(`packages[${index}].og_price`, Number(e.target.value))}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].og_price`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Distributor Price *</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].distributor_price`}
+                              value={pkg.distributor_price}
+                              onChange={e => setFieldValue(`packages[${index}].distributor_price`, Number(e.target.value))}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].distributor_price`} component="p" className="text-sm text-red-500" />
                           </div>
                         </div>
                       </Card>
