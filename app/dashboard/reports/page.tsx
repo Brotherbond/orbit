@@ -6,7 +6,7 @@ import { ColumnDef } from "@tanstack/react-table";
 
 type OrderEvent = {
   uuid: string;
-  order: string;
+  order_ref: string;
   ime_vss: string;
   distributor: string;
   total_amount: string;
@@ -19,7 +19,7 @@ type OrderEvent = {
 
 const columns: ColumnDef<unknown, unknown>[] = [
   {
-    accessorKey: "order",
+    accessorKey: "order_ref",
     header: "Order Ref",
     cell: ({ getValue }) => <span>{getValue() as string}</span>,
   },
@@ -34,7 +34,7 @@ const columns: ColumnDef<unknown, unknown>[] = [
     cell: ({ getValue }) => <span>{getValue() as string}</span>,
   },
   {
-    accessorKey: "order_value",
+    accessorKey: "total_amount",
     header: "Order Value",
     cell: ({ row }) => (row.original as any).total_amount || "-",
   },
