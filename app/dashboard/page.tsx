@@ -139,7 +139,7 @@ export default function DashboardPage() {
         <div className="flex flex-col justify-between w-full">
           <Card className="h-full card-hover">
             <CardHeader>
-              <CardTitle className="text-[#444444]">Daily Revenue Trend</CardTitle>
+              <CardTitle className="text-[#ff6600]">TOTAL ORDER VALUE</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -154,49 +154,61 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          <Card className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#ababab]">Total Revenue</p>
-                  <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue).toLocaleString()}</p>
+        {/* Demand Card */}
+        <Card className="h-full card-hover flex flex-col gap-1">
+          <CardHeader>
+            <CardTitle className="text-[#ff6600]">DEMAND</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-row gap-4 mb-4">
+              {/* Total Value Card */}
+              <div className="flex-1 bg-white rounded shadow border">
+                <div className="bg-[#ff6600] text-white px-4 py-2 rounded-t text-xs font-semibold">
+                  GROSS TOTAL VALUE
                 </div>
-                <DollarSign className="h-8 w-8 text-[#12b636]" />
+                <div className="px-4 py-4 text-2xl font-bold text-[#444444]">
+                  ₦{Number(dashboardData.total_revenue).toLocaleString()}
+                </div>
+                <div className="px-4 py-2 text-xs text-[#ababab] border-t">
+                  Total Confirmed Orders
+                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#ababab]">Total Volume</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
+              {/* Total Volume Card */}
+              <div className="flex-1 bg-white rounded shadow border">
+                <div className="bg-[#ff6600] text-white px-4 py-2 rounded-t text-xs font-semibold">
+                  TOTAL VOLUME
                 </div>
-                <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
+                <div className="px-4 py-4 text-2xl font-bold text-[#444444]">
+                  {dashboardData.total_volume}
+                </div>
+                <div className="px-4 py-2 text-xs text-[#ababab] border-t">
+                  Total Number of Packs Sold
+                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {dashboardData.brand_category_price_data.map((cat) => (
-            <Card className="card-hover" key={cat.category}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-[#ababab]">{cat.category} Revenue</p>
-                    <p className="text-2xl font-semibold text-[#444444]">₦{Number(cat.total_price).toLocaleString()}</p>
-                  </div>
-                  <Package className="h-8 w-8 text-[#1cd344]" />
-                </div>
-                <div className="flex items-center mt-2">
-                  <span className="text-sm text-[#12b636]">Volume: {cat.volume}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            </div>
+            {/* Brand Category Table */}
+            <div>
+              <table className="min-w-full text-sm border rounded">
+                <thead>
+                  <tr className="bg-[#f5f5f5]">
+                    <th className="px-3 py-2 text-left font-medium text-[#444444]">TYPE</th>
+                    <th className="px-3 py-2 text-left font-medium text-[#444444]">VALUE (₦)</th>
+                    <th className="px-3 py-2 text-left font-medium text-[#444444]">VOLUME</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboardData.brand_category_price_data.map((cat) => (
+                    <tr key={cat.category} className="border-t">
+                      <td className="px-3 py-2">{cat.category}</td>
+                      <td className="px-3 py-2">₦{Number(cat.total_price).toLocaleString()}</td>
+                      <td className="px-3 py-2">{cat.volume}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Orders */}
