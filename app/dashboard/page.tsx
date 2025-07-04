@@ -10,7 +10,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { getColumns, getStatusFilter } from "./orders/page";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef } from "@/components/ui/data-table-types";
 
 interface BrandCategoryPriceData {
   category: string;

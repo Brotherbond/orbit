@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef, useMemo, useCallback } from "react"
+import { useState, useRef, useMemo, useCallback } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,17 +9,13 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
+import type { ColumnDef } from "@/components/ui/data-table-types"
 import {
-  Target,
-  Calendar,
-  DollarSign,
-  Package,
-  Save,
-  X,
-  Plus,
-  Trash2,
-  MoreHorizontal,
+    Calendar, Save,
+    X,
+    Plus,
+    Trash2,
+    MoreHorizontal
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
