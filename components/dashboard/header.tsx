@@ -27,10 +27,10 @@ export function DashboardHeader() {
   return (
     <header className="bg-white border-b border-[#eeeeee] px-4 py-4">
       <div className="flex items-center justify-between">
-        <div className="flex flex-1 items-center">
+        <div className="flex flex-0 items-center">
           <Image src={Logo} alt="Orbit Logo" width={100} height={100} priority />
         </div>
-        <div className="flex flex-1 justify-center">
+        <div className="flex flex-1 justify-center search-bar-shift">
           <div className="relative w-80 flex justify-center">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#ababab]" />
             <Input placeholder="Search..." className="pl-10 w-full" />
