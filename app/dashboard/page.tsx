@@ -23,40 +23,12 @@ interface DailyRevenue {
   total: string;
 }
 
-interface RecentOrderBrand {
-  uuid: string;
-  quantity: string;
-  price: string;
-  info: {
-    uuid: string;
-    name: string;
-    category: string;
-    image: string;
-    created_at: string;
-  };
-}
-
-interface RecentOrder {
-  uuid: string;
-  ref: string;
-  ime_vss: any;
-  distributor_user: any;
-  promos: any;
-  brands: RecentOrderBrand[];
-  total_amount: string;
-  status: string;
-  status_progress: any;
-  created_at: string;
-}
-
 interface DashboardData {
   daily_revenue: DailyRevenue[];
   total_revenue: string;
   total_volume: number;
   brand_category_price_data: BrandCategoryPriceData[];
 }
-
-
 
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData>({ daily_revenue: [], total_revenue: "0", total_volume: 0, brand_category_price_data: [] });
