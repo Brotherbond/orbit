@@ -56,23 +56,61 @@ export function BrandForm({
         </div>
       </div>
 
-      <Card className="max-w-4xl">
-        <CardHeader>
-          <CardTitle className="text-[#444444]">Brand Information</CardTitle>
-          <CardDescription className="text-[#ababab]">
-            {mode === "create"
-              ? "Enter the details for the new brand"
-              : "Edit the details for this brand"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Formik
-            initialValues={initialValues}
-            enableReinitialize
-            validationSchema={validationSchema}
-            onSubmit={onSubmit}
-          >
-            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
+      <Formik
+        initialValues={initialValues}
+        enableReinitialize
+        validationSchema={validationSchema}
+        onSubmit={onSubmit}
+      >
+        {({ values, handleChange, setFieldValue, isSubmitting }) => (
+          <Card className="max-w-4xl">
+            <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+              <div>
+                <CardTitle className="text-[#444444]">Brand Information</CardTitle>
+                <CardDescription className="text-[#ababab]">
+                  {mode === "create"
+                    ? "Enter the details for the new brand"
+                    : "Edit the details for this brand"}
+                </CardDescription>
+              </div>
+
+              <div className="relative group cursor-pointer">
+                <input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImageFile(e.target.files[0]);
+                    }
+                  }}
+                  className="hidden"
+                />
+
+                <label htmlFor="image" className="flex items-center justify-center">
+                  {imageFile ? (
+                    <img
+                      src={URL.createObjectURL(imageFile)}
+                      alt="Preview"
+                      className="h-16 w-16 rounded-md object-cover border shadow-md"
+                    />
+                  ) : values.image ? (
+                    <img
+                      src={values.image}
+                      alt="Existing"
+                      className="h-16 w-16 rounded-md object-cover border shadow-md"
+                    />
+                  ) : (
+                    <div className="h-16 w-16 flex items-center justify-center rounded-md border border-dashed text-[#888] text-sm hover:border-gray-400 hover:bg-gray-50 transition">
+                      <span className="text-center px-2">Add Image</span>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </CardHeader>
+
+            <CardContent>
               <Form className="space-y-8">
                 {/* Basic Information */}
                 <div className="space-y-4">
@@ -109,30 +147,6 @@ export function BrandForm({
                         </SelectContent>
                       </Select>
                       <ErrorMessage name="category" component="p" className="text-sm text-red-500" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="image" className="text-[#444444]">
-                      Brand Image *
-                    </Label>
-                    <div className="flex space-x-2">
-                      <Input
-                        id="image"
-                        name="image"
-                        type="file"
-                        accept="image/*"
-                        onChange={e => {
-                          if (e.target.files && e.target.files[0]) {
-                            setImageFile(e.target.files[0]);
-                          }
-                        }}
-                      />
-                      {imageFile && (
-                        <span className="text-xs text-[#444444]">{imageFile.name}</span>
-                      )}
-                      {values.image && !imageFile && (
-                        <span className="text-xs text-[#444444]">{values.image.split("/").pop()}</span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -316,10 +330,10 @@ export function BrandForm({
                   </Button>
                 </div>
               </Form>
-            )}
-          </Formik>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
+      </Formik>
     </div>
   );
 }

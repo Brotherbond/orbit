@@ -6,15 +6,6 @@ import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 import BrandForm from "@/components/dashboard/BrandForm";
 
-interface BrandPackage {
-  type: string
-  quantity: number
-  wholesale_price: number
-  retail_price: number
-  retail_price_with_markup: number
-  og_price: number
-  distributor_price: number
-}
 
 export default function CreateBrandPage() {
   const [isLoading, setIsLoading] = useState(false);
