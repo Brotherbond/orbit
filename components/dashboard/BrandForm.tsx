@@ -103,13 +103,9 @@ export function BrandForm({
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="beverages">Beverages</SelectItem>
-                          <SelectItem value="snacks">Snacks</SelectItem>
-                          <SelectItem value="dairy">Dairy</SelectItem>
-                          <SelectItem value="household">Household</SelectItem>
-                          <SelectItem value="personal_care">Personal Care</SelectItem>
-                          <SelectItem value="electronics">Electronics</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="FnB">FnB</SelectItem>
+                          <SelectItem value="PC">PC</SelectItem>
+                          <SelectItem value="Pharma">Pharma</SelectItem>
                         </SelectContent>
                       </Select>
                       <ErrorMessage name="category" component="p" className="text-sm text-red-500" />
