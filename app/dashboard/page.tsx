@@ -1,9 +1,9 @@
 "use client"
 
+import { startOfWeek, addDays, format } from "date-fns";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ShoppingCart, DollarSign, Package } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
@@ -59,11 +59,9 @@ interface DashboardData {
 
 
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData>({ daily_revenue: [], total_revenue: "0", total_volume: 0, brand_category_price_data: [] });
   const [isLoading, setIsLoading] = useState(true)
   const dataTableRef = useRef<{ refresh: () => void }>(null)
-
-
   const { toast } = useToast()
   const { data: session } = useSession()
   const router = useRouter()
@@ -101,6 +99,31 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+
+  const getFullWeekWithRevenue = (revenueData: DailyRevenue[]): { date: string; total: string; label: string }[] => {
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+
+    const map: Record<string, string> = {};
+    revenueData.forEach((item) => {
+      map[item.date] = item.total;
+    });
+
+    return Array.from({ length: 7 }).map((_, i) => {
+      const date = addDays(weekStart, i);
+      const dateStr = format(date, "yyyy-MM-dd");
+      const dayStr = format(date, "EEE");
+      return {
+        date: dateStr,
+        total: map[dateStr] ?? "0",
+        label: `${dateStr} (${dayStr})`,
+      };
+    });
+  };
+
+  const revenueDataWithWeekday = useMemo(() => {
+    return getFullWeekWithRevenue(dashboardData.daily_revenue);
+  }, [dashboardData.daily_revenue]);
 
   if (isLoading) {
     return (
@@ -143,9 +166,9 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dashboardData.daily_revenue}>
+                <BarChart data={revenueDataWithWeekday}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eeeeee" />
-                  <XAxis dataKey="date" stroke="#ababab" />
+                  <XAxis dataKey="label" stroke="#ababab" />
                   <YAxis stroke="#ababab" />
                   <Tooltip />
                   <Bar dataKey="total" fill="#ff6600" />
