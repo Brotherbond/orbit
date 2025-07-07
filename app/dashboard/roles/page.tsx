@@ -1,10 +1,9 @@
 "use client"
 
-import React from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
+import type { ColumnDef } from "@/components/ui/data-table-types"
 import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
@@ -26,6 +25,11 @@ export default function RolesPage() {
           <div className="text-sm text-muted-foreground">{row.original.description}</div>
         </div>
       ),
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => row.original.description,
     },
     {
       accessorKey: "created_at",

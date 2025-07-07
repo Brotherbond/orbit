@@ -1,16 +1,17 @@
 "use client"
 
+import { startOfWeek, addDays, format } from "date-fns";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ShoppingCart, DollarSign, Package } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { getColumns, getStatusFilter } from "./orders/page";
-import { ColumnDef } from "@tanstack/react-table";
+import { ColumnDef } from "@/components/ui/data-table-types";
 
 interface BrandCategoryPriceData {
   category: string;
@@ -23,32 +24,6 @@ interface DailyRevenue {
   total: string;
 }
 
-interface RecentOrderBrand {
-  uuid: string;
-  quantity: string;
-  price: string;
-  info: {
-    uuid: string;
-    name: string;
-    category: string;
-    image: string;
-    created_at: string;
-  };
-}
-
-interface RecentOrder {
-  uuid: string;
-  ref: string;
-  ime_vss: any;
-  distributor_user: any;
-  promos: any;
-  brands: RecentOrderBrand[];
-  total_amount: string;
-  status: string;
-  status_progress: any;
-  created_at: string;
-}
-
 interface DashboardData {
   daily_revenue: DailyRevenue[];
   total_revenue: string;
@@ -56,14 +31,10 @@ interface DashboardData {
   brand_category_price_data: BrandCategoryPriceData[];
 }
 
-
-
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData>({ daily_revenue: [], total_revenue: "0", total_volume: 0, brand_category_price_data: [] });
   const [isLoading, setIsLoading] = useState(true)
   const dataTableRef = useRef<{ refresh: () => void }>(null)
-
-
   const { toast } = useToast()
   const { data: session } = useSession()
   const router = useRouter()
@@ -102,6 +73,31 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
+  const getFullWeekWithRevenue = (revenueData: DailyRevenue[]): { date: string; total: string; label: string }[] => {
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+
+    const map: Record<string, string> = {};
+    revenueData.forEach((item) => {
+      map[item.date] = item.total;
+    });
+
+    return Array.from({ length: 7 }).map((_, i) => {
+      const date = addDays(weekStart, i);
+      const dateStr = format(date, "yyyy-MM-dd");
+      const dayStr = format(date, "EEE");
+      return {
+        date: dateStr,
+        total: map[dateStr] ?? "0",
+        label: `${dateStr} (${dayStr})`,
+      };
+    });
+  };
+
+  const revenueDataWithWeekday = useMemo(() => {
+    return getFullWeekWithRevenue(dashboardData.daily_revenue);
+  }, [dashboardData.daily_revenue]);
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -139,13 +135,13 @@ export default function DashboardPage() {
         <div className="flex flex-col justify-between w-full">
           <Card className="h-full card-hover">
             <CardHeader>
-              <CardTitle className="text-[#444444]">Daily Revenue Trend</CardTitle>
+              <CardTitle className="text-[#ff6600]">TOTAL ORDER VALUE</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dashboardData.daily_revenue}>
+                <BarChart data={revenueDataWithWeekday}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eeeeee" />
-                  <XAxis dataKey="date" stroke="#ababab" />
+                  <XAxis dataKey="label" stroke="#ababab" />
                   <YAxis stroke="#ababab" />
                   <Tooltip />
                   <Bar dataKey="total" fill="#ff6600" />
@@ -154,55 +150,74 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          <Card className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#ababab]">Total Revenue</p>
-                  <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue).toLocaleString()}</p>
+        {/* Demand Card */}
+        <Card className="h-full card-hover flex flex-col gap-1">
+          <CardHeader>
+            <CardTitle className="text-[#ff6600]">DEMAND</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-row gap-4 mb-4">
+              {/* Total Value Card */}
+              <div className="flex-1 bg-white rounded shadow border">
+                <div className="bg-[#ff6600] text-white px-4 py-2 rounded-t text-xs font-semibold">
+                  GROSS TOTAL VALUE
                 </div>
-                <DollarSign className="h-8 w-8 text-[#12b636]" />
+                <div className="px-4 py-4 text-2xl font-bold text-[#444444]">
+                  ₦{Number(dashboardData.total_revenue).toLocaleString()}
+                </div>
+                <div className="px-4 py-2 text-xs text-[#ababab] border-t">
+                  Total Confirmed Orders
+                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#ababab]">Total Volume</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
+              {/* Total Volume Card */}
+              <div className="flex-1 bg-white rounded shadow border">
+                <div className="bg-[#ff6600] text-white px-4 py-2 rounded-t text-xs font-semibold">
+                  TOTAL VOLUME
                 </div>
-                <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
+                <div className="px-4 py-4 text-2xl font-bold text-[#444444]">
+                  {dashboardData.total_volume}
+                </div>
+                <div className="px-4 py-2 text-xs text-[#ababab] border-t">
+                  Total Number of Packs Sold
+                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {dashboardData.brand_category_price_data.map((cat) => (
-            <Card className="card-hover" key={cat.category}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-[#ababab]">{cat.category} Revenue</p>
-                    <p className="text-2xl font-semibold text-[#444444]">₦{Number(cat.total_price).toLocaleString()}</p>
-                  </div>
-                  <Package className="h-8 w-8 text-[#1cd344]" />
-                </div>
-                <div className="flex items-center mt-2">
-                  <span className="text-sm text-[#12b636]">Volume: {cat.volume}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            </div>
+            {/* Brand Category Table */}
+            <div>
+              <table className="min-w-full text-sm border rounded">
+                <thead>
+                  <tr className="bg-[#f5f5f5]">
+                    <th className="px-3 py-2 text-left font-medium text-[#444444]">TYPE</th>
+                    <th className="px-3 py-2 text-left font-medium text-[#444444]">VALUE (₦)</th>
+                    <th className="px-3 py-2 text-left font-medium text-[#444444]">VOLUME</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboardData.brand_category_price_data.map((cat) => (
+                    <tr key={cat.category} className="border-t">
+                      <td className="px-3 py-2">{cat.category}</td>
+                      <td className="px-3 py-2">₦{Number(cat.total_price).toLocaleString()}</td>
+                      <td className="px-3 py-2">{cat.volume}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Orders */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-[#444444]">Recent Orders</CardTitle>
+          <Link
+            href="/dashboard/orders"
+            className="text-sm text-[#ff6600] hover:underline font-medium"
+            aria-label="See all orders"
+          >
+            See All
+          </Link>
         </CardHeader>
         <CardContent>
           <div style={{ margin: "-1.5rem -1.5rem 0 -1.5rem" }}>

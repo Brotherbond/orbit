@@ -253,6 +253,27 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                 <div className="flex items-center gap-1 text-sm text-[#444] bg-[#F8F8F8] px-3 py-1 rounded">
                   <span className="font-medium text-[#12B636]">Order Token:</span>
                   <span className="font-mono text-xs text-[#333]">{order.fulfilled_token || 'N/A'}</span>
+                  {order.fulfilled_token && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="ml-1 p-1 h-6 w-6"
+                      onClick={() => {
+                        navigator.clipboard.writeText(order.fulfilled_token!);
+                        toast({
+                          title: "Copied!",
+                          description: "Order token copied to clipboard.",
+                        });
+                      }}
+                      aria-label="Copy order token"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2" />
+                        <rect x="3" y="3" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2" />
+                      </svg>
+                    </Button>
+                  )}
                 </div>
               )}
               <Link

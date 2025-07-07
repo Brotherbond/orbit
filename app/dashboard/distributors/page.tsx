@@ -1,16 +1,17 @@
 "use client"
 
-import React, { useRef } from "react"
+import React, { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
+import type { ColumnDef } from "@/components/ui/data-table-types"
 import { MoreHorizontal, Plus, Eye, Edit, Trash2, TrendingUp } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import { Distributor } from "@/types/distributor"
+import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
 
 
 function getColumns(
@@ -152,6 +153,8 @@ export default function DistributorsPage() {
     [router, toast]
   )
 
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -159,10 +162,16 @@ export default function DistributorsPage() {
           <h1 className="text-3xl font-bold text-[#444444]">Distributors</h1>
           <p className="text-[#ababab]">Manage distributors and their business information</p>
         </div>
-        <Button className="btn-primary" onClick={() => router.push("/dashboard/distributors/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Distributor
-        </Button>
+        <div className="flex gap-2">
+          <Button className="btn-primary" onClick={() => setBulkModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Bulk Distributors
+          </Button>
+          <Button className="btn-primary" onClick={() => router.push("/dashboard/distributors/create")}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Distributor
+          </Button>
+        </div>
       </div>
 
       <DataTable
@@ -172,6 +181,16 @@ export default function DistributorsPage() {
         searchPlaceholder="Search distributors..."
         url="/distributors"
         exportFileName="distributors.xlsx"
+      />
+
+      <BulkUploadModal
+        open={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        sampleUrl="/sample-distributors.xlsx"
+        apiUrl="/distributors/bulk-upload"
+        onSuccess={refreshTable}
+        title="Bulk Distributors Upload"
+        label="Upload Bulk Distributors (.xlsx)"
       />
     </div>
   )

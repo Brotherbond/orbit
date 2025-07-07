@@ -1,10 +1,7 @@
-// DataTable rewritten to fetch data from url if provided, with internal pagination and page size selection.
-
 "use client"
 
 import * as React from "react"
 import {
-  type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
   type VisibilityState,
@@ -15,7 +12,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDown, Search, Filter, Download } from "lucide-react"
+import { type ColumnDef } from "./data-table-types"
+import { ChevronDown, Search, Filter, Download, RefreshCw } from "lucide-react"
 import * as XLSX from "xlsx"
 import { apiClient, ApiResponse } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
@@ -193,6 +191,15 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
           </Button>
         </div>
         <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setRefreshCount((c) => c + 1)}
+            title="Refresh"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -314,17 +321,19 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
           </DropdownMenu>
         </div>
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto w-full">
         <Table>
 <TableHeader>
   {table.getHeaderGroups().map((headerGroup) => (
     <TableRow key={headerGroup.id}>
       {headerGroup.headers.map((header) => {
+        const width = (header.column.columnDef as any).width;
         return (
           <TableHead
             key={header.id}
             onClick={header.column.getCanSort() ? header.column.getToggleSortingHandler() : undefined}
             className={header.column.getCanSort() ? "cursor-pointer select-none" : ""}
+            style={width ? { width } : undefined}
           >
             {header.isPlaceholder ? null : (
               <span className="flex items-center">
@@ -360,15 +369,20 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                   className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
                   onClick={() => onRowClick?.(row.original)}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                  ))}
+                  {row.getVisibleCells().map((cell) => {
+                    const width = (cell.column.columnDef as any).width;
+                    return (
+                      <TableCell key={cell.id} style={width ? { width } : undefined}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  No data.
                 </TableCell>
               </TableRow>
             )}

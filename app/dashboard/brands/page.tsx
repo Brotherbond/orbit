@@ -1,21 +1,23 @@
 "use client"
 
-import React, { useRef } from "react"
+import React, { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
+import type { ColumnDef } from "@/components/ui/data-table-types"
 import { MoreHorizontal, Plus, Eye, Edit, Trash2, Package } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
+import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
 
 interface BrandPackage {
   id: string
   type: string
   quantity: number
+  og_price: number
   wholesale_price: number
   retail_price: number
   retail_price_with_markup: number
@@ -45,6 +47,8 @@ export default function BrandsPage() {
     [router, toast]
   )
 
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -52,10 +56,16 @@ export default function BrandsPage() {
           <h1 className="text-3xl font-bold text-[#444444]">Brands</h1>
           <p className="text-[#ababab]">Manage product brands and their packages</p>
         </div>
-        <Button className="btn-primary" onClick={() => router.push("/dashboard/brands/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Brand
-        </Button>
+        <div className="flex gap-2">
+          <Button className="btn-primary" onClick={() => setBulkModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Bulk Brands
+          </Button>
+          <Button className="btn-primary" onClick={() => router.push("/dashboard/brands/create")}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Brand
+          </Button>
+        </div>
       </div>
 
       <DataTable
@@ -65,6 +75,16 @@ export default function BrandsPage() {
         searchPlaceholder="Search brands..."
         url="/brands"
         exportFileName="brands.xlsx"
+      />
+
+      <BulkUploadModal
+        open={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        sampleUrl="/sample-brands.xlsx"
+        apiUrl="/brands/bulk-upload"
+        onSuccess={refreshTable}
+        title="Bulk Brands Upload"
+        label="Upload Bulk Brands (.xlsx)"
       />
     </div>
   )
@@ -139,23 +159,12 @@ function getColumns(
       ),
     },
     {
-      accessorKey: "price_range",
-      header: "Price Range",
+      accessorKey: "price",
+      header: "Price",
       cell: ({ row }) => {
-        const packages = row.original.packages || []
-        if (packages.length === 0) return <span className="text-muted-foreground">No pricing</span>
-
-        const prices = packages
-          .map((p: any) => Number(p.og_price))
-          .filter((n: number) => !isNaN(n))
-        if (prices.length === 0) return <span className="text-muted-foreground">No pricing</span>
-
-        const minPrice = Math.min(...prices)
-        const maxPrice = Math.max(...prices)
-
         return (
           <div className="text-sm">
-            ₦{minPrice.toLocaleString()} - ₦{maxPrice.toLocaleString()}
+            ₦{(Number(row.original.packages[0].og_price ?? 0) / (row.original.packages[0].quantity ?? 1)).toFixed(2).toLocaleString() ?? 'N/A'}
           </div>
         )
       },

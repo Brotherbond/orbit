@@ -1,165 +1,164 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ArrowLeft, Save } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
-import { Formik, Form, ErrorMessage } from "formik";
+import { apiClient } from "@/lib/api-client";
+import { useRouter } from "next/navigation";
 import * as Yup from "yup";
+import BrandForm from "@/components/dashboard/BrandForm";
 
+interface BrandPackage {
+  uuid?: string;
+  type: string;
+  quantity: number;
+  wholesale_price: number;
+  retail_price: number;
+  retail_price_with_markup: number;
+  og_price: number;
+  distributor_price: number;
+}
 
-interface BrandData {
-  name: string
-  description: string
-  status: string
+interface BrandDetail {
+  id: string;
+  uuid: string;
+  name: string;
+  category: string;
+  description?: string;
+  image: string;
+  packages: BrandPackage[];
+  created_at: string;
+  updated_at: string;
 }
 
 export default function EditBrandPage({ params }: { params: { id: string } }) {
-  const [initialValues, setInitialValues] = useState<BrandData>({
-    name: "",
-    description: "",
-    status: "active",
-  })
-  const [isLoading, setIsLoading] = useState(false)
-
-  const router = useRouter()
-  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialValues, setInitialValues] = useState<any>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchBrand()
-    // eslint-disable-next-line
-  }, [params.id])
-
-  const fetchBrand = async () => {
-    try {
-      const response = await apiClient.get(`/brands/${params.id}`)
-      const data = response.data as { status: string; data: { item: BrandData } }
-      if (data.status === "success") {
-        setInitialValues(data.data.item)
+    async function fetchBrand() {
+      setIsLoading(true);
+      try {
+        const { data } = await apiClient.get<{ item: BrandDetail }>(`/brands/${params.id}`);
+        const brand = data.item;
+        setInitialValues({
+          name: brand.name || "",
+          category: brand.category || "",
+          image: brand.image || "",
+          packages: (brand.packages || []).map((pkg: BrandPackage) => ({
+            uuid: pkg.uuid,
+            type: pkg.type || "",
+            quantity: pkg.quantity || 0,
+            wholesale_price: pkg.wholesale_price || 0,
+            retail_price: pkg.retail_price || 0,
+            retail_price_with_markup: pkg.retail_price_with_markup || 0,
+            og_price: pkg.og_price || 0,
+            distributor_price: pkg.distributor_price || 0,
+          })),
+        });
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error?.message || "Failed to fetch brand details",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch brand data",
-        variant: "destructive",
-      })
     }
-  }
+    fetchBrand();
+    // eslint-disable-next-line
+  }, [params.id]);
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Brand name is required"),
-    description: Yup.string(),
-    status: Yup.string().oneOf(["active", "inactive"]).required(),
-  })
+    category: Yup.string().required("Category is required"),
+    image: Yup.string(),
+    packages: Yup.array()
+      .of(
+        Yup.object({
+          type: Yup.string().required("Type is required"),
+          quantity: Yup.number().min(1, "Quantity must be greater than 0").required("Quantity is required"),
+          wholesale_price: Yup.number().min(0.01, "Wholesale price must be greater than 0").required("Wholesale price is required"),
+          retail_price: Yup.number().min(0.01, "Retail price must be greater than 0").required("Retail price is required"),
+          retail_price_with_markup: Yup.number().min(0, "Price with markup must be at least 0"),
+          og_price: Yup.number().min(0.01, "OG price must be greater than 0").required("OG price is required"),
+          distributor_price: Yup.number().min(0.01, "Distributor price must be greater than 0").required("Distributor price is required"),
+        })
+      )
+      .min(1, "At least one package is required"),
+  });
 
-  const handleSubmit = async (values: BrandData, { setSubmitting }: any) => {
-    setIsLoading(true)
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+    setIsLoading(true);
     try {
-      await apiClient.put(`/brands/${params.id}`, values)
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("category", values.category);
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+      const filteredPackages = values.packages.filter((pkg: BrandPackage) => pkg.type && pkg.quantity > 0);
+      filteredPackages.forEach((pkg: BrandPackage, idx: number) => {
+        Object.entries(pkg).forEach(([key, val]) => {
+          formData.append(`packages[${idx}][${key}]`, String(val));
+        });
+      });
+      await apiClient.put(`/brands/${params.id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       toast({
         title: "Success",
         description: "Brand updated successfully",
-      })
+      });
       router.push(`/dashboard/brands/${params.id}`);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update brand",
-        variant: "destructive",
-      })
+      let errorSet = false;
+      if (Array.isArray(error.errors)) {
+        error.errors.forEach((err: any) => {
+          if (err && typeof err.field === "string" && typeof err.message === "string") {
+            setFieldError(err.field, err.message);
+            errorSet = true;
+          }
+        });
+      }
+      if (!errorSet) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update brand",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setIsLoading(false)
-      setSubmitting(false)
+      setIsLoading(false);
+      setSubmitting(false);
     }
+  };
+
+  if (isLoading || !initialValues) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Edit Brand</h1>
-          <p className="text-[#ababab]">Update brand information</p>
-        </div>
-      </div>
-
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-[#444444]">Brand Information</CardTitle>
-          <CardDescription className="text-[#ababab]">Update the brand details below</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Formik
-            enableReinitialize
-            initialValues={initialValues}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
-              <Form className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-[#444444]">
-                    Brand Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={values.name}
-                    onChange={handleChange}
-                    placeholder="Enter brand name"
-                  />
-                  <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-[#444444]">
-                    Description
-                  </Label>
-                  <Input
-                    id="description"
-                    name="description"
-                    value={values.description}
-                    onChange={handleChange}
-                    placeholder="Enter description"
-                  />
-                  <ErrorMessage name="description" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status" className="text-[#444444]">
-                    Status
-                  </Label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={values.status}
-                    onChange={handleChange}
-                    className="w-full border rounded px-3 py-2"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                  <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="flex items-center justify-end space-x-4 pt-6 border-t border-[#eeeeee]">
-                  <Button type="button" variant="outline" onClick={() => router.back()}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
-                    <Save className="mr-2 h-4 w-4" />
-                    {isLoading || isSubmitting ? "Updating..." : "Update Brand"}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </CardContent>
-      </Card>
-    </div>
-  )
+    <BrandForm
+      mode="edit"
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      isLoading={isLoading}
+      imageFile={imageFile}
+      setImageFile={setImageFile}
+      onSubmit={handleSubmit}
+      onBack={() => router.back()}
+    />
+  );
 }

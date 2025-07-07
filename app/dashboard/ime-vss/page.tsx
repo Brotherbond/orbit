@@ -1,16 +1,17 @@
 "use client"
 
-import React, { useRef } from "react"
+import React, { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
+import type { ColumnDef } from "@/components/ui/data-table-types"
 import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
-import { User } from "../users/page"
+import { User } from "@/types/user"
+import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
 
 interface ImeVss extends User {}
 
@@ -128,6 +129,8 @@ export default function ImeVssPage() {
     [router, toast]
   )
 
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -135,10 +138,16 @@ export default function ImeVssPage() {
           <h1 className="text-3xl font-bold text-[#444444]">IME-VSS</h1>
           <p className="text-[#ababab]">Manage IME-VSS users and their permissions</p>
         </div>
-        <Button className="btn-primary" onClick={() => router.push("/dashboard/ime-vss/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add IME-VSS User
-        </Button>
+        <div className="flex gap-2">
+          <Button className="btn-primary" onClick={() => setBulkModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Bulk IME/VSS
+          </Button>
+          <Button className="btn-primary" onClick={() => router.push("/dashboard/ime-vss/create")}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add IME-VSS User
+          </Button>
+        </div>
       </div>
 
       <DataTable
@@ -148,6 +157,16 @@ export default function ImeVssPage() {
         searchPlaceholder="Search IME-VSS users..."
         url={`/users?roles=${roles}`}
         exportFileName="ime-vss.xlsx"
+      />
+
+      <BulkUploadModal
+        open={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        sampleUrl="/sample-ime-vss.xlsx"
+        apiUrl="/users/bulk-upload"
+        onSuccess={refreshTable}
+        title="Bulk IME/VSS Upload"
+        label="Upload Bulk IME/VSS (.xlsx)"
       />
     </div>
   )
