@@ -8,6 +8,7 @@ import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { getColumns, getStatusFilter } from "./orders/page";
 import { ColumnDef } from "@/components/ui/data-table-types";
@@ -208,8 +209,15 @@ export default function DashboardPage() {
 
       {/* Recent Orders */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-[#444444]">Recent Orders</CardTitle>
+          <Link
+            href="/dashboard/orders"
+            className="text-sm text-[#ff6600] hover:underline font-medium"
+            aria-label="See all orders"
+          >
+            See All
+          </Link>
         </CardHeader>
         <CardContent>
           <div style={{ margin: "-1.5rem -1.5rem 0 -1.5rem" }}>
