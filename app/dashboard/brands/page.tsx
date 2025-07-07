@@ -17,6 +17,7 @@ interface BrandPackage {
   id: string
   type: string
   quantity: number
+  og_price: number
   wholesale_price: number
   retail_price: number
   retail_price_with_markup: number
@@ -158,23 +159,12 @@ function getColumns(
       ),
     },
     {
-      accessorKey: "price_range",
-      header: "Price Range",
+      accessorKey: "price",
+      header: "Price",
       cell: ({ row }) => {
-        const packages = row.original.packages || []
-        if (packages.length === 0) return <span className="text-muted-foreground">No pricing</span>
-
-        const prices = packages
-          .map((p: any) => Number(p.og_price))
-          .filter((n: number) => !isNaN(n))
-        if (prices.length === 0) return <span className="text-muted-foreground">No pricing</span>
-
-        const minPrice = Math.min(...prices)
-        const maxPrice = Math.max(...prices)
-
         return (
           <div className="text-sm">
-            ₦{minPrice.toLocaleString()} - ₦{maxPrice.toLocaleString()}
+            ₦{(Number(row.original.packages[0].og_price ?? 0) / (row.original.packages[0].quantity ?? 1)).toFixed(2).toLocaleString() ?? 'N/A'}
           </div>
         )
       },

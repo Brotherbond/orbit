@@ -248,29 +248,6 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
               </div>
               <Separator />
               <div className="flex justify-between items-center">
-                <span className="text-[#ababab]">Price Range</span>
-                <div className="text-right">
-                  {brand.packages && brand.packages.length > 0 ? (
-                    <div className="text-sm">
-                      <div className="font-medium text-[#444444]">
-                        {(() => {
-                          const prices = brand.packages
-                            .map((p: any) => Number(p.og_price))
-                            .filter((n: number) => !isNaN(n))
-                          if (prices.length === 0) return <span className="text-[#ababab]">No pricing</span>
-                          const minPrice = Math.min(...prices)
-                          const maxPrice = Math.max(...prices)
-                          return <>₦{minPrice.toLocaleString()} - ₦{maxPrice.toLocaleString()}</>
-                        })()}
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="text-[#ababab]">No pricing</span>
-                  )}
-                </div>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center">
                 <span className="text-[#ababab]">Created</span>
                 <span className="font-medium text-[#444444]">{brand.created_at}</span>
               </div>
