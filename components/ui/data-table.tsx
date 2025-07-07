@@ -382,7 +382,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                  No data.
                 </TableCell>
               </TableRow>
             )}
