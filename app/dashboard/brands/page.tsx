@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef, useState } from "react"
+import React, { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -11,7 +11,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
-import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
 
 interface BrandPackage {
   id: string
@@ -47,8 +46,6 @@ export default function BrandsPage() {
     [router, toast]
   )
 
-  const [bulkModalOpen, setBulkModalOpen] = useState(false);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -56,16 +53,10 @@ export default function BrandsPage() {
           <h1 className="text-3xl font-bold text-[#444444]">Brands</h1>
           <p className="text-[#ababab]">Manage product brands and their packages</p>
         </div>
-        <div className="flex gap-2">
-          <Button className="btn-primary" onClick={() => setBulkModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Bulk Brands
-          </Button>
-          <Button className="btn-primary" onClick={() => router.push("/dashboard/brands/create")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Brand
-          </Button>
-        </div>
+        <Button className="btn-primary" onClick={() => router.push("/dashboard/brands/create")}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Brand
+        </Button>
       </div>
 
       <DataTable
@@ -75,16 +66,6 @@ export default function BrandsPage() {
         searchPlaceholder="Search brands..."
         url="/brands"
         exportFileName="brands.xlsx"
-      />
-
-      <BulkUploadModal
-        open={bulkModalOpen}
-        onClose={() => setBulkModalOpen(false)}
-        sampleUrl="/sample-brands.xlsx"
-        apiUrl="/brands/bulk-upload"
-        onSuccess={refreshTable}
-        title="Bulk Brands Upload"
-        label="Upload Bulk Brands (.xlsx)"
       />
     </div>
   )
