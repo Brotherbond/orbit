@@ -27,6 +27,11 @@ export default function RolesPage() {
       ),
     },
     {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => row.original.description,
+    },
+    {
       accessorKey: "created_at",
       header: "Created",
       cell: ({ row }) => row.original.created_at,
