@@ -163,7 +163,7 @@ export default function ImeVssPage() {
         open={bulkModalOpen}
         onClose={() => setBulkModalOpen(false)}
         sampleUrl="/sample-ime-vss.xlsx"
-        apiUrl="/users/bulk-upload"
+        apiUrl="/users/bulk-store"
         onSuccess={refreshTable}
         title="Bulk IME/VSS Upload"
         label="Upload Bulk IME/VSS (.xlsx)"

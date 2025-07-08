@@ -160,7 +160,7 @@ export default function UsersPage() {
         open={bulkModalOpen}
         onClose={() => setBulkModalOpen(false)}
         sampleUrl="/sample-users.xlsx"
-        apiUrl="/users/bulk-upload"
+        apiUrl="/users/bulk-store"
         onSuccess={refreshTable}
         title="Bulk Users Upload"
         label="Upload Bulk Users (.xlsx)"

@@ -187,7 +187,7 @@ export default function DistributorsPage() {
         open={bulkModalOpen}
         onClose={() => setBulkModalOpen(false)}
         sampleUrl="/sample-distributors.xlsx"
-        apiUrl="/distributors/bulk-upload"
+        apiUrl="/distributors/bulk-store"
         onSuccess={refreshTable}
         title="Bulk Distributors Upload"
         label="Upload Bulk Distributors (.xlsx)"
