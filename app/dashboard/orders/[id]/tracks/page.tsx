@@ -6,12 +6,19 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
+import { useOrderContext } from "../order-context";
+import { Modal } from "@/components/ui/modal";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
   const [orderEvents, setOrderEvents] = useState<any[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState(true);
+  const { order } = useOrderContext();
   const router = useRouter();
   const { toast } = useToast();
+
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -63,12 +70,37 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                   <div className="text-sm text-[#444] mt-1">
                     By: {event.user?.full_name || "System"}
                   </div>
+                  {event.action === "Order Delivered" && (
+                    <div className="mt-2">
+                      {order?.delivery_image ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEvidenceOpen(true)}
+                          >
+                            View evidence
+                          </Button>
+                        </>
+                      ) : (
+                        <Badge variant="secondary">No image</Badge>
+                      )}
+                    </div>
+                  )}
                 </li>
               ))}
             </ol>
           )}
         </CardContent>
       </Card>
+      <Modal
+        open={evidenceOpen}
+        onClose={() => setEvidenceOpen(false)}
+        size="lg-center"
+        title="Delivery Evidence"
+      >
+        <Image src={order?.delivery_image ?? ""} alt="Delivery Evidence" width={600} height={400} className="max-w-full max-h-[60vh] mx-auto" />
+      </Modal>
     </div>
   );
 }

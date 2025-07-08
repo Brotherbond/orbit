@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+
+import { useOrderContext } from "../order-context"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -41,61 +42,32 @@ interface OrderData {
 }
 
 export default function EditOrderPage({ params }: { params: { id: string } }) {
-  const [initialValues, setInitialValues] = useState<OrderData>({
-    uuid: "",
-    ime_vss: { uuid: "", full_name: "" },
-    distributor_user: { uuid: "", full_name: "" },
-    brands: [],
-    total_amount: "",
-    status: "pending",
-    content: "",
-  })
-  const [isLoading, setIsLoading] = useState(false)
+  const { order, isLoading, fetchOrder, setOrder } = useOrderContext();
   const { data: session } = useSession()
-
   const router = useRouter()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchOrder()
-    // eslint-disable-next-line
-  }, [params.id])
-
-  const fetchOrder = async () => {
-    try {
-      const {data} = await apiClient.get<{ item: OrderData }>(`/orders/${params.id}`)
-      if (data.item) {
-        setInitialValues(data.item)
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch order data",
-        variant: "destructive",
-      })
-    }
-  }
-
   const validationSchema = Yup.object({
     status: Yup.string().oneOf([
-      "pending",
-      "confirmed",
       "approved",
-      "update_requested",
+      "confirmed",
+      "delivered",
+      "fulfilled",
+      "pending",
       "rejected",
-      "fulfilled"
+      "update_requested",
     ]).required(),
     content: Yup.string().optional(),
   })
 
   const handleSubmit = async (values: OrderData, { setSubmitting, setFieldError }: any) => {
-    setIsLoading(true)
     try {
-      session?.user?.role === "sales-admin" && values.content && handleMessageSubmit(values.content || "");
-      const payload = { status: values.status }
-      const response = await apiClient.put<{ status: string }>(`/orders/${params.id}`, payload)
+      session?.user?.role === "sales-admin" && values?.content && handleMessageSubmit(values?.content || "");
+      const payload = { status: values?.status }
+      const response = await apiClient.put<any>(`/orders/${params.id}`, payload)
       if (response.status === "success") {
-        toast({ title: "Success", description: "Order updated successfully" })
+        toast({ title: "Success", description: "Order updated successfully" });
+        setOrder(response.data.item);
         router.push(`/dashboard/orders/${params.id}`)
       }
     } catch (error: any) {
@@ -106,13 +78,11 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
       })
       setFieldError("reference", error.response?.data?.errors?.reference || "")
     } finally {
-      setIsLoading(false)
       setSubmitting(false)
     }
   }
 
   const handleMessageSubmit = async (content: string) => {
-    setIsLoading(true)
     try {
       const payload = { content, sales_admin: session?.user?.uuid }
       const response = await apiClient.post<{ status: string }>(`/orders/${params.id}/messages`, payload)
@@ -127,7 +97,6 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
         variant: "destructive",
       })
     } finally {
-      setIsLoading(false)
     }
   }
 
@@ -157,16 +126,16 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
         <CardContent>
           <Formik
             enableReinitialize
-            initialValues={initialValues}
+            initialValues={order as OrderData}
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
+            {({ values, handleChange, setFieldValue, isSubmitting }) => (
               <Form className="space-y-6">
                 <div className="space-y-2">
                   <Label>Distributor</Label>
                   <Input
-                    defaultValue={values.distributor_user?.full_name || ""}
+                    defaultValue={values?.distributor_user?.full_name || ""}
                     readOnly
                     disabled
                   />
@@ -174,7 +143,7 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                 <div className="space-y-2">
                   <Label>Total Amount</Label>
                   <Input
-                    defaultValue={values.total_amount}
+                    defaultValue={values?.total_amount}
                     readOnly
                     disabled
                   />
@@ -182,7 +151,7 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
                   <Select
-                    value={values.status}
+                    value={values?.status}
                     onValueChange={(value) => setFieldValue("status", value)}
                   >
                     <SelectTrigger>
@@ -191,12 +160,13 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                     <SelectContent>
                       {(() => {
                         const allOptions = [
-                          { value: "pending", label: "Pending" },
-                          { value: "confirmed", label: "Confirmed" },
                           { value: "approved", label: "Approved" },
-                          { value: "update_requested", label: "Update Requested" },
-                          { value: "rejected", label: "Rejected" },
+                          { value: "confirmed", label: "Confirmed" },
+                          { value: "delivered", label: "Delivered" },
                           { value: "fulfilled", label: "Fulfilled" },
+                          { value: "pending", label: "Pending" },
+                          { value: "rejected", label: "Rejected" },
+                          { value: "update_requested", label: "Update Requested" },
                         ];
                         let filteredOptions = allOptions;
                         if (session?.user?.role === "sales-admin") {
@@ -223,7 +193,7 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                   <Textarea
                     id="content"
                     name="content"
-                    value={values.content}
+                    value={values?.content}
                     onChange={handleChange}
                     placeholder="Enter Message"
                     rows={4}

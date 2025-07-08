@@ -56,7 +56,7 @@ export const Modal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="!mt-0 fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={onClose}
       aria-modal="true"
       role="dialog"

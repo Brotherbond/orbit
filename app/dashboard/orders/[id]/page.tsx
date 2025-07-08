@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useOrderContext } from "./order-context";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,8 +20,7 @@ import Link from "next/link";
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const user = session?.user;
-  const [order, setOrder] = useState<Order | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { order, isLoading, fetchOrder } = useOrderContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,27 +29,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const router = useRouter();
   const { toast } = useToast();
 
-  // Fetch order details
-  const fetchOrder = async () => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.get<{ item: Order }>(`/orders/${params.id}`);
-      setOrder(response.data.item ?? null);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to fetch order details",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrder();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+  // Order fetching handled by useOrder hook
 
   // Fetch messages for the order
   const fetchMessages = async () => {
@@ -122,6 +102,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       setIsModalOpen(false);
       setUpdateMessage("");
       fetchMessages();
+      fetchOrder();
     } catch (error: any) {
       toast({
         title: "Error",

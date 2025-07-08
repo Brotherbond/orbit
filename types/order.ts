@@ -1,5 +1,5 @@
-import { User } from "@/app/dashboard/users/page";
 import { StatusBadgeProps } from "@/components/ui/status-badge";
+import { User } from "./user";
 
 export interface OrderBrand {
   uuid: string;
@@ -15,6 +15,7 @@ export interface OrderBrand {
 export interface Order {
   uuid: string;
   ref: string;
+  delivery_image: string;
   fulfilled_token: string;
   ime_vss: User;
   distributor_user: User & {
