@@ -31,6 +31,11 @@ interface DashboardData {
   brand_category_price_data: BrandCategoryPriceData[];
 }
 
+interface DailyRevenueWithDay extends DailyRevenue {
+  dayOfWeek: string;
+  formattedDate: string;
+}
+
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true)
@@ -73,6 +78,25 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
+  // Sort daily_revenue by date ascending and add day of week
+  const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
+    if (!dashboardData || !dashboardData.daily_revenue) return [];
+    return [...dashboardData.daily_revenue]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((item) => {
+        const dateObj = new Date(item.date);
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = String(dateObj.getFullYear()).slice(-2);
+        const dayShort = dateObj.toLocaleDateString("en-US", { weekday: "short" });
+        return {
+          ...item,
+          dayOfWeek: dayShort,
+          formattedDate: `${day}/${month}/${year}(${dayShort})`,
+        };
+      });
+  }, [dashboardData]);
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -114,10 +138,17 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dashboardData.daily_revenue}>
+                <BarChart data={sortedDailyRevenue}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eeeeee" />
-                  <XAxis dataKey="date" stroke="#ababab" />
-                  <YAxis stroke="#ababab" />
+                  <XAxis dataKey="formattedDate" stroke="#ababab" tick={{ fontSize: 10 }} />
+                  <YAxis
+                    stroke="#ababab"
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={value => {
+                      const n = Number(value) / 1_000_000;
+                      return n === 0 ? "0" : `${n}${n === 1 ? "m" : "m"}`;
+                    }}
+                  />
                   <Tooltip />
                   <Bar dataKey="total" fill="#ff6600" />
                 </BarChart>
