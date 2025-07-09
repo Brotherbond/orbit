@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { AuthProvider } from "@/lib/auth-context"
 import { RolesProvider } from "@/components/dashboard/RolesContext"
+import SessionTimeout from "@/components/SessionTimeout"
 
 export default function DashboardLayout({
   children,
@@ -46,6 +47,7 @@ export default function DashboardLayout({
 
   return (
     <AuthProvider>
+      <SessionTimeout />
       <RolesProvider>
         <div className="dashboard min-h-screen bg-[#f8f8f8]">
           <DashboardHeader />
