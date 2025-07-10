@@ -77,7 +77,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
         <div>
           <div className="font-medium">{row.original.distributor_user.distributor_details.business_name}</div>
           <div className="text-sm text-muted-foreground">
-            {row.original.distributor_user.first_name} {row.original.distributor_user.last_name}
+            {row.original.distributor_user.full_name}
           </div>
         </div>
       ),
@@ -87,7 +87,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
       header: "IME/VSS",
       cell: ({ row }) => (
         <div className="text-sm">
-          {row.original.ime_vss.first_name} {row.original.ime_vss.last_name}
+          {row.original.ime_vss.full_name}
         </div>
       ),
     },
@@ -153,7 +153,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem className="cursor-pointer"onClick={() => router.push(`/dashboard/orders/${row.original.uuid}`)}>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`/dashboard/orders/${row.original.uuid}`)}>
                 <Eye className="mr-2 h-4 w-4" />
                 View Details
               </DropdownMenuItem>
@@ -161,23 +161,23 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
                 <Eye className="mr-2 h-4 w-4" />
                 View Track
               </DropdownMenuItem>
-              {["sales-admin","treasury"].includes(userRole) && row.original.status === "pending" && (
-                <DropdownMenuItem className="cursor-pointer"onClick={handleConfirmPayment}>
+              {["sales-admin", "treasury"].includes(userRole) && row.original.status === "pending" && (
+                <DropdownMenuItem className="cursor-pointer" onClick={handleConfirmPayment}>
                   <Edit className="mr-2 h-4 w-4" />
                   Confirm Payment
                 </DropdownMenuItem>
-              ) 
-              // : userRole === "admin" ? (
-              //   <DropdownMenuItem className="cursor-pointer"onClick={handleConfirmOrder}>
-              //     <Edit className="mr-2 h-4 w-4" />
-              //     Approve Order
-              //   </DropdownMenuItem>
-              // ) : (
-              //   <DropdownMenuItem className="cursor-pointer"onClick={() => router.push(`/dashboard/orders/${row.original.uuid}/edit`)}>
-              //     <Edit className="mr-2 h-4 w-4" />
-              //     Update Order
-              //   </DropdownMenuItem>
-              // )
+              )
+                // : userRole === "admin" ? (
+                //   <DropdownMenuItem className="cursor-pointer"onClick={handleConfirmOrder}>
+                //     <Edit className="mr-2 h-4 w-4" />
+                //     Approve Order
+                //   </DropdownMenuItem>
+                // ) : (
+                //   <DropdownMenuItem className="cursor-pointer"onClick={() => router.push(`/dashboard/orders/${row.original.uuid}/edit`)}>
+                //     <Edit className="mr-2 h-4 w-4" />
+                //     Update Order
+                //   </DropdownMenuItem>
+                // )
               }
 
             </DropdownMenuContent>

@@ -132,6 +132,7 @@ const columns: ColumnDef<unknown, unknown>[] = [
 ];
 
 export default function ReportsPage() {
+  const date= (new Date().toISOString()).split('.')[0].replace('T','_');
 
   return (
     <div className="space-y-6">
@@ -141,7 +142,7 @@ export default function ReportsPage() {
         url={`/reports/order_events`}
         searchKey="distributor"
         searchPlaceholder="Search by reference"
-        exportFileName="draft-reports.xlsx"
+        exportFileName={`ORBIT_LeadTime_Report_${date}.xlsx`}
       />
     </div>
   );
