@@ -12,7 +12,10 @@ type OrderEvent = {
   delivered_at?: string;
   confirmed_at?: string;
   fulfilled_at?: string;
-  lead_time?: string;
+  created_confirmed_lead_time: string,
+  confirmed_delivered_lead_time: string,
+  delivered_fulfilled_lead_time: string,
+  overall_lead_time: string,
 };
 
 const columns: ColumnDef<unknown, unknown>[] = [
@@ -48,16 +51,67 @@ const columns: ColumnDef<unknown, unknown>[] = [
     cell: ({ row }) => (row.original as OrderEvent).confirmed_at || "-",
   },
   {
+    accessorKey: "delivered_at",
+    header: "Delivered At",
+    cell: ({ row }) => (row.original as OrderEvent).delivered_at || "-",
+  },
+  {
     accessorKey: "fulfilled_at",
     header: "Fulfilled At",
     cell: ({ row }) => (row.original as OrderEvent).fulfilled_at || "-",
   },
   {
-    accessorKey: "lead_time",
-    header: "Lead Time",
+    accessorKey: "created_confirmed_lead_time",
+    header: "CC Lead Time",
     width: 150,
     cell: ({ row }) => {
-      const leadTime = (row.original as OrderEvent).lead_time;
+      const leadTime = (row.original as OrderEvent).created_confirmed_lead_time;
+      if (!leadTime) return "-";
+      // Parse "X hrs, Y min"
+      const match = leadTime.match(/(\d+)\s*hrs?,\s*(\d+)\s*min/);
+      let hours = 0;
+      if (match) {
+        hours = parseInt(match[1] || "0", 10);
+        const mins = parseInt(match[2] || "0", 10);
+        hours += mins / 60;
+      }
+      const isOver48 = hours >= 48;
+      return (
+        <span className={isOver48 ? "bg-red-600 text-white px-2 py-1 rounded" : ""}>
+          {leadTime}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "confirmed_delivered_lead_time",
+    header: "CD Lead Time",
+    width: 150,
+    cell: ({ row }) => {
+      const leadTime = (row.original as OrderEvent).confirmed_delivered_lead_time;
+      if (!leadTime) return "-";
+      // Parse "X hrs, Y min"
+      const match = leadTime.match(/(\d+)\s*hrs?,\s*(\d+)\s*min/);
+      let hours = 0;
+      if (match) {
+        hours = parseInt(match[1] || "0", 10);
+        const mins = parseInt(match[2] || "0", 10);
+        hours += mins / 60;
+      }
+      const isOver48 = hours >= 48;
+      return (
+        <span className={isOver48 ? "bg-red-600 text-white px-2 py-1 rounded" : ""}>
+          {leadTime}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "delivered_fulfilled_lead_time",
+    header: "DF Lead Time",
+    width: 150,
+    cell: ({ row }) => {
+      const leadTime = (row.original as OrderEvent).delivered_fulfilled_lead_time;
       if (!leadTime) return "-";
       // Parse "X hrs, Y min"
       const match = leadTime.match(/(\d+)\s*hrs?,\s*(\d+)\s*min/);
@@ -84,7 +138,7 @@ export default function ReportsPage() {
       <h1 className="text-2xl font-bold mb-4">Reports</h1>
       <DataTable
         columns={columns}
-        url={`/orders/events`}
+        url={`/reports/order_events`}
         searchKey="distributor"
         searchPlaceholder="Search by reference"
         exportFileName="draft-reports.xlsx"
