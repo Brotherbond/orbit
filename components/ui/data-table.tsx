@@ -15,7 +15,7 @@ import {
 import { type ColumnDef } from "./data-table-types"
 import { ChevronDown, Search, Filter, Download, RefreshCw } from "lucide-react"
 import * as XLSX from "xlsx"
-import { apiClient, ApiResponse } from "@/lib/api-client"
+import { apiClient } from "@/lib/api-client"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -35,7 +35,7 @@ interface DataTableProps<TData, TValue> {
   url?: string
   exportFileName?: string
   className?: string
-  perPage?: number
+  per_page?: number
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 100, 1000]
@@ -64,7 +64,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     url,
     exportFileName = "export.xlsx",
     className,
-    perPage,
+    per_page,
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
 ) {
@@ -73,7 +73,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const [pageIndex, setPageIndex] = React.useState(0)
-  const [pageSize, setPageSize] = React.useState(perPage ?? PAGE_SIZE_OPTIONS[0])
+  const [pageSize, setPageSize] = React.useState(per_page ?? PAGE_SIZE_OPTIONS[0])
   const [tableData, setTableData] = React.useState<TData[]>(dataProp ?? [])
   const [total, setTotal] = React.useState(0)
   const [pageCount, setPageCount] = React.useState(1)
@@ -122,7 +122,11 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
         if (!ignore) {
           setTableData(items)
           setTotal(meta?.total ?? items.length)
-          setPageCount(meta?.totalPages ?? 1)
+          setPageCount(meta?.last_page ?? 1)
+          const currentPage = meta?.current_page
+          if (typeof currentPage === "number" && currentPage > 0) {
+            setPageIndex(currentPage - 1)
+          }
         }
       } catch (e) {
         if (!ignore) {

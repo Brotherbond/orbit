@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import { getSession, signOut } from "next-auth/react";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth";
@@ -24,12 +24,12 @@ export interface ApiResponse<T> {
   }>;
   meta: {
     pagination?: {
+      current_page: number;
+      from: number;
+      last_page: number;
+      per_page: number;
+      to: number;
       total: number;
-      perPage: number;
-      currentPage: number;
-      totalPages: number;
-      hasNextPage: boolean;
-      hasPrevPage: boolean;
     };
   };
 }

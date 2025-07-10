@@ -232,7 +232,7 @@ export default function DashboardPage() {
                 ref={dataTableRef}
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
                 url="/orders"
-                perPage={5}
+                per_page={5}
                 exportFileName="recent-orders.xlsx"
               />
             </div>
