@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ShoppingCart, DollarSign, Package } from "lucide-react";
+import { ShoppingCart, Package } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
@@ -165,7 +165,7 @@ export default function DashboardPage() {
                   <p className="text-sm text-[#ababab]">Total Revenue</p>
                   <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue).toLocaleString()}</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-[#12b636]" />
+                <span className="h-8 w-8 text-[#12b636] flex items-center justify-center text-3xl font-bold">₦</span>
               </div>
             </CardContent>
           </Card>
@@ -182,22 +182,29 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {dashboardData.brand_category_price_data.map((cat) => (
-            <Card className="card-hover" key={cat.category}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-[#ababab]">{cat.category} Revenue</p>
-                    <p className="text-2xl font-semibold text-[#444444]">₦{Number(cat.total_price).toLocaleString()}</p>
+          {["FnB", "PC", "Pharma"].map((category) => {
+            const cat = dashboardData.brand_category_price_data.find((c) => c.category === category) || {
+              category,
+              total_price: "0",
+              volume: 0,
+            };
+            return (
+              <Card className="card-hover" key={cat.category}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-[#ababab]">{cat.category} Revenue</p>
+                      <p className="text-2xl font-semibold text-[#444444]">₦{Number(cat.total_price).toLocaleString()}</p>
+                    </div>
+                    <Package className="h-8 w-8 text-[#1cd344]" />
                   </div>
-                  <Package className="h-8 w-8 text-[#1cd344]" />
-                </div>
-                <div className="flex items-center mt-2">
-                  <span className="text-sm text-[#12b636]">Volume: {cat.volume}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="flex items-center mt-2">
+                    <span className="text-sm text-[#12b636]">Volume: {cat.volume}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
 
