@@ -65,7 +65,7 @@ export default function BrandsPage() {
         searchKey="name"
         searchPlaceholder="Search brands..."
         url="/brands"
-        exportFileName="brands.xlsx"
+        exportFileName="Brands.xlsx"
       />
     </div>
   )

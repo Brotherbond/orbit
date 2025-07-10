@@ -180,7 +180,7 @@ export default function DistributorsPage() {
         searchKey="business_name"
         searchPlaceholder="Search distributors..."
         url="/distributors"
-        exportFileName="distributors.xlsx"
+        exportFileName="Distributors.xlsx"
       />
 
       <BulkUploadModal

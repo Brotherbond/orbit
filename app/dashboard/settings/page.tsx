@@ -149,7 +149,7 @@ export default function SettingsPage() {
         searchKey="key"
         searchPlaceholder="Search settings..."
         url="/settings"
-        exportFileName="settings.xlsx"
+        exportFileName="Settings.xlsx"
       />
     </div>
   )

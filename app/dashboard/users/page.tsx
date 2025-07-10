@@ -153,7 +153,7 @@ export default function UsersPage() {
         searchKey="first_name"
         searchPlaceholder="Search users..."
         url={`/users?roles=${roles}`}
-        exportFileName="users.xlsx"
+        exportFileName="Users.xlsx"
       />
 
       <BulkUploadModal

@@ -308,7 +308,7 @@ export default function DistributorTargetPage() {
           searchKey="type"
           searchPlaceholder="Search targets..."
           url={distributorUser?.uuid ? `/targets?user_id=${distributorUser.uuid}` : ''}
-          exportFileName="distributor-targets.xlsx"
+          exportFileName="Distributor-Targets.xlsx"
         />
       )}
     </div>

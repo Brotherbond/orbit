@@ -156,7 +156,7 @@ export default function ImeVssPage() {
         searchKey="first_name"
         searchPlaceholder="Search IME-VSS users..."
         url={`/users?roles=${roles}`}
-        exportFileName="ime-vss.xlsx"
+        exportFileName="IME-VSS.xlsx"
       />
 
       <BulkUploadModal

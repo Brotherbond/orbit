@@ -57,7 +57,7 @@ export default function OrdersPage() {
         searchKey="ref"
         searchPlaceholder="Search orders..."
         url={`/orders?${statusFilter}`}
-        exportFileName="orders.xlsx"
+        exportFileName="Orders.xlsx"
       />
     </div>
   )

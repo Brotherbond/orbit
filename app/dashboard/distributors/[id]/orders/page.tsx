@@ -42,7 +42,7 @@ export default function DistributorOrdersPage() {
         searchKey="ref"
         searchPlaceholder="Search orders..."
         url={`/distributors/${distributorId}/orders?${statusFilter}`}
-        exportFileName="distributor-orders.xlsx"
+        exportFileName="Distributor-Orders.xlsx"
       />
     </div>
   );
