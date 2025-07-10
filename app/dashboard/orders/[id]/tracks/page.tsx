@@ -68,7 +68,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                     <span className="text-xs text-gray-500">{event.created_at}</span>
                   </div>
                   <div className="text-sm text-[#444] mt-1">
-                    By: {event.user?.full_name || "System"}
+                    By: {event.user?.full_name || event.user || ""}
                   </div>
                   {event.action === "Order Delivered" && (
                     <div className="mt-2">
