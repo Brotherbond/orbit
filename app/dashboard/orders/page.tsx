@@ -71,7 +71,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
       cell: ({ row }) => <div className="text-sm">{row.original.ref}</div>,
     },
     {
-      accessorKey: "distributor_user",
+      accessorKey: "distributor_user.distributor_details.business_name",
       header: "Distributor",
       cell: ({ row }) => (
         <div>
@@ -83,7 +83,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
       ),
     },
     {
-      accessorKey: "ime_vss",
+      accessorKey: "ime_vss.full_name",
       header: "IME/VSS",
       cell: ({ row }) => (
         <div className="text-sm">
