@@ -40,6 +40,7 @@ export default function LoginPage() {
 
       if (result?.error) {
         setError("Invalid email or password. Please try again.")
+        setIsLoading(false)
       } else if (result?.ok) {
         if (callbackUrl) {
           router.push(callbackUrl)
@@ -50,8 +51,6 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError("An error occurred. Please try again.")
-    } finally {
-      setIsLoading(false)
     }
   }
 
