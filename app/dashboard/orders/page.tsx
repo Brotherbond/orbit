@@ -115,7 +115,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
         const userRole = session?.user?.role?.toLowerCase() || "";
         const handleConfirmPayment = async () => {
           try {
-            await apiClient.put(`/orders/${row.original.uuid}`, { status: "confirmed" });
+            const response = await apiClient.put<{ item: Order }>(`/orders/${row.original.uuid}`, { status: "confirmed" });
             toast({
               title: "Success",
               description: "Order payment confirmed",
@@ -131,7 +131,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
         };
         const handleConfirmOrder = async () => {
           try {
-            await apiClient.put(`/orders/${row.original.uuid}`, { status: "approved" });
+            const response = await apiClient.put<{ item: Order }>(`/orders/${row.original.uuid}`, { status: "approved" });
             toast({
               title: "Success",
               description: "Order Approved",
