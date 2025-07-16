@@ -126,10 +126,18 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Personal Information</CardTitle>
+            <CardHeader className="flex flex-row items-start justify-between">
+              <div>
+                <CardTitle className="text-[#444444]">User Details</CardTitle>
+              </div>
+              <Badge
+                variant={user.status === "active" ? "default" : "destructive"}
+                className={`status ${user.status === "active" ? "active" : "inactive"} mt-1`}
+              >
+                {user.status}
+              </Badge>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center space-x-3">
                   <User className="h-5 w-5 text-[#ababab]" />
@@ -161,16 +169,6 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
                     <p className="font-medium text-[#444444]">{user.market?.name || "No Market"}</p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Account Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-[#ababab]">Role</p>
                   <Badge variant="secondary" className="mt-1">
@@ -178,68 +176,9 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-[#ababab]">Status</p>
-                  <Badge
-                    variant={user.status === "active" ? "default" : "destructive"}
-                    className={`mt-1 status ${user.status === "active" ? "active" : "inactive"}`}
-                  >
-                    {user.status}
-                  </Badge>
+                  <p className="text-sm text-[#ababab]">Created</p>
+                  <p className="font-medium text-[#444444]">{user.created_at}</p>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Calendar className="h-5 w-5 text-[#ababab]" />
-                  <div>
-                    <p className="text-sm text-[#ababab]">Created</p>
-                    <p className="font-medium text-[#444444]">{user.created_at}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Calendar className="h-5 w-5 text-[#ababab]" />
-                  <div>
-                    <p className="text-sm text-[#ababab]">Last Login</p>
-                    <p className="font-medium text-[#444444]">
-                      {user.last_login ? user.last_login : "Never"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full" variant="outline">
-                Reset Password
-              </Button>
-              <Button className="w-full" variant="outline">
-                Send Notification
-              </Button>
-              <Button className="w-full" variant="outline">
-                View Activity Log
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">User Statistics</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-[#ababab]">Orders Created</span>
-                <span className="font-medium text-[#444444]">0</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between">
-                <span className="text-[#ababab]">Last Activity</span>
-                <span className="font-medium text-[#444444]">
-                  {user.updated_at ? user.updated_at : "N/A"}
-                </span>
               </div>
             </CardContent>
           </Card>

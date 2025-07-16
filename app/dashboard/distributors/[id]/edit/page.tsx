@@ -8,7 +8,7 @@ import * as Yup from "yup"
 import UserForm from "@/components/dashboard/UserForm"
 import { useDistributor } from "../distributor-context"
 
-interface DistributorData {
+interface Distributor {
   first_name: string
   last_name: string
   email: string
@@ -25,8 +25,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
   const { toast } = useToast()
   const { distributor, isLoading: isDataLoading, error, updateDistributor } = useDistributor()
 
-  // Memoize initial values to prevent unnecessary re-renders
-  const initialValues = useMemo<DistributorData>(() => {
+  const initialValues = useMemo<Distributor>(() => {
     if (!distributor) {
       return {
         first_name: "",
@@ -52,7 +51,6 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     }
   }, [distributor])
 
-  // Memoize validation schema to prevent recreation on every render
   const validationSchema = useMemo(() => Yup.object({
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
@@ -64,7 +62,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     send_notification: Yup.boolean(),
   }), [])
 
-  const handleSubmit = useCallback(async (values: DistributorData, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = useCallback(async (values: Distributor, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
       const { data, status } = await apiClient.put(`/distributors/${params.id}`, values)
@@ -80,7 +78,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
             email: values.email,
             phone: values.phone,
           },
-          ime_vss: distributor?.ime_vss // Keep existing ime_vss data
+          ime_vss: distributor?.ime_vss
         })
         
         toast({
@@ -106,7 +104,6 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     }
   }, [params.id, distributor, updateDistributor, toast, router])
 
-  // Memoize fields to prevent recreation on every render
   const fields = useMemo(() => [
     {
       name: "business_name",
