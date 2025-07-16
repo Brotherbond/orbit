@@ -6,17 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ErrorMessage, FieldArray, Form, Formik } from "formik";
 import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
 import React from "react";
-
-interface BrandPackage {
-  uuid?: string;
-  type: string;
-  quantity: number;
-  wholesale_price: number;
-  retail_price: number;
-  retail_price_with_markup: number;
-  og_price: number;
-  distributor_price: number;
-}
+import { BrandPackage } from "@/types/brand";
 
 interface BrandFormProps {
   mode: "create" | "edit";

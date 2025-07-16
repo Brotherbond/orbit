@@ -11,27 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
-
-interface BrandPackage {
-  id: string
-  type: string
-  quantity: number
-  og_price: number
-  wholesale_price: number
-  retail_price: number
-  retail_price_with_markup: number
-}
-
-interface Brand {
-  id: string
-  uuid: string
-  name: string
-  category: string
-  image: string
-  packages: BrandPackage[]
-  created_at: string
-}
-
+import { Brand } from "@/types/brand"
 export default function BrandsPage() {
   const router = useRouter()
   const { toast } = useToast()

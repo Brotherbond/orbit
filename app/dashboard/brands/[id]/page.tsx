@@ -10,32 +10,10 @@ import { ArrowLeft, Edit, Trash2, Package } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
-
-interface BrandPackage {
-  uuid: string
-  type: string
-  quantity: number
-  og_price: number
-  wholesale_price: number
-  distributor_price: number
-  retail_price: number
-  retail_price_with_markup: number
-}
-
-interface BrandDetail {
-  id: string
-  uuid: string
-  name: string
-  category: string
-  description: string
-  image: string
-  packages: BrandPackage[]
-  created_at: string
-  updated_at: string
-}
+import { Brand } from "@/types/brand"
 
 export default function BrandDetailPage({ params }: { params: { id: string } }) {
-  const [brand, setBrand] = useState<BrandDetail | null>(null)
+  const [brand, setBrand] = useState<Brand | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const { toast } = useToast()
@@ -43,7 +21,7 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
   const fetchBrand = React.useCallback(async () => {
     setIsLoading(true)
     try {
-      const { data } = await apiClient.get<{ item: BrandDetail }>(`/brands/${params.id}`);
+      const { data } = await apiClient.get<{ item: Brand }>(`/brands/${params.id}`);
       setBrand(data.item ?? null)
     } catch (error: any) {
       setBrand(null)

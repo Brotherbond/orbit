@@ -5,29 +5,7 @@ import { apiClient } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 import BrandForm from "@/components/dashboard/BrandForm";
-
-interface BrandPackage {
-  uuid?: string;
-  type: string;
-  quantity: number;
-  wholesale_price: number;
-  retail_price: number;
-  retail_price_with_markup: number;
-  og_price: number;
-  distributor_price: number;
-}
-
-interface BrandDetail {
-  id: string;
-  uuid: string;
-  name: string;
-  category: string;
-  description?: string;
-  image: string;
-  packages: BrandPackage[];
-  created_at: string;
-  updated_at: string;
-}
+import { Brand, BrandPackage } from "@/types/brand";
 
 export default function EditBrandPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +18,7 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
     async function fetchBrand() {
       setIsLoading(true);
       try {
-        const { data } = await apiClient.get<{ item: BrandDetail }>(`/brands/${params.id}`);
+        const { data } = await apiClient.get<{ item: Brand }>(`/brands/${params.id}`);
         const brand = data.item;
         setInitialValues({
           name: brand.name || "",
