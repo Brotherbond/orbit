@@ -50,7 +50,7 @@ export default function CreateBrandPage() {
       .min(1, "At least one package is required"),
   });
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true);
     try {
       const formData = new FormData();
@@ -74,7 +74,7 @@ export default function CreateBrandPage() {
         title: "Success",
         description: "Brand created successfully",
       });
-      // router.push("/dashboard/brands");
+      resetForm();
     } catch (error: any) {
       let errorSet = false;
       if (Array.isArray(error.errors)) {

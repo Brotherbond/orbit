@@ -40,14 +40,15 @@ export default function CreateMarketPage() {
     location_id: Yup.string().required("Location is required"),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
       await apiClient.post("/markets", values)
       toast({
         title: "Success",
         description: "Market created successfully",
-      })
+      });
+      resetForm();
     } catch (error: any) {
       toast({
         title: "Error",

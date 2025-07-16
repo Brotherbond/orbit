@@ -41,7 +41,7 @@ export default function CreateImeVssPage() {
     send_notification: Yup.boolean(),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
       await apiClient.post("/users", values)
@@ -49,7 +49,7 @@ export default function CreateImeVssPage() {
         title: "Success",
         description: "IME-VSS user created successfully",
       })
-      // router.push("/dashboard/ime-vss")
+      resetForm();
     } catch (error: any) {
       toast({
         title: "Error",

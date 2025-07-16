@@ -32,14 +32,15 @@ export default function CreateLocationPage() {
     country: Yup.string().required("Country is required"),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
       await apiClient.post("/locations", values)
       toast({
         title: "Success",
         description: "Location created successfully",
-      })
+      });
+      resetForm();
     } catch (error: any) {
       toast({
         title: "Error",

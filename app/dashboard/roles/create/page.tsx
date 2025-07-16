@@ -21,7 +21,7 @@ export default function CreateRolePage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    apiClient.get<{ id: string; name: string }[]>("/permissions?per_page=1000")
+    apiClient.get<{ items: { id: string; name: string }[] }>("/permissions?per_page=1000")
       .then((res) => {
         if (res.status === "success" && Array.isArray(res.data.items)) {
           const items = Array.isArray(res.data.items[0])
@@ -51,13 +51,13 @@ export default function CreateRolePage() {
     permissions: Yup.array().of(Yup.string()),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
       const response = await apiClient.post("/roles", values)
       if (response.status === "success") {
-        toast({ title: "Success", description: "Role created successfully" })
-        router.push("/dashboard/roles")
+        toast({ title: "Success", description: "Role created successfully" });
+        resetForm();
       }
     } catch (error: any) {
       toast({

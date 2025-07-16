@@ -37,7 +37,7 @@ export default function CreateDistributorPage() {
     send_notification: Yup.boolean(),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
       const { data, status } = await apiClient.post("/distributors", values)
@@ -45,8 +45,8 @@ export default function CreateDistributorPage() {
         toast({
           title: "Success",
           description: "Distributor created successfully",
-        })
-        // router.push("/dashboard/distributors")
+        });
+        resetForm();
       }
     } catch (error: any) {
       toast({
