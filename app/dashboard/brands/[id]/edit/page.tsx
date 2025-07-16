@@ -95,6 +95,7 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
     try {
       const formData = new FormData();
       formData.append("name", values.name);
+      formData.append("_method", "PUT");
       formData.append("category", values.category);
       if (imageFile) {
         formData.append("image", imageFile);
@@ -105,7 +106,7 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
           formData.append(`packages[${idx}][${key}]`, String(val));
         });
       });
-      await apiClient.put(`/brands/${params.id}`, formData, {
+      await apiClient.post(`/brands/${params.id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

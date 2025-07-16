@@ -182,7 +182,6 @@ export function BrandForm({
                               retail_price_with_markup: 0,
                               og_price: 0,
                               distributor_price: 0,
-                              uuid: undefined,
                             })
                           }
                         >
