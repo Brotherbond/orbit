@@ -10,7 +10,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { getColumns, getStatusFilter } from "./orders/page";
+import { getColumns } from "./orders/page";
 import { ColumnDef } from "@/components/ui/data-table-types";
 import { useOrdersContext } from "./orders/orders-context";
 
@@ -45,9 +45,6 @@ export default function DashboardPage() {
   const { toast } = useToast()
   const { data: session } = useSession()
   const router = useRouter()
-  const user = session?.user
-  const role = user?.role
-  const statusFilter = getStatusFilter(role);
   const fetchDashboardData = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -121,6 +118,7 @@ export default function DashboardPage() {
   if (!dashboardData) {
     return null;
   }
+const filters: import("@/components/ui/data-table").FilterConfig[] = [{type: "disableDefaultDateRange"}]
 
   return (
     <div className="space-y-6">
@@ -235,6 +233,7 @@ export default function DashboardPage() {
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
                 data={orders.slice(0, 5)}
                 per_page={5}
+                filters={filters}
                 exportFileName="recent-orders.xlsx"
               />
             </div>

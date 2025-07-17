@@ -10,29 +10,31 @@ import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import { MoreHorizontal, Eye, Edit } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import type { Order } from "@/types/order"
-
-
-export function getStatusFilter(role?: string): string {
-  if (role && ["treasury", "sales-admin"].includes(role)) {
-    return "";
-  } else if (role === "sales-admin") {
-    return "&status=confirmed";
-  }
-  return "";
-}
+import { useEffect, useState } from "react"
+import { apiClient } from "@/lib/api-client"
 
 export default function OrdersPage() {
   const { data: session } = useSession()
   const { toast } = useToast()
   const router = useRouter()
-  const dataTableRef = useRef<{ refresh: () => void }>(null)
+  const dataTableRef = useRef<{ refresh: () => void }>(null);
+  const user = session?.user;
+  const role = user?.role;
+  const [distributors, setDistributors] = useState<{ uuid: string; business_name: string }[]>([]);
 
-  const user = session?.user
-  const role = user?.role
-  const statusFilter = getStatusFilter(role)
+  // Fetch distributors for filter options
+  useEffect(() => {
+    apiClient.get("/distributors?per_page=1000").then((res: any) => {
+      setDistributors(
+        res.data.items?.map((d: any) => ({
+          uuid: d.uuid,
+          business_name: d.business_name || d.distributor_details?.business_name || ""
+        })) || []
+      )
+    })
+  }, [])
 
   const refreshTable = () => {
     dataTableRef.current?.refresh()
@@ -42,6 +44,36 @@ export default function OrdersPage() {
     () => getColumns(session, router, toast, refreshTable),
     [session, router, toast]
   )
+
+  // Filter config for orders
+  const filters: import("@/components/ui/data-table").FilterConfig[] = [
+    {
+      type: "select",
+      label: "Status",
+      param: "status",
+      options: [
+        { label: "All Statuses", value: "all" },
+        { label: "Pending", value: "pending" },
+        { label: "Confirmed", value: "confirmed" },
+        { label: "Update Requested", value: "update_requested" },
+        { label: "Rejected", value: "rejected" },
+        { label: "Delivered", value: "delivered" },
+        { label: "Fulfilled", value: "fulfilled" },
+      ],
+    },
+    {
+      type: "select",
+      label: "Distributor",
+      param: "distributor",
+      options: [
+        { label: "All Distributors", value: "all" },
+        ...distributors.map(d => ({
+          label: d.business_name,
+          value: d.uuid,
+        })),
+      ],
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -56,8 +88,9 @@ export default function OrdersPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="ref"
         searchPlaceholder="Search orders..."
-        url={`/orders?${statusFilter}`}
+        url="/orders"
         exportFileName="Orders.xlsx"
+        filters={filters}
       />
     </div>
   )
