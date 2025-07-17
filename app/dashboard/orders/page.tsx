@@ -12,7 +12,6 @@ import { MoreHorizontal, Eye, Edit } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
 import type { Order } from "@/types/order"
-import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/api-client"
 
 export default function OrdersPage() {
@@ -21,20 +20,6 @@ export default function OrdersPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null);
   const user = session?.user;
-  const role = user?.role;
-  const [distributors, setDistributors] = useState<{ uuid: string; business_name: string }[]>([]);
-
-  // Fetch distributors for filter options
-  useEffect(() => {
-    apiClient.get("/distributors?per_page=1000").then((res: any) => {
-      setDistributors(
-        res.data.items?.map((d: any) => ({
-          uuid: d.uuid,
-          business_name: d.business_name || d.distributor_details?.business_name || ""
-        })) || []
-      )
-    })
-  }, [])
 
   const refreshTable = () => {
     dataTableRef.current?.refresh()
@@ -59,18 +44,6 @@ export default function OrdersPage() {
         { label: "Rejected", value: "rejected" },
         { label: "Delivered", value: "delivered" },
         { label: "Fulfilled", value: "fulfilled" },
-      ],
-    },
-    {
-      type: "select",
-      label: "Distributor",
-      param: "distributor",
-      options: [
-        { label: "All Distributors", value: "all" },
-        ...distributors.map(d => ({
-          label: d.business_name,
-          value: d.uuid,
-        })),
       ],
     },
   ]
