@@ -16,6 +16,7 @@ import {
   Shield,
   UserCheck,
   LogOut,
+  History,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
 
@@ -34,6 +35,7 @@ const iconMap: Record<string, IconType> = {
   Locations: MapPin,
   "Roles & Permissions": Shield,
   Reports: FileText,
+  "Audit Logs": History,
   Settings: Settings,
 };
 
