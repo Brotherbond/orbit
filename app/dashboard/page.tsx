@@ -163,28 +163,6 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-[#ababab]">Total Brand Volume</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
-                </div>
-                <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-[#ababab]">Total Brand Volume</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
-                </div>
-                <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="card-hover">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
                   <p className="text-sm text-[#ababab]">Total Revenue</p>
                   <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue).toLocaleString()}</p>
                 </div>
@@ -192,7 +170,6 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
-
           {["FnB", "PC", "Pharma"].map((category) => {
             const cat = dashboardData.brand_category_price_data.find((c) => c.category === category) || {
               category,
@@ -216,6 +193,28 @@ export default function DashboardPage() {
               </Card>
             );
           })}
+          <Card className="card-hover">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#ababab]">Total Brand Volume</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
+                </div>
+                <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="card-hover">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#ababab]">Total Brand Volume</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
+                </div>
+                <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
