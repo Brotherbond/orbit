@@ -208,8 +208,8 @@ export default function DashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-[#ababab]">Total Brand Volume</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
+                  <p className="text-sm text-[#ababab]">Total Order Volume</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_order_volume}</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
               </div>
