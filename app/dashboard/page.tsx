@@ -119,7 +119,7 @@ export default function DashboardPage() {
   if (!dashboardData) {
     return null;
   }
-const filters: import("@/components/ui/data-table").FilterConfig[] = [{type: "disableDefaultDateRange"}]
+  const filters: import("@/components/ui/data-table").FilterConfig[] = [{ type: "disableDefaultDateRange" }]
 
   return (
     <div className="space-y-6">
@@ -163,14 +163,13 @@ const filters: import("@/components/ui/data-table").FilterConfig[] = [{type: "di
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-[#ababab]">Total Revenue</p>
-                  <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue).toLocaleString()}</p>
+                  <p className="text-sm text-[#ababab]">Total Brand Volume</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
                 </div>
-                <span className="h-8 w-8 text-[#12b636] flex items-center justify-center text-3xl font-bold">₦</span>
+                <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
               </div>
             </CardContent>
           </Card>
-
           <Card className="card-hover">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -178,11 +177,18 @@ const filters: import("@/components/ui/data-table").FilterConfig[] = [{type: "di
                   <p className="text-sm text-[#ababab]">Total Brand Volume</p>
                   <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-[#ababab]">Total Order Volume</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_order_volume}</p>
-                </div>
                 <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="card-hover">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#ababab]">Total Revenue</p>
+                  <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue).toLocaleString()}</p>
+                </div>
+                <span className="h-8 w-8 text-[#12b636] flex items-center justify-center text-3xl font-bold">₦</span>
               </div>
             </CardContent>
           </Card>
