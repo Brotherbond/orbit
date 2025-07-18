@@ -36,10 +36,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
         case "GET":
           result = await apiClient.get(url);
           return {
-            data:
-              (result.data as any).items ||
-              (result.data as any).item ||
-              result.data,
+            data: result,
           };
         case "POST":
           result = await apiClient.post(url, body);
@@ -74,8 +71,29 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
     baseQuery: customBaseQuery,
     tagTypes,
     endpoints: (builder) => ({
-      getAll: builder.query<T[], void>({
-        query: () => ({ url: `/${entityEndpoint}` }),
+      getAll: builder.query<T[], Record<string, any> | void>({
+        query: (params) => {
+          let url = `/${entityEndpoint}`;
+          if (
+            params &&
+            typeof params === "object" &&
+            Object.keys(params).length > 0
+          ) {
+            const qs = new URLSearchParams(
+              Object.entries(params)
+                .filter(([_, v]) => v !== undefined && v !== null && v !== "")
+                .reduce(
+                  (acc, [k, v]) => {
+                    acc[k] = String(v);
+                    return acc;
+                  },
+                  {} as Record<string, string>,
+                ),
+            ).toString();
+            url += `?${qs}`;
+          }
+          return { url };
+        },
       }),
       getById: builder.query<T, string>({
         query: (id: string) => ({ url: `/${entityEndpoint}/${id}` }),

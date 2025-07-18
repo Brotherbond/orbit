@@ -44,7 +44,7 @@ export default function BrandsPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="name"
         searchPlaceholder="Search brands..."
-        url="/brands"
+        store="brands"
         exportFileName="Brands.xlsx"
       />
     </div>
@@ -125,7 +125,7 @@ function getColumns(
       cell: ({ row }) => {
         return (
           <div className="text-sm">
-            ₦{(Number(row.original.packages[0].og_price ?? 0) / (row.original.packages[0].quantity ?? 1)).toFixed(2).toLocaleString() ?? 'N/A'}
+            ₦{(Number(row.original.packages?.[0]?.og_price ?? 0) / (row.original.packages?.[0]?.quantity ?? 1)).toFixed(2).toLocaleString() ?? 'N/A'}
           </div>
         )
       },

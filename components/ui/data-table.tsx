@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { type ColumnDef } from "./data-table-types";
-import { ChevronDown, Search, Filter, Download, RefreshCw } from "lucide-react";
+import { ChevronDown, Search, Download, RefreshCw } from "lucide-react";
 import * as XLSX from "xlsx";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -41,39 +41,24 @@ export type FilterConfig =
   | { type: "custom"; render: React.ReactNode }
   | { type: "disableDefaultDateRange" };
 
+import { storeHooks } from "@/store";
+import { skipToken } from "@reduxjs/toolkit/query";
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data?: TData[];
   searchKey?: string;
   searchPlaceholder?: string;
   onRowClick?: (row: TData) => void;
-  url?: string;
+  store?: keyof typeof storeHooks;
   exportFileName?: string;
   className?: string;
   per_page?: number;
   filters?: FilterConfig[];
+  fixedQuery?: Record<string, any>;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 100, 1000];
-
-function extractUrlAndQuery(url: string) {
-  try {
-    const u = new URL(
-      url,
-      typeof window !== "undefined"
-        ? window.location.origin
-        : "http://localhost"
-    );
-    const base = u.pathname;
-    const query: Record<string, string> = {};
-    u.searchParams.forEach((v, k) => {
-      query[k] = v;
-    });
-    return { base, query };
-  } catch {
-    return { base: url, query: {} };
-  }
-}
 
 export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   {
@@ -82,11 +67,12 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     searchKey,
     searchPlaceholder = "Search...",
     onRowClick,
-    url,
-    exportFileName = "export.xlsx",
-    className,
-    per_page,
-    filters = [],
+  store,
+  exportFileName = "export.xlsx",
+  className,
+  per_page,
+  filters = [],
+    fixedQuery = {},
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
 ) {
@@ -101,10 +87,6 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   const [pageSize, setPageSize] = React.useState(
     per_page ?? PAGE_SIZE_OPTIONS[0]
   );
-  const [tableData, setTableData] = React.useState<TData[]>(dataProp ?? []);
-  const [total, setTotal] = React.useState(0);
-  const [pageCount, setPageCount] = React.useState(1);
-  const [loading, setLoading] = React.useState(false);
   const [refreshCount, setRefreshCount] = React.useState(0);
   const [filterState, setFilterState] = React.useState<{
     [key: string]: string;
@@ -118,79 +100,60 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     []
   );
 
-  // Build filter query string
-  const filterParams = Object.entries(filterState)
-    .filter(([_, v]) => v && v !== "all")
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-    .join("&");
+  // Store-based data fetching
+  let tableData: TData[] = [];
+  let total = 0;
+  let pageCount = 1;
+  let loading = false;
 
-  // Compose final URL with filters
-  const finalUrl = url
-    ? url.includes("?")
-      ? `${url}&${filterParams}`
-      : `${url}?${filterParams}`
-    : undefined;
+  // Generic store-based data fetching
+  const filterParams = React.useMemo(
+    () =>
+      Object.entries(filterState)
+        .filter(([_, v]) => v && v !== "all")
+        .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {}),
+    [filterState]
+  );
 
-  // Fetch data if url is provided
+  const storeParams = React.useMemo(
+    () =>
+      store
+        ? { ...fixedQuery, page: pageIndex + 1, per_page: pageSize, ...filterParams }
+        : undefined,
+    [store, pageIndex, pageSize, filterParams, fixedQuery]
+  );
+
+  const storeHook = store ? storeHooks[store] : undefined;
+  const storeQuery = storeHook ? storeHook(storeParams ?? skipToken) : undefined;
+
+  // Only refetch when user clicks Refresh
   React.useEffect(() => {
-    let ignore = false;
-    async function fetchData() {
-      if (!finalUrl) {
-        setTableData(dataProp ?? []);
-        setTotal(dataProp?.length ?? 0);
-        setPageCount(1);
-        return;
-      }
-      setLoading(true);
-      try {
-        // Extract base and query from url
-        const { base, query } = extractUrlAndQuery(finalUrl);
-        const params: { [key: string]: string } = {
-          ...query,
-          page: (pageIndex + 1).toString(),
-          per_page: pageSize.toString(),
-        };
-        // Add filters if any
-        if (searchKey && columnFilters.length > 0) {
-          const filter = columnFilters.find((f) => f.id === searchKey);
-          if (filter && typeof filter.value === "string" && filter.value) {
-            params[searchKey] = filter.value;
-          }
-        }
-        const searchParams = new URLSearchParams(params).toString();
-        const endpoint = `${base}?${searchParams}`;
-        const res = await apiClient.get<any>(endpoint);
-        let items = res.data.items ?? [];
-        items = items.map((item: any) => ({
-          ...item,
-          id: item.id ?? item.uuid ?? undefined,
-        }));
-        const meta = res.meta?.pagination;
-        if (!ignore) {
-          setTableData(items);
-          setTotal(meta?.total ?? items.length);
-          setPageCount(meta?.last_page ?? 1);
-          const currentPage = meta?.current_page;
-          if (typeof currentPage === "number" && currentPage > 0) {
-            setPageIndex(currentPage - 1);
-          }
-        }
-      } catch (e) {
-        if (!ignore) {
-          setTableData([]);
-          setTotal(0);
-          setPageCount(1);
-        }
-      } finally {
-        if (!ignore) setLoading(false);
-      }
+    if (storeQuery && storeQuery.refetch && refreshCount > 0) {
+      storeQuery.refetch();
     }
-    fetchData();
-    return () => {
-      ignore = true;
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finalUrl, pageIndex, pageSize, columnFilters, dataProp, refreshCount]);
+  }, [refreshCount]);
+
+  if (store && storeQuery) {
+    const resp = storeQuery.data as any;
+    if (resp && Array.isArray(resp)) {
+      tableData = resp as TData[];
+      total = tableData.length;
+      pageCount = 1;
+    } else {
+      const items = resp?.data?.items ?? [];
+      tableData = items as TData[];
+      const pagination = resp?.meta?.pagination;
+      total = Number(pagination?.total) ?? tableData.length;
+      pageCount = Number(pagination?.last_page) || 1;
+    }
+    loading = storeQuery.isLoading || storeQuery.isFetching;
+  } else {
+    tableData = dataProp ?? [];
+    total = tableData.length;
+    pageCount = 1;
+    loading = false;
+  }
 
   const table = useReactTable({
     data: tableData,
@@ -209,7 +172,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
       columnVisibility,
       rowSelection,
     },
-    manualPagination: !!url,
+    manualPagination: !!store,
     pageCount: pageCount,
   });
 
@@ -223,23 +186,24 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     setPageIndex(0);
   };
 
-  // Debounced search state for API mode
+  // Debounced search state for API/store mode
   const [searchValue, setSearchValue] = React.useState("");
 
-  // Reset search/filter state only when url changes (prevents infinite loop)
+  // Reset search/filter/page state only when store changes (prevents unnecessary refetch)
   React.useEffect(() => {
     setFilterState({});
     setSearchValue("");
-  }, [url]);
+    setPageIndex(0);
+  }, [store]);
 
-  // Debounced search for API mode
+  // Debounced search for API/store mode
   React.useEffect(() => {
-    if (!url) return;
+    if (!store) return;
     const timeout = setTimeout(() => {
       setFilterState((s) => ({ ...s, search: searchValue }));
     }, 400);
     return () => clearTimeout(timeout);
-  }, [searchValue, url]);
+  }, [searchValue, store]);
 
   // Memoized effective filters with default date range unless disabled
   const effectiveFilters = React.useMemo(() => {
@@ -329,24 +293,26 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={searchPlaceholder}
-                value={
-                  url
-                    ? searchValue
-                    : ((searchKey &&
-                      (table
-                        .getColumn(searchKey)
-                        ?.getFilterValue() as string)) ??
-                      "")
-                }
-                onChange={(event) => {
-                  if (url) {
-                    setSearchValue(event.target.value);
-                  } else if (searchKey) {
-                    table
-                      .getColumn(searchKey)
-                      ?.setFilterValue(event.target.value);
+                  value={
+                    store
+                      ? searchValue
+                      : ((searchKey &&
+                        (table
+                          .getColumn(searchKey)
+                          ?.getFilterValue() as string)) ??
+                        "")
                   }
-                }}
+                  onChange={(event) => {
+                    if (store) {
+                      setSearchValue(event.target.value);
+                      setPageIndex(0);
+                    } else if (searchKey) {
+                      table
+                        .getColumn(searchKey)
+                        ?.setFilterValue(event.target.value);
+                      setPageIndex(0);
+                    }
+                  }}
                 className="pl-8 max-w-sm"
               />
             </div>
@@ -416,25 +382,27 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
               >
                 Export Current Page
               </DropdownMenuCheckboxItem>
-              {url && (
+              {/* Export All for store-based */}
+              {store && (
                 <DropdownMenuCheckboxItem
                   onClick={async () => {
-                    // Fetch all data from url with large per_page using apiClient
                     let allRows: any[] = [];
                     try {
-                      const { base, query } = extractUrlAndQuery(url);
-                      const params: { [key: string]: string } = {
-                        ...query,
-                        page: "1",
-                        per_page: "10000",
-                      };
-                      const searchParams = new URLSearchParams(
-                        params
+                      // Build endpoint dynamically
+                      let endpoint = `/${store}`;
+                      // Build query params for export all (per_page large, page 1, plus filters, plus fixedQuery)
+                      const params = { ...fixedQuery, ...filterParams, page: 1, per_page: 10000 };
+                      const qs = new URLSearchParams(
+                        Object.entries(params)
+                          .filter(([_, v]) => v !== undefined && v !== null && v.toString() !== "")
+                          .reduce((acc, [k, v]) => {
+                            acc[k] = String(v);
+                            return acc;
+                          }, {} as Record<string, string>)
                       ).toString();
-                      const endpoint = `${base}?${searchParams}`;
+                      endpoint += `?${qs}`;
                       const res = await apiClient.get<any>(endpoint);
-                      allRows = res.data.items ?? [];
-                      // Ensure each item has an 'id' property for export consistency
+                      allRows = res.data?.items ?? [];
                       allRows = allRows.map((item: any) => ({
                         ...item,
                         id: item.id ?? item.uuid ?? undefined,

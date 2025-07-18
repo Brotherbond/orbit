@@ -125,7 +125,7 @@ export default function MarketsPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="name"
         searchPlaceholder="Search markets..."
-        url="/markets"
+        store="markets"
         exportFileName="Markets.xlsx"
       />
     </div>

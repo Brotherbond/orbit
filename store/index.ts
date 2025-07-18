@@ -4,23 +4,52 @@ import { distributors, useGetDistributorsQuery } from "@/store/distributors";
 import { imeVss, useGetIMEVSSsQuery } from "@/store/ime-vss";
 import { orders, useGetOrdersQuery } from "@/store/orders";
 import { users, useGetUsersQuery } from "./users";
-
+import {
+  distributorOrders,
+  useGetDistributorOrdersQuery,
+} from "./distributor-orders";
+import { auditLogs, useGetAuditLogsQuery } from "./audit-logs";
+import {
+  distributorTargets,
+  useGetDistributorTargetsQuery,
+} from "./distributor-targets";
+import { locations, useGetLocationsQuery } from "./locations";
+import { markets, useGetMarketsQuery } from "./markets";
+import { roles, useGetRolesQuery } from "./roles";
+import { settings, useGetSettingsQuery } from "./settings";
+import { orderEvents, useGetOrderEventsQuery } from "./order-events";
 
 export const store = configureStore({
   reducer: {
-    [orders.reducerPath]: orders.reducer,
+    [auditLogs.reducerPath]: auditLogs.reducer,
     [brands.reducerPath]: brands.reducer,
     [distributors.reducerPath]: distributors.reducer,
-    [users.reducerPath]: users.reducer,
+    [distributorOrders.reducerPath]: distributorOrders.reducer,
+    [distributorTargets.reducerPath]: distributorTargets.reducer,
     [imeVss.reducerPath]: imeVss.reducer,
+    [locations.reducerPath]: locations.reducer,
+    [markets.reducerPath]: markets.reducer,
+    [orders.reducerPath]: orders.reducer,
+    [orderEvents.reducerPath]: orderEvents.reducer,
+    [roles.reducerPath]: roles.reducer,
+    [settings.reducerPath]: settings.reducer,
+    [users.reducerPath]: users.reducer,
   } as any,
   middleware: (getDefaultMiddleware) =>
     (getDefaultMiddleware() as any).concat([
-      orders.middleware,
+      auditLogs.middleware,
       brands.middleware,
       distributors.middleware,
-      users.middleware,
+      distributorOrders.middleware,
+      distributorTargets.middleware,
       imeVss.middleware,
+      locations.middleware,
+      markets.middleware,
+      orders.middleware,
+      orderEvents.middleware,
+      roles.middleware,
+      settings.middleware,
+      users.middleware,
     ]) as any,
 });
 
@@ -28,9 +57,17 @@ export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 export const storeHooks = {
-  orders: useGetOrdersQuery,
+  auditLogs: useGetAuditLogsQuery,
   brands: useGetBrandsQuery,
   distributors: useGetDistributorsQuery,
+  distributorOrders: useGetDistributorOrdersQuery,
+  distributorTargets: useGetDistributorTargetsQuery,
   imeVss: useGetIMEVSSsQuery,
+  locations: useGetLocationsQuery,
+  markets: useGetMarketsQuery,
+  orders: useGetOrdersQuery,
+  orderEvents: useGetOrderEventsQuery,
+  roles: useGetRolesQuery,
+  settings: useGetSettingsQuery,
   users: useGetUsersQuery,
 };

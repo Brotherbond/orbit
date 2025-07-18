@@ -23,19 +23,8 @@ import { useToast } from "@/hooks/use-toast"
 import { Formik, Form } from "formik"
 import * as Yup from "yup"
 import { useDistributor, useDistributorUser } from "../distributor-context"
+import { Target } from "@/types/target"
 
-interface TargetData {
-  id?: number
-  uuid?: string
-  user_id: number
-  type: string
-  volume?: number
-  amount: number
-  start_date?: string
-  end_date?: string
-  created_at?: string
-  updated_at?: string
-}
 
 export default function DistributorTargetPage() {
   const [isEditing, setIsEditing] = useState(false)
@@ -60,7 +49,7 @@ export default function DistributorTargetPage() {
     end_date: Yup.date().required("End date is required").min(Yup.ref('start_date'), "End date must be after start date"),
   }), [])
 
-  const handleSubmit = useCallback(async (values: Omit<TargetData, 'id' | 'uuid' | 'created_at' | 'updated_at'>) => {
+  const handleSubmit = useCallback(async (values: Omit<Target, 'id' | 'uuid' | 'created_at' | 'updated_at'>) => {
     if (!distributorUser?.uuid) {
       toast({
         title: "Error",
@@ -93,7 +82,7 @@ export default function DistributorTargetPage() {
   }, [distributorUser?.uuid, toast, refreshTable])
 
   // Memoize initial values to prevent recreation on every render
-  const getInitialValues = useCallback((): Omit<TargetData, 'id' | 'uuid' | 'created_at' | 'updated_at'> => {
+  const getInitialValues = useCallback((): Omit<Target, 'id' | 'uuid' | 'created_at' | 'updated_at'> => {
     return {
       user_id: 0,
       type: "monthly_sales",
@@ -321,7 +310,7 @@ function getColumns(
   getTargetTypeLabel: (type: string) => string,
   formatCurrency: (amount: number) => string,
   formatDate: (date: string) => string
-): ColumnDef<TargetData>[] {
+): ColumnDef<Target>[] {
   return [
     {
       accessorKey: "type",

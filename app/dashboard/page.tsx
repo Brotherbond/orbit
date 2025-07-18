@@ -239,7 +239,7 @@ export default function DashboardPage() {
               <DataTable className="no-card"
                 ref={dataTableRef}
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
-                url="/orders"
+                store="orders"
                 per_page={5}
                 filters={filters}
                 exportFileName="recent-orders.xlsx"

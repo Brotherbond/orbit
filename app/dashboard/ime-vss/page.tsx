@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { User } from "@/types/user"
 import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
 
-interface ImeVss extends User {}
+interface ImeVss extends User { }
 
 const roles = "ime,vss"
 
@@ -155,7 +155,20 @@ export default function ImeVssPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="first_name"
         searchPlaceholder="Search IME-VSS users..."
-        url={`/users?roles=${roles}`}
+        store="imeVss"
+        fixedQuery={{ roles }}
+        filters={[
+          {
+            type: "select",
+            label: "Role",
+            param: "roles",
+            options: [
+              { label: "All Roles", value: roles },
+              { label: "IME", value: "ime" },
+              { label: "VSS", value: "vss" },
+            ],
+          },
+        ]}
         exportFileName="IME-VSS.xlsx"
       />
 

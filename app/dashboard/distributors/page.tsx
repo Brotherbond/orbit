@@ -179,7 +179,7 @@ export default function DistributorsPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="business_name"
         searchPlaceholder="Search distributors..."
-        url="/distributors"
+        store="distributors"
         exportFileName="Distributors.xlsx"
       />
 

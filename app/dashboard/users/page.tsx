@@ -152,8 +152,23 @@ export default function UsersPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="first_name"
         searchPlaceholder="Search users..."
-        url={`/users?roles=${roles}`}
+        store="users"
+        fixedQuery={{ roles }}
         exportFileName="Users.xlsx"
+        filters={[
+          {
+            type: "select",
+            label: "Role",
+            param: "roles",
+            options: [
+              { label: "All Roles", value: roles },
+              { label: "Sales Admin", value: "sales-admin" },
+              { label: "Manager", value: "manager" },
+              { label: "Operations", value: "operations" },
+              { label: "Treasury", value: "treasury" },
+            ],
+          },
+        ]}
       />
 
       <BulkUploadModal

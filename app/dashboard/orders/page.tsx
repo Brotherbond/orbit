@@ -61,7 +61,7 @@ export default function OrdersPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="ref"
         searchPlaceholder="Search orders..."
-        url="/orders"
+        store="orders"
         exportFileName="Orders.xlsx"
         filters={filters}
       />

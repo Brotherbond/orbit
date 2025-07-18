@@ -65,7 +65,7 @@ export default function AuditLogs() {
         searchKey="search"
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchPlaceholder="Search log..."
-        url={`/audit-logs`}
+        store="auditLogs"
         exportFileName="audit-logs.xlsx"
       />
     </div>

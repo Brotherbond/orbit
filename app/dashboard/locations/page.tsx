@@ -150,7 +150,7 @@ export default function LocationsPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="name"
         searchPlaceholder="Search locations..."
-        url="/locations"
+        store="locations"
         exportFileName="Locations.xlsx"
       />
     </div>

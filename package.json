@@ -67,6 +67,7 @@
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "latest",
+    "redux-persist": "^6.0.0",
     "sass": "^1.89.2",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",

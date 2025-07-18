@@ -101,7 +101,7 @@ export default function RolesPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="name"
         searchPlaceholder="Search roles..."
-        url="/roles"
+        store="roles"
         exportFileName="Roles.xlsx"
       />
     </div>

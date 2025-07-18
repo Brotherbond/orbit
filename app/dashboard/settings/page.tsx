@@ -9,15 +9,8 @@ import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { Setting } from "@/types/setting"
 
-interface Setting {
-  uuid: string
-  key: string
-  value: string
-  description: string
-  status: string
-  created_at: string
-}
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -148,7 +141,7 @@ export default function SettingsPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="key"
         searchPlaceholder="Search settings..."
-        url="/settings"
+        store="settings"
         exportFileName="Settings.xlsx"
       />
     </div>
