@@ -102,7 +102,7 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
@@ -125,7 +125,7 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                   </div>
                 )}
                 <div className="flex-1">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <p className="text-sm text-[#ababab]">Brand Name</p>
                       <p className="font-medium text-[#444444]">{brand.name}</p>
@@ -133,6 +133,10 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                     <div>
                       <p className="text-sm text-[#ababab]">Category</p>
                       <Badge variant="secondary">{brand.category}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-sm text-[#ababab]">Total Packages</p>
+                      <p className="font-medium text-[#444444]">{brand.packages?.length || 0}</p>
                     </div>
                   </div>
                   {brand.description && (
@@ -161,7 +165,7 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                 <div className="space-y-4">
                   {brand.packages.map((pkg, index) => (
                     <Card key={pkg.uuid || pkg.uuid} className="p-4 bg-[#f8f8f8]">
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
                           <p className="text-sm text-[#ababab]">Type</p>
                           <p className="font-medium text-[#444444] capitalize">{pkg.type}</p>
@@ -210,39 +214,6 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                   <p className="text-[#ababab]">No packages configured for this brand</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-[#ababab]">Total Packages</span>
-                <span className="font-bold text-[#444444]">{brand.packages?.length || 0}</span>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center">
-                <span className="text-[#ababab]">Created</span>
-                <span className="font-medium text-[#444444]">{brand.created_at}</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-[#444444]">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full" variant="outline">
-                View Sales History
-              </Button>
-              <Button className="w-full" variant="outline">
-                Update Pricing
-              </Button>
             </CardContent>
           </Card>
         </div>
