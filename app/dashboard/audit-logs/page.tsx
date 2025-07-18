@@ -10,6 +10,10 @@ import { AuditLog } from "@/types/audit-log";
 function getColumns(): ColumnDef<AuditLog>[] {
   return [
     {
+      header: "S/N",
+      cell: ({ row }) => row.index + 1,
+    },
+    {
       accessorKey: "name",
       header: "Name",
       cell: ({ row }) => (
