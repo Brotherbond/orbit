@@ -1,6 +1,8 @@
 "use client"
 
 import { SessionProvider } from "next-auth/react"
+import { Provider as ReduxProvider } from "react-redux"
+import { store } from "@/store"
 import type React from "react"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
@@ -21,13 +23,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [pathname])
 
   return (
-    <SessionProvider>
-      {loading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent" />
-        </div>
-      )}
-      {children}
-    </SessionProvider>
+    <ReduxProvider store={store}>
+      <SessionProvider>
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/60">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent" />
+          </div>
+        )}
+        {children}
+      </SessionProvider>
+    </ReduxProvider>
   )
 }

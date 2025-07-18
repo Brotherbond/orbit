@@ -12,7 +12,7 @@ import { useEffect } from "react"
 import { AuthProvider } from "@/lib/auth-context"
 import { RolesProvider } from "@/components/dashboard/RolesContext"
 import SessionTimeout from "@/components/SessionTimeout"
-import { OrdersProvider } from "./orders/orders-context"
+
 
 export default function DashboardLayout({
   children,
@@ -54,9 +54,7 @@ export default function DashboardLayout({
           <DashboardHeader />
           <div className="flex">
             <DashboardSidebar />
-            <OrdersProvider>
               <main className="flex-1 p-6">{children}</main>
-            </OrdersProvider>
           </div>
         </div>
       </RolesProvider>

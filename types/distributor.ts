@@ -28,5 +28,4 @@ export interface Distributor {
     last_order_date: string;
   };
   created_at: string;
-  send_notification?: boolean;
 }

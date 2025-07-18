@@ -12,7 +12,6 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { getColumns } from "./orders/page";
 import { ColumnDef } from "@/components/ui/data-table-types";
-import { useOrdersContext } from "./orders/orders-context";
 
 interface BrandCategoryPriceData {
   category: string;
@@ -42,7 +41,6 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true)
   const dataTableRef = useRef<{ refresh: () => void }>(null)
-  const { orders, isLoading: ordersLoading } = useOrdersContext()
   const { toast } = useToast()
   const { data: session } = useSession()
   const router = useRouter()
@@ -97,7 +95,7 @@ export default function DashboardPage() {
       });
   }, [dashboardData]);
 
-  if (isLoading || ordersLoading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -241,7 +239,7 @@ export default function DashboardPage() {
               <DataTable className="no-card"
                 ref={dataTableRef}
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
-                data={orders.slice(0, 5)}
+                url="/orders"
                 per_page={5}
                 filters={filters}
                 exportFileName="recent-orders.xlsx"
