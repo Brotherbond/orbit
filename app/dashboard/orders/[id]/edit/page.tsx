@@ -42,7 +42,7 @@ interface OrderData {
 }
 
 export default function EditOrderPage({ params }: { params: { id: string } }) {
-  const { order, isLoading, fetchOrder, setOrder } = useOrderContext();
+  const { order, isLoading, fetchOrder } = useOrderContext();
   const { data: session } = useSession()
   const router = useRouter()
   const { toast } = useToast()
@@ -67,7 +67,7 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
       const response = await apiClient.put<any>(`/orders/${params.id}`, payload)
       if (response.status === "success") {
         toast({ title: "Success", description: "Order updated successfully" });
-        setOrder(response.data.item);
+        fetchOrder(); // Refetch the order data
         router.push(`/dashboard/orders/${params.id}`)
       }
     } catch (error: any) {
