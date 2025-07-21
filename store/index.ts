@@ -71,3 +71,19 @@ export const storeHooks = {
   settings: useGetSettingsQuery,
   users: useGetUsersQuery,
 };
+
+export const storeApis = {
+  auditLogs,
+  brands,
+  distributors,
+  distributorOrders,
+  distributorTargets,
+  imeVss,
+  locations,
+  markets,
+  orders,
+  orderEvents,
+  roles,
+  settings,
+  users,
+};

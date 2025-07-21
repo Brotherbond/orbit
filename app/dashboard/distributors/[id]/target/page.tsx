@@ -114,7 +114,7 @@ export default function DistributorTargetPage() {
     return new Date(dateString).toLocaleDateString()
   }, [])
 
-  const handleDeleteTarget = useCallback(async (targetId: number) => {
+  const handleDeleteTarget = useCallback(async (targetId: string) => {
     if (!confirm("Are you sure you want to delete this target?")) return
 
     try {
@@ -296,7 +296,8 @@ export default function DistributorTargetPage() {
           columns={columns as unknown as ColumnDef<unknown, unknown>[]}
           searchKey="type"
           searchPlaceholder="Search targets..."
-          url={distributorUser?.uuid ? `/targets?user_id=${distributorUser.uuid}` : ''}
+          store="distributorTargets"
+          fixedQuery={{ user_id: distributorUser?.uuid }}
           exportFileName="Distributor-Targets.xlsx"
         />
       )}
@@ -306,7 +307,7 @@ export default function DistributorTargetPage() {
 
 function getColumns(
   toast: any,
-  handleDeleteTarget: (id: number) => void,
+  handleDeleteTarget: (uuid: string) => void,
   getTargetTypeLabel: (type: string) => string,
   formatCurrency: (amount: number) => string,
   formatDate: (date: string) => string
@@ -376,7 +377,7 @@ function getColumns(
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem 
-                onClick={() => handleDeleteTarget(row.original.id!)}
+                onClick={() => handleDeleteTarget(row.original.uuid!)}
                 className="text-red-600"
               >
                 <Trash2 className="mr-2 h-4 w-4" />

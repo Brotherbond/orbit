@@ -41,7 +41,7 @@ export type FilterConfig =
   | { type: "custom"; render: React.ReactNode }
   | { type: "disableDefaultDateRange" };
 
-import { storeHooks } from "@/store";
+import { storeHooks, storeApis } from "@/store";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 interface DataTableProps<TData, TValue> {
@@ -55,10 +55,62 @@ interface DataTableProps<TData, TValue> {
   className?: string;
   per_page?: number;
   filters?: FilterConfig[];
-  fixedQuery?: Record<string, any>;
+  params?: Record<string, any>; // URL parameters for parameterized endpoints
+  fixedQuery?: Record<string, any>; // Query string parameters
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 100, 1000];
+
+/**
+ * Helper function to export table data to Excel
+ */
+const exportToExcel = (
+  tableData: any[],
+  table: any,
+  exportFileName: string
+) => {
+  // Get visible columns excluding actions
+  const visibleCols = table
+    .getAllLeafColumns()
+    .filter(
+      (col: any) =>
+        col.getIsVisible() &&
+        col.id !== "actions" &&
+        typeof col.columnDef.header === "string" &&
+        typeof col.columnDef.accessorKey === "string"
+    )
+    .map((col: any) => ({
+      accessorKey: col.columnDef.accessorKey as string,
+      header: col.columnDef.header as string,
+    }));
+
+  // Transform data for export
+  const rows = tableData.map((row) => {
+    const obj: { [key: string]: unknown } = {};
+    visibleCols.forEach((col: { accessorKey: string; header: string }) => {
+      obj[col.header] = col.accessorKey
+        .split(".")
+        .reduce(
+          (acc: any, k: string) =>
+            acc && typeof acc === "object" ? acc[k] : undefined,
+          row
+        );
+    });
+    return obj;
+  });
+
+  // Create and download Excel file
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+  const now = new Date();
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  const datetime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}_${pad(now.getSeconds())}`;
+  const baseName = exportFileName.replace(/\.xlsx$/, "");
+
+  XLSX.writeFile(wb, `ORBIT_${baseName}_Report_${datetime}_current_page.xlsx`);
+};
 
 export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   {
@@ -67,11 +119,12 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     searchKey,
     searchPlaceholder = "Search...",
     onRowClick,
-  store,
-  exportFileName = "export.xlsx",
-  className,
-  per_page,
-  filters = [],
+    store,
+    exportFileName = "export.xlsx",
+    className,
+    per_page,
+    filters = [],
+    params = {},
     fixedQuery = {},
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
@@ -106,22 +159,26 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   let pageCount = 1;
   let loading = false;
 
-  // Generic store-based data fetching
+  // Memoized filter and store parameters
   const filterParams = React.useMemo(
     () =>
       Object.entries(filterState)
-        .filter(([_, v]) => v && v !== "all")
-        .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {}),
+        .filter(([_, value]) => value && value !== "all")
+        .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
     [filterState]
   );
 
-  const storeParams = React.useMemo(
-    () =>
-      store
-        ? { ...fixedQuery, page: pageIndex + 1, per_page: pageSize, ...filterParams }
-        : undefined,
-    [store, pageIndex, pageSize, filterParams, fixedQuery]
-  );
+  const storeParams = React.useMemo(() => {
+    if (!store) return undefined;
+
+    return {
+      ...params,
+      ...fixedQuery,
+      ...filterParams,
+      page: pageIndex + 1,
+      per_page: pageSize,
+    };
+  }, [store, params, fixedQuery, filterParams, pageIndex, pageSize]);
 
   const storeHook = store ? storeHooks[store] : undefined;
   const storeQuery = storeHook ? storeHook(storeParams ?? skipToken) : undefined;
@@ -293,26 +350,26 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={searchPlaceholder}
-                  value={
-                    store
-                      ? searchValue
-                      : ((searchKey &&
-                        (table
-                          .getColumn(searchKey)
-                          ?.getFilterValue() as string)) ??
-                        "")
-                  }
-                  onChange={(event) => {
-                    if (store) {
-                      setSearchValue(event.target.value);
-                      setPageIndex(0);
-                    } else if (searchKey) {
-                      table
+                value={
+                  store
+                    ? searchValue
+                    : ((searchKey &&
+                      (table
                         .getColumn(searchKey)
-                        ?.setFilterValue(event.target.value);
-                      setPageIndex(0);
-                    }
-                  }}
+                        ?.getFilterValue() as string)) ??
+                      "")
+                }
+                onChange={(event) => {
+                  if (store) {
+                    setSearchValue(event.target.value);
+                    setPageIndex(0);
+                  } else if (searchKey) {
+                    table
+                      .getColumn(searchKey)
+                      ?.setFilterValue(event.target.value);
+                    setPageIndex(0);
+                  }
+                }}
                 className="pl-8 max-w-sm"
               />
             </div>
@@ -337,48 +394,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuCheckboxItem
-                onClick={() => {
-                  // Only export visible columns
-                  const visibleCols = table
-                    .getAllLeafColumns()
-                    .filter(
-                      (col) =>
-                        col.getIsVisible() &&
-                        col.id !== "actions" &&
-                        typeof col.columnDef.header === "string" &&
-                        typeof (col.columnDef as any).accessorKey === "string"
-                    )
-                    .map((col) => ({
-                      accessorKey: (col.columnDef as any).accessorKey as string,
-                      header: col.columnDef.header as string,
-                    }));
-                  const rows = tableData.map((row) => {
-                    const obj: { [key: string]: unknown } = {};
-                    visibleCols.forEach((col) => {
-                      obj[col.header] = col.accessorKey
-                        .split(".")
-                        .reduce(
-                          (acc, k) =>
-                            acc && typeof acc === "object"
-                              ? (acc as any)[k]
-                              : undefined,
-                          row
-                        );
-                    });
-                    return obj;
-                  });
-                  const ws = XLSX.utils.json_to_sheet(rows);
-                  const wb = XLSX.utils.book_new();
-                  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-                  const now = new Date();
-                  const pad = (n: number) => n.toString().padStart(2, "0");
-                  const datetime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}_${pad(now.getSeconds())}`;
-                  const baseName = exportFileName.replace(/\.xlsx$/, "");
-                  XLSX.writeFile(
-                    wb,
-                    `ORBIT_${baseName}_Report_${datetime}_current_page.xlsx`
-                  );
-                }}
+                onClick={() => exportToExcel(tableData, table, exportFileName)}
               >
                 Export Current Page
               </DropdownMenuCheckboxItem>
@@ -388,21 +404,42 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                   onClick={async () => {
                     let allRows: any[] = [];
                     try {
-                      // Build endpoint dynamically
-                      let endpoint = `/${store}`;
-                      // Build query params for export all (per_page large, page 1, plus filters, plus fixedQuery)
-                      const params = { ...fixedQuery, ...filterParams, page: 1, per_page: 10000 };
-                      const qs = new URLSearchParams(
-                        Object.entries(params)
-                          .filter(([_, v]) => v !== undefined && v !== null && v.toString() !== "")
-                          .reduce((acc, [k, v]) => {
-                            acc[k] = String(v);
-                            return acc;
-                          }, {} as Record<string, string>)
-                      ).toString();
-                      endpoint += `?${qs}`;
-                      const res = await apiClient.get<any>(endpoint);
-                      allRows = res.data?.items ?? [];
+                      // Build endpoint manually using the same logic as entityFactory
+                      const exportParams = { ...params, ...fixedQuery, ...filterParams, page: 1, per_page: 10000 };
+                      
+                      // Get the entityEndpoint from the store API object
+                      const storeApi = storeApis[store];
+                      const entityEndpoint = (storeApi as any)?.entityEndpoint || store;
+                      
+                      // Substitute URL parameters (e.g., :id)
+                      let endpoint = entityEndpoint.replace(/:(\w+)/g, (match: string, paramName: string) => {
+                        return String((exportParams as any)[paramName] || match);
+                      });
+                      
+                      // Filter out URL parameters from query string
+                      const urlParamNames = entityEndpoint.match(/:(\w+)/g)?.map((p: string) => p.substring(1)) || [];
+                      const queryParams = Object.entries(exportParams)
+                        .filter(([key, value]) => 
+                          value !== undefined && 
+                          value !== null && 
+                          String(value) !== "" && 
+                          !urlParamNames.includes(key)
+                        )
+                        .reduce((acc, [key, value]) => {
+                          acc[key] = String(value);
+                          return acc;
+                        }, {} as Record<string, string>);
+                      
+                      // Build final URL
+                      let url = `/${endpoint}`;
+                      if (Object.keys(queryParams).length > 0) {
+                        const queryString = new URLSearchParams(queryParams).toString();
+                        url += `?${queryString}`;
+                      }
+                      
+                      // Make direct API call
+                      const res = await apiClient.get<any>(url);
+                      allRows = res.data?.items ?? res.data ?? [];
                       allRows = allRows.map((item: any) => ({
                         ...item,
                         id: item.id ?? item.uuid ?? undefined,

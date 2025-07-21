@@ -18,17 +18,29 @@ export default function DistributorOrdersPage() {
   const { toast } = useToast();
 
   const router = useRouter();
-  const params = useParams();
-  const distributorId = params?.id as string;
+  const routeParams = useParams();
+  const distributorId = routeParams?.id as string;
 
-  let statusFilter = "";
   const user = session?.user;
   const role = user?.role;
-  if (role === "treasury") {
-    statusFilter = "&status=pending";
-  } else if (role === "sales-admin") {
-    statusFilter = "&status=confirmed";
-  }
+
+  // URL parameters for parameterized endpoints
+  const urlParams = React.useMemo(() => ({
+    id: distributorId, // This will be used for URL parameter substitution
+  }), [distributorId]);
+
+  // Query string parameters based on user role
+  const fixedQuery = React.useMemo(() => {
+    const query: Record<string, any> = {};
+
+    if (role === "treasury") {
+      query.status = "pending";
+    } else if (role === "sales-admin") {
+      query.status = "confirmed";
+    }
+
+    return query;
+  }, [role]);
 
   const columns = React.useMemo(
     () => getColumns(session, router, toast),
@@ -41,7 +53,9 @@ export default function DistributorOrdersPage() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="ref"
         searchPlaceholder="Search orders..."
-        url={`/distributors/${distributorId}/orders?${statusFilter}`}
+        store="distributorOrders"
+        params={urlParams}
+        fixedQuery={fixedQuery}
         exportFileName="Distributor-Orders.xlsx"
       />
     </div>

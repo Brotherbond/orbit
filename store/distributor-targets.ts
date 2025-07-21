@@ -3,7 +3,7 @@ import { createEntity } from "./entityFactory";
 
 export const distributorTargets = createEntity<Target>({
   reducerPath: "distributorTargetsApi",
-  entityEndpoint: "distributor-targets",
+  entityEndpoint: "targets",
 });
 export const {
   useGetAllQuery: useGetDistributorTargetsQuery,
