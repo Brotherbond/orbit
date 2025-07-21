@@ -148,7 +148,12 @@ export default function DashboardPage() {
                       return n === 0 ? "0" : `${n}${n === 1 ? "m" : "m"}`;
                     }}
                   />
-                  <Tooltip />
+                  <Tooltip
+                    formatter={(value: string | number, name) => {
+                      const formatted = `₦${Number(value).toLocaleString()}`;
+                      return [formatted, "Total"];
+                    }}
+                  />
                   <Bar dataKey="total" fill="#ff6600" />
                 </BarChart>
               </ResponsiveContainer>
