@@ -70,7 +70,7 @@ function getColumns(session: any, router: any, toast: any): ColumnDef<Order>[] {
       cell: ({ row }) => <div className="text-sm">{row.original.ref}</div>,
     },
     {
-      accessorKey: "ime_vss",
+      accessorKey: "ime_vss.full_name",
       header: "IME/VSS",
       cell: ({ row }) => (
         <div className="text-sm">

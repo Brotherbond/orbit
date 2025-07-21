@@ -1,6 +1,5 @@
 "use client"
 
-
 import React, { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
@@ -19,7 +18,6 @@ export default function OrdersPage() {
   const { toast } = useToast()
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null);
-  const user = session?.user;
 
   const refreshTable = () => {
     dataTableRef.current?.refresh()
