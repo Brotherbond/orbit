@@ -85,10 +85,16 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
     try {
       let result: any;
       switch ((method || "GET").toUpperCase()) {
+        case "GET_ALL":
+          result = await apiClient.get(url);
+          return {
+            data: result, // Return full response for pagination
+          };
+        case "GET_BY_ID":
         case "GET":
           result = await apiClient.get(url);
           return {
-            data: result,
+            data: (result.data as any).item || result.data,
           };
         case "POST":
           result = await apiClient.post(url, body);
@@ -139,11 +145,11 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
             url += `?${queryString}`;
           }
 
-          return { url };
+          return { url, method: "GET_ALL" };
         },
       }),
       getById: builder.query<T, string>({
-        query: (id: string) => ({ url: `/${entityEndpoint}/${id}` }),
+        query: (id: string) => ({ url: `/${entityEndpoint}/${id}`, method: "GET_BY_ID" }),
       }),
       create: builder.mutation<T, CreateT>({
         query: (body: CreateT) => ({
