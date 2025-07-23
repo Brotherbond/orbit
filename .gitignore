@@ -31,3 +31,7 @@ next-env.d.ts
 # domain conig
 nginx.conf
 /domain_config
+
+# docker config
+Dockerfile
+docker-compose.yml
