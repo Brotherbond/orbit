@@ -4,8 +4,8 @@
 /node_modules
 
 # next.js
-/.next/
-/out/
+#/.next/
+#/out/
 
 # production
 /build
@@ -30,3 +30,8 @@ next-env.d.ts
 
 # domain conig
 nginx.conf
+/domain_config
+
+# docker config
+Dockerfile
+docker-compose.yml
