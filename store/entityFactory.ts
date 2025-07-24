@@ -149,7 +149,10 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
         },
       }),
       getById: builder.query<T, string>({
-        query: (id: string) => ({ url: `/${entityEndpoint}/${id}`, method: "GET_BY_ID" }),
+        query: (id: string) => ({
+          url: `/${entityEndpoint}/${id}`,
+          method: "GET_BY_ID",
+        }),
       }),
       create: builder.mutation<T, CreateT>({
         query: (body: CreateT) => ({

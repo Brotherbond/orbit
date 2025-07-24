@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { type ColumnDef } from "./data-table-types";
-import { ChevronDown, Search, Download, RefreshCw } from "lucide-react";
+import { ChevronDown, Search, Download, RefreshCw, Filter } from "lucide-react";
 import * as XLSX from "xlsx";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -144,6 +144,8 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   const [filterState, setFilterState] = React.useState<{
     [key: string]: string;
   }>({});
+  const [activeFilters, setActiveFilters] = React.useState<{ [key: string]: boolean }>({});
+  const [filterDropdownOpen, setFilterDropdownOpen] = React.useState(false);
 
   React.useImperativeHandle(
     ref,
@@ -280,68 +282,6 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
       className={`w-full card bg-white shadow-md rounded-lg p-4${className ? " " + className : ""}`}
     >
       {/* Filter row */}
-      {effectiveFilters.length > 0 && (
-        <div className="flex flex-wrap items-end gap-4 mb-4">
-          {effectiveFilters.map((filter, idx) => {
-            if (filter.type === "custom" && "render" in filter) {
-              return (
-                <div key={idx} className="flex flex-col min-w-[8rem]">
-                  {filter.render}
-                </div>
-              );
-            }
-            if (
-              "param" in filter &&
-              "label" in filter &&
-              (filter.type === "date" ||
-                filter.type === "text" ||
-                filter.type === "select")
-            ) {
-              let input = null;
-              const commonProps = {
-                className: "w-40 h-10 px-2 py-2 rounded border",
-                value: filterState[filter.param] || "",
-                onChange: (
-                  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-                ) =>
-                  setFilterState((s) => ({
-                    ...s,
-                    [filter.param]: e.target.value,
-                  })),
-              };
-              if (filter.type === "date") {
-                input = <Input type="date" {...commonProps} />;
-              } else if (filter.type === "select" && "options" in filter) {
-                input = (
-                  <select
-                    {...commonProps}
-                    value={filterState[filter.param] || "all"}
-                  >
-                    {(filter.options as FilterOption[]).map(
-                      (opt: FilterOption) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      )
-                    )}
-                  </select>
-                );
-              } else if (filter.type === "text") {
-                input = <Input type="text" {...commonProps} />;
-              }
-              return (
-                <div key={filter.param} className="flex flex-col min-w-[8rem]">
-                  <label className="mb-1 text-xs font-medium text-gray-600">
-                    {filter.label}
-                  </label>
-                  {input}
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-      )}
       {/* Search, refresh, export, columns row */}
       <div className="flex items-center justify-between py-4">
         <div className="flex items-center space-x-2">
@@ -374,6 +314,113 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
               />
             </div>
           )}
+          <DropdownMenu open={filterDropdownOpen} onOpenChange={setFilterDropdownOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                {Object.values(activeFilters).some(Boolean) || Object.values(filterState).some(v => v && v !== "all") ? (
+                  <Filter className="mr-2 h-4 w-4 fill-current text-primary" />
+                ) : (
+                  <Filter className="mr-2 h-4 w-4" />
+                )}
+                Filter
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" sideOffset={4} className="min-w-[18rem] p-2">
+              {effectiveFilters.map((filter, idx) => {
+                if (filter.type === "custom" && "render" in filter) {
+                  return (
+                    <div key={idx} className="flex flex-col min-w-[8rem] px-2 py-1">
+                      {filter.render}
+                    </div>
+                  );
+                }
+                if (
+                  "param" in filter &&
+                  "label" in filter &&
+                  (filter.type === "date" ||
+                    filter.type === "text" ||
+                    filter.type === "select")
+                ) {
+                  return (
+                    <div key={filter.param} className="flex flex-col min-w-[8rem] px-2 py-2 border-b last:border-b-0">
+                      <DropdownMenuCheckboxItem
+                        checked={!!activeFilters[filter.param]}
+                        indicatorClassName="border border-[black]"
+                        onCheckedChange={(checked) => {
+                          setActiveFilters((prev) => ({
+                            ...prev,
+                            [filter.param]: checked,
+                          }));
+                          if (!checked) {
+                            setFilterState((prev) => {
+                              const next = { ...prev };
+                              delete next[filter.param];
+                              return next;
+                            });
+                          }
+                        }}
+                        className="font-medium"
+                      >
+                        {filter.label}
+                      </DropdownMenuCheckboxItem>
+                      {!!activeFilters[filter.param] && (
+                        <div className="mt-2 pl-6">
+                          {filter.type === "date" && (
+                            <Input
+                              type="date"
+                              className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
+                              value={filterState[filter.param] || ""}
+                              onChange={(e) =>
+                                setFilterState((s) => ({
+                                  ...s,
+                                  [filter.param]: e.target.value,
+                                }))
+                              }
+                              placeholder={filter.label}
+                            />
+                          )}
+                          {filter.type === "select" && "options" in filter && (
+                            <select
+                              className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
+                              value={filterState[filter.param] || "all"}
+                              onChange={(e) =>
+                                setFilterState((s) => ({
+                                  ...s,
+                                  [filter.param]: e.target.value,
+                                }))
+                              }
+                              aria-label={filter.label}
+                            >
+                              {(filter.options as FilterOption[]).map((opt) => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          {filter.type === "text" && (
+                            <Input
+                              type="text"
+                              className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
+                              value={filterState[filter.param] || ""}
+                              onChange={(e) =>
+                                setFilterState((s) => ({
+                                  ...s,
+                                  [filter.param]: e.target.value,
+                                }))
+                              }
+                              placeholder={filter.label}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -406,37 +453,37 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                     try {
                       // Build endpoint manually using the same logic as entityFactory
                       const exportParams = { ...params, ...fixedQuery, ...filterParams, page: 1, per_page: 10000 };
-                      
+
                       // Get the entityEndpoint from the store API object
                       const storeApi = storeApis[store];
                       const entityEndpoint = (storeApi as any)?.entityEndpoint || store;
-                      
+
                       // Substitute URL parameters (e.g., :id)
                       let endpoint = entityEndpoint.replace(/:(\w+)/g, (match: string, paramName: string) => {
                         return String((exportParams as any)[paramName] || match);
                       });
-                      
+
                       // Filter out URL parameters from query string
                       const urlParamNames = entityEndpoint.match(/:(\w+)/g)?.map((p: string) => p.substring(1)) || [];
                       const queryParams = Object.entries(exportParams)
-                        .filter(([key, value]) => 
-                          value !== undefined && 
-                          value !== null && 
-                          String(value) !== "" && 
+                        .filter(([key, value]) =>
+                          value !== undefined &&
+                          value !== null &&
+                          String(value) !== "" &&
                           !urlParamNames.includes(key)
                         )
                         .reduce((acc, [key, value]) => {
                           acc[key] = String(value);
                           return acc;
                         }, {} as Record<string, string>);
-                      
+
                       // Build final URL
                       let url = `/${endpoint}`;
                       if (Object.keys(queryParams).length > 0) {
                         const queryString = new URLSearchParams(queryParams).toString();
                         url += `?${queryString}`;
                       }
-                      
+
                       // Make direct API call
                       const res = await apiClient.get<any>(url);
                       allRows = res.data?.items ?? res.data ?? [];
