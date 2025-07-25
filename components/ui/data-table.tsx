@@ -59,7 +59,7 @@ interface DataTableProps<TData, TValue> {
   fixedQuery?: Record<string, any>; // Query string parameters
 }
 
-const PAGE_SIZE_OPTIONS = [10, 25, 100, 1000];
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 /**
  * Helper function to export table data to Excel
