@@ -1,10 +1,12 @@
 "use client"
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useRef, useMemo } from "react";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
+import { useGetDashboardQuery } from "@/store/dashboard-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { ShoppingCart, Package } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { DataTable } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
@@ -12,71 +14,29 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { getColumns } from "./orders/page";
 import { ColumnDef } from "@/components/ui/data-table-types";
+import { DateFilter } from "@/components/dashboard/DateFilter";
+import { DailyRevenueWithDay } from "@/types/dashboard";
 
-interface BrandCategoryPriceData {
-  category: string;
-  total_price: string;
-  volume: number;
-}
-
-interface DailyRevenue {
-  date: string;
-  total: string;
-}
-
-interface DashboardData {
-  daily_revenue: DailyRevenue[];
-  total_revenue: string;
-  total_order_volume: number;
-  total_volume: number;
-  brand_category_price_data: BrandCategoryPriceData[];
-}
-
-interface DailyRevenueWithDay extends DailyRevenue {
-  dayOfWeek: string;
-  formattedDate: string;
-}
 
 export default function DashboardPage() {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [isLoading, setIsLoading] = useState(true)
+  const dateRange = useSelector((state: RootState) => state.dashboardFilters.dateRange);
+  const { data: dashboardData, isLoading } = useGetDashboardQuery(
+    dateRange && dateRange.start_date && dateRange.end_date
+      ? { start_date: dateRange.start_date, end_date: dateRange.end_date }
+      : undefined
+  );
   const dataTableRef = useRef<{ refresh: () => void }>(null)
   const { toast } = useToast()
   const { data: session } = useSession()
   const router = useRouter()
-  const fetchDashboardData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const res = await apiClient.get<{ items: any }>("/admin/dashboard/sales-admin");
-      if (res.data && res.data.items) {
-        setDashboardData(res.data.items);
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to load dashboard data",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
 
-  const refreshTable = useCallback(() => {
-    dataTableRef.current?.refresh();
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+
 
   const columns = useMemo(
-    () => getColumns(session, router, toast, refreshTable),
-    [session, router, toast, refreshTable]
+    () => getColumns(session, router, toast, () => { }),
+    [session, router, toast]
   )
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  // Sort daily_revenue by date ascending and add day of week
   const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
     if (!dashboardData || !dashboardData.daily_revenue) return [];
     return [...dashboardData.daily_revenue]
@@ -126,6 +86,9 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-[#444444]">Dashboard</h1>
           <p className="text-[#ababab]">Welcome back! Here&apos;s what&apos;s happening with your business.</p>
         </div>
+        <div className="flex items-center">
+          <DateFilter />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full dashboard-charts">
@@ -167,14 +130,16 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#ababab]">Total Revenue</p>
-                  <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue).toLocaleString()}</p>
+                  <p className="text-2xl font-semibold text-[#444444]">₦{Number(dashboardData.total_revenue || 0).toLocaleString()}</p>
                 </div>
                 <span className="h-8 w-8 text-[#12b636] flex items-center justify-center text-3xl font-bold">₦</span>
               </div>
             </CardContent>
           </Card>
           {["FnB", "PC", "Pharma"].map((category) => {
-            const cat = dashboardData.brand_category_price_data.find((c) => c.category === category) || {
+            const cat = (dashboardData.brand_category_price_data ?? []).find(
+              (c) => c.category === category
+            ) || {
               category,
               total_price: "0",
               volume: 0,
@@ -201,7 +166,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#ababab]">Total Brand Volume</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume}</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_volume || 0}</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
               </div>
@@ -212,7 +177,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-[#ababab]">Total Order Volume</p>
-                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_order_volume}</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_order_volume || 0}</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
               </div>

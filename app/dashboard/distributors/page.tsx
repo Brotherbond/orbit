@@ -155,6 +155,29 @@ export default function DistributorsPage() {
 
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
+  const filters: import("@/components/ui/data-table").FilterConfig[] = [
+    {
+      type: "select",
+      label: "IME/VSS",
+      param: "ime_vss",
+      options: [
+        { label: "All", value: "" },
+        { label: "IME", value: "ime" },
+        { label: "VSS", value: "vss" },
+      ],
+    },
+    {
+      type: "select",
+      label: "Status",
+      param: "status",
+      options: [
+        { label: "All", value: "" },
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" },
+      ],
+    },
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -181,6 +204,7 @@ export default function DistributorsPage() {
         searchPlaceholder="Search distributors..."
         store="distributors"
         exportFileName="Distributors.xlsx"
+        filters={filters}
       />
 
       <BulkUploadModal

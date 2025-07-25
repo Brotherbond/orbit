@@ -88,20 +88,25 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
         case "GET_ALL":
           result = await apiClient.get(url);
           return {
-            data: result, // Return full response for pagination
+            data: result.data?.items || [],
+          };
+        case "GET_SINGLE":
+          result = await apiClient.get(url);
+          return {
+            data: result.data?.items,
           };
         case "GET_BY_ID":
         case "GET":
           result = await apiClient.get(url);
           return {
-            data: (result.data as any).item || result.data,
+            data: result.data?.item,
           };
         case "POST":
           result = await apiClient.post(url, body);
-          return { data: (result.data as any).item || result.data };
+          return { data: result.data?.item };
         case "PUT":
           result = await apiClient.put(url, body);
-          return { data: (result.data as any).item || result.data };
+          return { data: result.data?.item };
         case "DELETE":
           result = await apiClient.delete(url);
           return { data: result.data || { success: true } };
@@ -174,10 +179,22 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
           method: "DELETE",
         }),
       }),
+      getSingle: builder.query<T, Record<string, any> | void>({
+        query: (params) => {
+          const safeParams = params || {};
+          let url = `/${substituteUrlParams(entityEndpoint, safeParams)}`;
+          const urlParamNames = getUrlParamNames(entityEndpoint);
+          const queryParams = filterQueryParams(safeParams, urlParamNames);
+          if (Object.keys(queryParams).length > 0) {
+            const queryString = new URLSearchParams(queryParams).toString();
+            url += `?${queryString}`;
+          }
+          return { url, method: "GET_SINGLE" };
+        },
+      }),
     }),
   });
 
-  // Expose the entityEndpoint for external access
   (api as any).entityEndpoint = entityEndpoint;
 
   return api;

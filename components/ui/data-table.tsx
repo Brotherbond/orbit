@@ -144,6 +144,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   const [filterState, setFilterState] = React.useState<{
     [key: string]: string;
   }>({});
+  const [pendingFilterState, setPendingFilterState] = React.useState<{ [key: string]: string }>({});
   const [activeFilters, setActiveFilters] = React.useState<{ [key: string]: boolean }>({});
   const [filterDropdownOpen, setFilterDropdownOpen] = React.useState(false);
 
@@ -154,6 +155,12 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     }),
     []
   );
+
+  React.useEffect(() => {
+    if (filterDropdownOpen) {
+      setPendingFilterState(filterState);
+    }
+  }, [filterDropdownOpen]);
 
   // Store-based data fetching
   let tableData: TData[] = [];
@@ -352,7 +359,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                             [filter.param]: checked,
                           }));
                           if (!checked) {
-                            setFilterState((prev) => {
+                            setPendingFilterState((prev) => {
                               const next = { ...prev };
                               delete next[filter.param];
                               return next;
@@ -369,9 +376,9 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                             <Input
                               type="date"
                               className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
-                              value={filterState[filter.param] || ""}
+                              value={pendingFilterState[filter.param] || ""}
                               onChange={(e) =>
-                                setFilterState((s) => ({
+                                setPendingFilterState((s) => ({
                                   ...s,
                                   [filter.param]: e.target.value,
                                 }))
@@ -382,9 +389,9 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                           {filter.type === "select" && "options" in filter && (
                             <select
                               className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
-                              value={filterState[filter.param] || "all"}
+                              value={pendingFilterState[filter.param] || "all"}
                               onChange={(e) =>
-                                setFilterState((s) => ({
+                                setPendingFilterState((s) => ({
                                   ...s,
                                   [filter.param]: e.target.value,
                                 }))
@@ -402,9 +409,9 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                             <Input
                               type="text"
                               className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
-                              value={filterState[filter.param] || ""}
+                              value={pendingFilterState[filter.param] || ""}
                               onChange={(e) =>
-                                setFilterState((s) => ({
+                                setPendingFilterState((s) => ({
                                   ...s,
                                   [filter.param]: e.target.value,
                                 }))
@@ -419,6 +426,33 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                 }
                 return null;
               })}
+              {Object.values(activeFilters).some(Boolean) && (
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setPendingFilterState({});
+                      setFilterState({});
+                      setActiveFilters({});
+                      setFilterDropdownOpen(false);
+                    }}
+                    data-testid="filter-reset"
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setFilterState(pendingFilterState);
+                      setFilterDropdownOpen(false);
+                    }}
+                    data-testid="filter-apply"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

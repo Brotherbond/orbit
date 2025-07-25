@@ -18,6 +18,8 @@ import { markets, useGetMarketsQuery } from "./markets";
 import { roles, useGetRolesQuery } from "./roles";
 import { settings, useGetSettingsQuery } from "./settings";
 import { orderEvents, useGetOrderEventsQuery } from "./order-events";
+import dashboardFiltersReducer from "./dashboard-filters";
+import { dashboardApi } from "./dashboard-api";
 
 export const store = configureStore({
   reducer: {
@@ -34,6 +36,8 @@ export const store = configureStore({
     [roles.reducerPath]: roles.reducer,
     [settings.reducerPath]: settings.reducer,
     [users.reducerPath]: users.reducer,
+    dashboardFilters: dashboardFiltersReducer,
+    [dashboardApi.reducerPath]: dashboardApi.reducer,
   } as any,
   middleware: (getDefaultMiddleware) =>
     (getDefaultMiddleware() as any).concat([
@@ -50,6 +54,7 @@ export const store = configureStore({
       roles.middleware,
       settings.middleware,
       users.middleware,
+      dashboardApi.middleware,
     ]) as any,
 });
 
