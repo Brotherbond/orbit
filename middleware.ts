@@ -4,6 +4,7 @@ import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
   // Check if the request is for a dashboard route
+  const requestUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   if (request.nextUrl.pathname.startsWith("/dashboard")) {
     const token = await getToken({
       req: request,
@@ -12,8 +13,8 @@ export async function middleware(request: NextRequest) {
 
     // If no token, redirect to login
     if (!token) {
-      const loginUrl = new URL("/auth/login", request.url);
-      loginUrl.searchParams.set("callbackUrl", request.url);
+      const loginUrl = new URL("/auth/login", requestUrl);
+      loginUrl.searchParams.set("callbackUrl", requestUrl);
       return NextResponse.redirect(loginUrl);
     }
 
@@ -67,7 +68,7 @@ export async function middleware(request: NextRequest) {
         !(matched.roles.includes("everybody") || matched.roles.includes(role))
       ) {
         // Redirect to dashboard if not authorized
-        return NextResponse.redirect(new URL("/dashboard", request.url));
+        return NextResponse.redirect(new URL("/dashboard", requestUrl));
       }
     }
   }
@@ -80,7 +81,7 @@ export async function middleware(request: NextRequest) {
     });
 
     if (token) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/dashboard", requestUrl));
     }
   }
 
