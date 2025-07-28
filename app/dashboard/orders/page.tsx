@@ -55,6 +55,17 @@ export default function OrdersPage() {
       placeholder: "Select distributor...",
       labelFormatter: (item: any) => `${item.business_name}`,
     },
+    {
+      type: "selectWithFetch",
+      label: "Market",
+      param: "market",
+      fetchUrl: "/markets",
+      valueKey: "uuid",
+      labelKey: "full_name",
+      searchParam: "search",
+      placeholder: "Select market...",
+      labelFormatter: (item: any) => `${item.full_name}`,
+    },
   ]
 
   return (
