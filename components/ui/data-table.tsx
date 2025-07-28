@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { SelectWithFetch } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -37,6 +38,17 @@ export type FilterOption = { label: string; value: string };
 export type FilterConfig =
   | { type: "date"; label: string; param: string }
   | { type: "select"; label: string; param: string; options: FilterOption[] }
+  | { 
+      type: "selectWithFetch"; 
+      label: string; 
+      param: string; 
+      fetchUrl: string;
+      valueKey?: string;
+      labelKey?: string;
+      searchParam?: string;
+      placeholder?: string;
+      labelFormatter?: (item: any) => string;
+    }
   | { type: "text"; label: string; param: string }
   | { type: "custom"; render: React.ReactNode }
   | { type: "disableDefaultDateRange" };
@@ -332,7 +344,18 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                 Filter
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" sideOffset={4} className="min-w-[18rem] p-2">
+            <DropdownMenuContent 
+              align="start" 
+              sideOffset={4} 
+              className="min-w-[18rem] p-2"
+              onInteractOutside={(e) => {
+                const target = e.target as Element;
+                if (target.closest('[data-radix-select-content]') || 
+                    target.closest('[data-radix-popper-content-wrapper]')) {
+                  e.preventDefault();
+                }
+              }}
+            >
               {effectiveFilters.map((filter, idx) => {
                 if (filter.type === "custom" && "render" in filter) {
                   return (
@@ -346,7 +369,8 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                   "label" in filter &&
                   (filter.type === "date" ||
                     filter.type === "text" ||
-                    filter.type === "select")
+                    filter.type === "select" ||
+                    filter.type === "selectWithFetch")
                 ) {
                   return (
                     <div key={filter.param} className="flex flex-col min-w-[8rem] px-2 py-2 border-b last:border-b-0">
@@ -418,6 +442,25 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                               }
                               placeholder={filter.label}
                             />
+                          )}
+                          {filter.type === "selectWithFetch" && "fetchUrl" in filter && (
+                            <div className="w-full">
+                              <SelectWithFetch
+                                fetchUrl={filter.fetchUrl}
+                                value={pendingFilterState[filter.param] || ""}
+                                onChange={(value) =>
+                                  setPendingFilterState((s) => ({
+                                    ...s,
+                                    [filter.param]: value,
+                                  }))
+                                }
+                                valueKey={filter.valueKey}
+                                labelKey={filter.labelKey}
+                                searchParam={filter.searchParam}
+                                placeholder={filter.placeholder || filter.label}
+                                labelFormatter={filter.labelFormatter}
+                              />
+                            </div>
                           )}
                         </div>
                       )}

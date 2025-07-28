@@ -46,6 +46,18 @@ export default function BrandsPage() {
         searchPlaceholder="Search brands..."
         store="brands"
         exportFileName="Brands.xlsx"
+        filters={[
+          {
+            type: "select",
+            label: "Category",
+            param: "category",
+            options: [
+              { label: "FnB", value: "FnB" },
+              { label: "PC", value: "PC" },
+              { label: "Pharma", value: "Pharma" },
+            ],
+          },
+        ]}
       />
     </div>
   )

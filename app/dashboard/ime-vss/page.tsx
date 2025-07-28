@@ -168,6 +168,17 @@ export default function ImeVssPage() {
               { label: "VSS", value: "vss" },
             ],
           },
+          {
+            type: "selectWithFetch",
+            label: "Market",
+            param: "market_id",
+            fetchUrl: "/markets",
+            valueKey: "uuid",
+            labelKey: "full_name",
+            searchParam: "search",
+            placeholder: "Select market...",
+            labelFormatter: (item: any) => `${item.full_name}`,
+          },
         ]}
         exportFileName="IME-VSS.xlsx"
       />

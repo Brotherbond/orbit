@@ -44,6 +44,17 @@ export default function OrdersPage() {
         { label: "Fulfilled", value: "fulfilled" },
       ],
     },
+    {
+      type: "selectWithFetch",
+      label: "Distributor",
+      param: "distributor",
+      fetchUrl: "/distributors",
+      valueKey: "user.uuid",
+      labelKey: "business_name",
+      searchParam: "search",
+      placeholder: "Select distributor...",
+      labelFormatter: (item: any) => `${item.business_name}`,
+    },
   ]
 
   return (

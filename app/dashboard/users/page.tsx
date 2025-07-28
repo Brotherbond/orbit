@@ -61,11 +61,6 @@ function getColumns(
       cell: ({ row }) => <Badge variant="secondary">{row.original.role?.name?.toUpperCase() || "No Role"}</Badge>,
     },
     {
-      accessorKey: "market",
-      header: "Market",
-      cell: ({ row }) => row.original.market?.name || "No Market",
-    },
-    {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
