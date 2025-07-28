@@ -41,6 +41,7 @@ export default function CreateRolePage() {
     name: "",
     description: "",
     status: "active",
+    access_type: "web",
     permissions: [] as string[],
   }
 
@@ -48,6 +49,7 @@ export default function CreateRolePage() {
     name: Yup.string().required("Name is required"),
     description: Yup.string(),
     status: Yup.string().oneOf(["active", "inactive"]).required(),
+    access_type: Yup.string().oneOf(["web", "mobile"]).required(),
     permissions: Yup.array().of(Yup.string()),
   })
 
@@ -134,6 +136,22 @@ export default function CreateRolePage() {
                     </SelectContent>
                   </Select>
                   <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="access_type">Access Type</Label>
+                  <Select
+                    value={values.access_type}
+                    onValueChange={(value) => setFieldValue("access_type", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="web">Web</SelectItem>
+                      <SelectItem value="mobile">Mobile</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="space-y-2">
                   <Label>Permissions</Label>
