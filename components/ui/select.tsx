@@ -18,6 +18,7 @@ interface SelectWithFetchProps<T = any> {
   placeholder?: string
   disabled?: boolean
   labelFormatter?: (item: T) => string
+  className?: string
 }
 
 
@@ -177,6 +178,7 @@ function SelectWithFetch<T = any>({
   placeholder = "Select...",
   disabled = false,
   labelFormatter,
+  className,
 }: SelectWithFetchProps<T>) {
   const [options, setOptions] = useState<T[]>([])
   const [search, setSearch] = useState("")
@@ -214,7 +216,7 @@ function SelectWithFetch<T = any>({
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger>
+      <SelectTrigger className={className}>
         <SelectValue placeholder={loading ? "Loading..." : placeholder} />
       </SelectTrigger>
       <SelectContent>

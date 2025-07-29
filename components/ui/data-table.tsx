@@ -412,7 +412,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                           )}
                           {filter.type === "select" && "options" in filter && (
                             <select
-                              className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
+                              className="w-full h-9 px-2 py-1 rounded text-[14px] border bg-gray-50 focus:bg-white focus:border-primary"
                               value={pendingFilterState[filter.param] || "all"}
                               onChange={(e) =>
                                 setPendingFilterState((s) => ({
@@ -445,7 +445,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                           )}
                           {filter.type === "selectWithFetch" && "fetchUrl" in filter && (
                             <div className="w-full">
-                              <SelectWithFetch
+                              <SelectWithFetch className="text-[14px]"
                                 fetchUrl={filter.fetchUrl}
                                 value={pendingFilterState[filter.param] || ""}
                                 onChange={(value) =>
