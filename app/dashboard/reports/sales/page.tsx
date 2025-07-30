@@ -48,7 +48,7 @@ export function getColumns(): ColumnDef<OrderBrand>[] {
     },
     {
       header: "Pieces Sold",
-      cell: ({ row }) => <div className="text-sm">{parseInt((parseFloat(row.original.cartons_sold ?? '0') * parseFloat(row.original.pcs_per_carton ?? '0')).toLocaleString())}</div>,
+      cell: ({ row }) => <div className="text-sm">{(Number(row.original.cartons_sold ?? '0') * Number(row.original.pcs_per_carton ?? '0'))}</div>,
     },
     {
       accessorKey: "price_per_carton",
