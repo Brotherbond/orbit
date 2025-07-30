@@ -40,11 +40,11 @@ export default function CreateBrandPage() {
         Yup.object({
           type: Yup.string().required("Type is required"),
           quantity: Yup.number().min(1, "Quantity must be greater than 0").required("Quantity is required"),
-          wholesale_price: Yup.number().min(0.01, "Wholesale price must be greater than 0").required("Wholesale price is required"),
-          retail_price: Yup.number().min(0.01, "Retail price must be greater than 0").required("Retail price is required"),
+          wholesale_price: Yup.number().min(0.0, "Wholesale price must be at least 0").required("Wholesale price is required"),
+          retail_price: Yup.number().min(0.0, "Retail price must be at least 0").required("Retail price is required"),
           retail_price_with_markup: Yup.number().min(0, "Price with markup must be at least 0"),
-          og_price: Yup.number().min(0.01, "OG price must be greater than 0").required("OG price is required"),
-          distributor_price: Yup.number().min(0.01, "Distributor price must be greater than 0").required("Distributor price is required"),
+          og_price: Yup.number().min(0.0, "OG price must be at least 0").required("OG price is required"),
+          distributor_price: Yup.number().min(0.0, "Distributor price must be at least 0").required("Distributor price is required"),
         })
       )
       .min(1, "At least one package is required"),
@@ -75,6 +75,7 @@ export default function CreateBrandPage() {
         description: "Brand created successfully",
       });
       resetForm();
+      setImageFile(null);
     } catch (error: any) {
       let errorSet = false;
       if (Array.isArray(error.errors)) {
