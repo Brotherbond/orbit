@@ -3,7 +3,7 @@ import { createEntity } from "./entityFactory";
 
 export const orderBrands = createEntity<OrderBrand>({
   reducerPath: "orderBrandsApi",
-  entityEndpoint: "reports/brands",
+  entityEndpoint: "reports/sales",
 });
 
 export const {
