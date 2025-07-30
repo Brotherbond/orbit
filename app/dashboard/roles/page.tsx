@@ -27,6 +27,11 @@ export default function RolesPage() {
       ),
     },
     {
+      accessorKey: "access_type",
+      header: "Access Type",
+      cell: ({ row }) => `${row.original.access_type?.charAt(0)?.toUpperCase()||''}${row.original.access_type?.slice(1)?.toLowerCase()||''}` || "N/A",
+    },
+    {
       accessorKey: "description",
       header: "Description",
       cell: ({ row }) => row.original.description,

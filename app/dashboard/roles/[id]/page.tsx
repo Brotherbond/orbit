@@ -4,32 +4,24 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Edit, Trash2, Calendar } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, Calendar, Laptop, Smartphone } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
-
-interface RoleDetail {
-  id: string
-  name: string
-  description: string
-  created_at: string
-  updated_at: string
-}
+import { Badge } from "@/components/ui/badge"
+import { Role } from "@/types/role"
 
 export default function RoleDetailPage({ params }: { params: { id: string } }) {
-  const [role, setRole] = useState<RoleDetail | null>(null)
+  const [role, setRole] = useState<Role | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchRole()
-  }, [params.id])
+  useEffect(() => { fetchRole() }, [params.id])
 
   const fetchRole = async () => {
     try {
       setIsLoading(true)
-      const { data } = await apiClient.get<{ item: RoleDetail }>(`/roles/${params.id}`)
+      const { data } = await apiClient.get<{ item: Role }>(`/roles/${params.id}`)
       setRole(data.item ?? null)
     } catch (error: any) {
       toast({
@@ -96,7 +88,7 @@ export default function RoleDetailPage({ params }: { params: { id: string } }) {
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => router.push(`/dashboard/roles/${role.id}/edit`)}>
+          <Button variant="outline" onClick={() => router.push(`/dashboard/roles/${role.uuid}/edit`)}>
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
@@ -117,6 +109,35 @@ export default function RoleDetailPage({ params }: { params: { id: string } }) {
               <span className="text-[#ababab]">Description</span>
               <div className="font-medium text-[#444444]">{role.description}</div>
             </div>
+
+            <div className="space-y-2">
+              <span className="text-[#ababab]">Status</span>
+              <div>
+                <Badge variant={role.status === "active" ? "primary" : "destructive"}>
+                  {role.status === "active" ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[#ababab]">Access Type</span>
+              <div className="flex items-center space-x-2">
+                {role.access_type === "web" ? (
+                  <>
+                    <Laptop className="h-4 w-4 text-[#444444]" />
+                    <span className="font-medium text-[#444444]">Web</span>
+                  </>
+                ) : role.access_type === "mobile" ? (
+                  <>
+                    <Smartphone className="h-4 w-4 text-[#444444]" />
+                    <span className="font-medium text-[#444444]">Mobile</span>
+                  </>
+                ) : (
+                  <span className="font-medium text-[#444444]">{role.access_type || "N/A"}</span>
+                )}
+              </div>
+            </div>
+
             <div className="flex items-center space-x-3">
               <Calendar className="h-5 w-5 text-[#ababab]" />
               <div>
