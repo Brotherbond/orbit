@@ -3,6 +3,16 @@ import { User } from "./user";
 
 export interface OrderBrand {
   uuid: string;
+  order_ref: string;
+  customer_name: string;
+  customer_type: string;
+  category: string;
+  brand_name: string;
+  pcs_per_carton: string;
+  cartons_sold: string;
+  price_per_carton: string;
+  sales_value: number;
+  comments: string;
   quantity: string;
   price: string;
   info: {

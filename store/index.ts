@@ -13,13 +13,14 @@ import {
   distributorTargets,
   useGetDistributorTargetsQuery,
 } from "./distributor-targets";
+import { dashboardApi } from "./dashboard-api";
+import dashboardFiltersReducer from "./dashboard-filters";
 import { locations, useGetLocationsQuery } from "./locations";
 import { markets, useGetMarketsQuery } from "./markets";
 import { roles, useGetRolesQuery } from "./roles";
 import { settings, useGetSettingsQuery } from "./settings";
+import { orderBrands, useGetOrderBrandsQuery } from "./order-brands";
 import { orderEvents, useGetOrderEventsQuery } from "./order-events";
-import dashboardFiltersReducer from "./dashboard-filters";
-import { dashboardApi } from "./dashboard-api";
 
 export const store = configureStore({
   reducer: {
@@ -32,6 +33,7 @@ export const store = configureStore({
     [locations.reducerPath]: locations.reducer,
     [markets.reducerPath]: markets.reducer,
     [orders.reducerPath]: orders.reducer,
+    [orderBrands.reducerPath]: orderBrands.reducer,
     [orderEvents.reducerPath]: orderEvents.reducer,
     [roles.reducerPath]: roles.reducer,
     [settings.reducerPath]: settings.reducer,
@@ -50,6 +52,7 @@ export const store = configureStore({
       locations.middleware,
       markets.middleware,
       orders.middleware,
+      orderBrands.middleware,
       orderEvents.middleware,
       roles.middleware,
       settings.middleware,
@@ -71,6 +74,7 @@ export const storeHooks = {
   locations: useGetLocationsQuery,
   markets: useGetMarketsQuery,
   orders: useGetOrdersQuery,
+  orderBrands: useGetOrderBrandsQuery,
   orderEvents: useGetOrderEventsQuery,
   roles: useGetRolesQuery,
   settings: useGetSettingsQuery,
@@ -87,6 +91,7 @@ export const storeApis = {
   locations,
   markets,
   orders,
+  orderBrands,
   orderEvents,
   roles,
   settings,
