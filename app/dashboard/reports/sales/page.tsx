@@ -19,7 +19,7 @@ export function getColumns(): ColumnDef<OrderBrand>[] {
     {
       accessorKey: "customer_type",
       header: "Customer Type",
-      cell: ({ row }) => <div className="text-sm">{row.original.customer_type}</div>,
+      cell: ({ row }) => <div className="text-sm">{row.original.customer_type.charAt(0).toUpperCase() + row.original.customer_type.slice(1).toLowerCase()}</div>,
     },
     {
       accessorKey: "sales_type",
@@ -61,6 +61,7 @@ export function getColumns(): ColumnDef<OrderBrand>[] {
       cell: ({ row }) => <div className="font-medium">₦{row.original.sales_value.toLocaleString()}</div>,
     },
     {
+      accessorKey: "comments",
       header: "Comments (if any)",
       cell: ({ row }) => <div className="font-medium">{row.original.comments || ''}</div>,
     },
