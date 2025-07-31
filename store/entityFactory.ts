@@ -88,7 +88,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
         case "GET_ALL":
           result = await apiClient.get(url);
           return {
-            data: result.data?.items || [],
+            data: result,
           };
         case "GET_SINGLE":
           result = await apiClient.get(url);
