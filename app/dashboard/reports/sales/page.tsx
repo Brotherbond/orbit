@@ -59,12 +59,7 @@ export function getColumns(): ColumnDef<OrderBrand>[] {
       accessorKey: "sales_value",
       header: "Sales Value",
       cell: ({ row }) => <div className="font-medium">₦{row.original.sales_value.toLocaleString()}</div>,
-    },
-    {
-      accessorKey: "comments",
-      header: "Comments (if any)",
-      cell: ({ row }) => <div className="font-medium">{row.original.comments || ''}</div>,
-    },
+    }
   ]
 }
 

@@ -15,8 +15,8 @@ function DistributorLayoutContent({ children, }: { children: React.ReactNode }) 
   }
 
   const tabs = [
-    { id: 'orders', label: 'Order Events', path: `/dashboard/reports/orders` },
-    { id: 'sales', label: 'Sales Register', path: `/dashboard/reports/sales` },
+    { id: 'orders', label: 'Order Lead Time', path: `/dashboard/reports/orders` },
+    { id: 'sales', label: 'Sales', path: `/dashboard/reports/sales` },
   ]
 
   const activeTab = getActiveTab()
