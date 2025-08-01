@@ -10,6 +10,7 @@ export type DateFilterOption =
 export interface DateRange {
   start_date: string;
   end_date: string;
+  period_type?: string;
 }
 
 export interface CustomDateRange {
@@ -29,17 +30,17 @@ export function calculateDateRange(
 
   switch (filter) {
     case "This week":
-      return getWeekRange(today);
+      return { ...getWeekRange(today), period_type: "week" };
     case "This month":
-      return getMonthRange(now);
+      return { ...getMonthRange(now), period_type: "month" };
     case "This quarter":
-      return getQuarterRange(now);
+      return { ...getQuarterRange(now), period_type: "quarter" };
     case "All time":
-      return getAllTimeRange(today);
+      return { ...getAllTimeRange(today), period_type: "all_time" };
     case "Custom":
       return getCustomRange(customRange);
     default:
-      return getWeekRange(today);
+      return { ...getWeekRange(today), period_type: "week" };
   }
 }
 

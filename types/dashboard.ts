@@ -6,12 +6,16 @@ interface BrandCategoryPriceData {
 
 interface DailyRevenue {
   date: string;
-  total: string;
+  total: number;
 }
 
 export interface DashboardData {
-  daily_revenue: DailyRevenue[];
   total_revenue: string;
+  revenue?: {
+    labels: string[];
+    data: number[];
+    period_type: string;
+  };
   total_order_volume: number;
   total_volume: number;
   brand_category_price_data: BrandCategoryPriceData[];

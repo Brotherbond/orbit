@@ -21,8 +21,8 @@ import { DailyRevenueWithDay } from "@/types/dashboard";
 export default function DashboardPage() {
   const dateRange = useSelector((state: RootState) => state.dashboardFilters.dateRange);
   const { data: dashboardData, isLoading } = useGetDashboardQuery(
-    dateRange && dateRange.start_date && dateRange.end_date
-      ? { start_date: dateRange.start_date, end_date: dateRange.end_date }
+    dateRange && dateRange.period_type
+      ? { period: dateRange.period_type }
       : undefined
   );
   const dataTableRef = useRef<{ refresh: () => void }>(null)
@@ -37,23 +37,28 @@ export default function DashboardPage() {
     [session, router, toast]
   )
 
-  const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
-    if (!dashboardData || !dashboardData.daily_revenue) return [];
-    return [...dashboardData.daily_revenue]
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      .map((item) => {
-        const dateObj = new Date(item.date);
-        const day = String(dateObj.getDate()).padStart(2, "0");
-        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-        const year = String(dateObj.getFullYear()).slice(-2);
-        const dayShort = dateObj.toLocaleDateString("en-US", { weekday: "short" });
-        return {
-          ...item,
-          dayOfWeek: dayShort,
-          formattedDate: `${day}/${month}/${year}(${dayShort})`,
-        };
-      });
-  }, [dashboardData]);
+const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
+  if (!dashboardData || !dashboardData.revenue) return [];
+  const { labels = [], data = [], period_type } = dashboardData.revenue;
+  return labels.map((label, idx) => {
+    let formattedDate = label;
+    let dayOfWeek = "";
+    if (period_type === "week") {
+      const dateObj = new Date(label);
+      const day = String(dateObj.getDate()).padStart(2, "0");
+      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+      const year = String(dateObj.getFullYear()).slice(-2);
+      dayOfWeek = dateObj.toLocaleDateString("en-US", { weekday: "short" });
+      formattedDate = `${day}/${month}/${year}(${dayOfWeek})`;
+    }
+    return {
+      date: label,
+      total: typeof data[idx] === "string" ? Number(data[idx]) : data[idx] ?? 0,
+      dayOfWeek,
+      formattedDate,
+    };
+  });
+}, [dashboardData]);
 
   if (isLoading) {
     return (
