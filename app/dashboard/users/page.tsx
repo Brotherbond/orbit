@@ -157,9 +157,10 @@ export default function UsersPage() {
             param: "roles",
             options: [
               { label: "All Roles", value: roles },
-              { label: "Sales Admin", value: "sales-admin" },
               { label: "Manager", value: "manager" },
               { label: "Operations", value: "operations" },
+              { label: "Sales Admin", value: "sales-admin" },
+              { label: "Super Admin", value: "super-admin" },
               { label: "Treasury", value: "treasury" },
             ],
           },
