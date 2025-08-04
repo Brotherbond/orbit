@@ -19,31 +19,37 @@ const columns: ColumnDef<unknown, unknown>[] = [
   {
     accessorKey: "ime_vss",
     header: "IME/VSS",
+    width: 200,
     cell: ({ getValue }) => <span>{getValue() as string}</span>,
   },
   {
     accessorKey: "total_amount",
     header: "Order Value",
+    width: 200,
     cell: ({ row }) => <span>₦{parseFloat((row.original as any).total_amount).toLocaleString()}</span>,
   },
   {
     accessorKey: "created_at",
     header: "Created At",
+    width: 200,
     cell: ({ getValue }) => <span>{getValue() as string}</span>,
   },
   {
     accessorKey: "confirmed_at",
     header: "Confirmed At",
+    width: 200,
     cell: ({ row }) => (row.original as OrderEvent).confirmed_at || "-",
   },
   {
     accessorKey: "delivered_at",
     header: "Delivered At",
+    width: 200,
     cell: ({ row }) => (row.original as OrderEvent).delivered_at || "-",
   },
   {
     accessorKey: "fulfilled_at",
     header: "Fulfilled At",
+    width: 200,
     cell: ({ row }) => (row.original as OrderEvent).fulfilled_at || "-",
   },
   {

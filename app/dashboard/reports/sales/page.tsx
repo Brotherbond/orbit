@@ -14,50 +14,60 @@ export function getColumns(): ColumnDef<OrderBrand>[] {
     {
       accessorKey: "customer_name",
       header: "Customer Name",
+      width: 200,
       cell: ({ row }) => <div className="text-sm">{row.original.customer_name}</div>,
     },
     {
       accessorKey: "customer_type",
       header: "Customer Type",
+      width: 150,
       cell: ({ row }) => <div className="text-sm">{row.original.customer_type.charAt(0).toUpperCase() + row.original.customer_type.slice(1).toLowerCase()}</div>,
     },
     {
       accessorKey: "sales_type",
       header: "Sales Type",
+      width: 150,
       cell: ({ row }) => <div className="text-sm">Sales</div>,
     },
     {
       accessorKey: "category",
       header: "Category",
+      width: 150,
       cell: ({ row }) => <div className="text-sm">{row.original.category}</div>,
     },
     {
       accessorKey: "brand_name",
       header: "Product Description",
+      width: 200,
       cell: ({ row }) => <div className="text-sm">{row.original.brand_name}</div>,
     },
     {
       accessorKey: "pcs_per_carton",
       header: "Pieces /Ctn",
+      width: 150,
       cell: ({ row }) => <div className="text-sm">{row.original.pcs_per_carton ?? '0'}</div>,
     },
     {
       accessorKey: "cartons_sold",
       header: "Ctn Sold",
+      width: 150,
       cell: ({ row }) => <div className="text-sm">{row.original.cartons_sold}</div>,
     },
     {
       header: "Pieces Sold",
+      width: 150,
       cell: ({ row }) => <div className="text-sm">{(Number(row.original.cartons_sold ?? '0') * Number(row.original.pcs_per_carton ?? '0'))}</div>,
     },
     {
       accessorKey: "price_per_carton",
       header: "Price per Carton",
+      width: 200,
       cell: ({ row }) => <div className="font-medium">₦{parseFloat(row.original.price_per_carton).toLocaleString()}</div>,
     },
     {
       accessorKey: "sales_value",
       header: "Sales Value",
+      width: 150,
       cell: ({ row }) => <div className="font-medium">₦{row.original.sales_value.toLocaleString()}</div>,
     }
   ]

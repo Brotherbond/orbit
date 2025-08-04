@@ -662,7 +662,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                           ? "cursor-pointer select-none"
                           : ""
                       }
-                      style={width ? { width } : undefined}
+                      style={width ? { minWidth:width } : undefined}
                     >
                       {header.isPlaceholder ? null : (
                         <span className="flex items-center">
