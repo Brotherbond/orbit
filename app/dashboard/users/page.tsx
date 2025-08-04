@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { User } from "@/types/user";
 import BulkUploadModal from "@/components/dashboard/BulkUploadModal";
 
-const roles = "sales-admin,manager,operations,treasury"
+const roles = "super-admin,sales-admin,manager,operations,treasury"
 
 function getColumns(
   router: any,
