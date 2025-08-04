@@ -49,7 +49,7 @@ const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
       const month = String(dateObj.getMonth() + 1).padStart(2, "0");
       const year = String(dateObj.getFullYear()).slice(-2);
       dayOfWeek = dateObj.toLocaleDateString("en-US", { weekday: "short" });
-      formattedDate = `${day}/${month}/${year}(${dayOfWeek})`;
+      formattedDate = `${dayOfWeek}`;
     }
     return {
       date: label,
