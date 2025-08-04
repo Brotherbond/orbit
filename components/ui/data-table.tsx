@@ -38,17 +38,17 @@ export type FilterOption = { label: string; value: string };
 export type FilterConfig =
   | { type: "date"; label: string; param: string }
   | { type: "select"; label: string; param: string; options: FilterOption[] }
-  | { 
-      type: "selectWithFetch"; 
-      label: string; 
-      param: string; 
-      fetchUrl: string;
-      valueKey?: string;
-      labelKey?: string;
-      searchParam?: string;
-      placeholder?: string;
-      labelFormatter?: (item: any) => string;
-    }
+  | {
+    type: "selectWithFetch";
+    label: string;
+    param: string;
+    fetchUrl: string;
+    valueKey?: string;
+    labelKey?: string;
+    searchParam?: string;
+    placeholder?: string;
+    labelFormatter?: (item: any) => string;
+  }
   | { type: "text"; label: string; param: string }
   | { type: "custom"; render: React.ReactNode }
   | { type: "disableDefaultDateRange" };
@@ -142,6 +142,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   ref: React.Ref<{ refresh: () => void }>
 ) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [paginationInput, setPaginationInput] = React.useState("");
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -344,14 +345,14 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                 Filter
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="start" 
-              sideOffset={4} 
+            <DropdownMenuContent
+              align="start"
+              sideOffset={4}
               className="min-w-[18rem] p-2"
               onInteractOutside={(e) => {
                 const target = e.target as Element;
-                if (target.closest('[data-radix-select-content]') || 
-                    target.closest('[data-radix-popper-content-wrapper]')) {
+                if (target.closest('[data-radix-select-content]') ||
+                  target.closest('[data-radix-popper-content-wrapper]')) {
                   e.preventDefault();
                 }
               }}
@@ -754,39 +755,74 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
           {Math.min((pageIndex + 1) * pageSize, total)} of {total} results
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(pageIndex - 1)}
-            disabled={pageIndex === 0}
-          >
-            Previous
-          </Button>
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: Math.min(5, pageCount) }, (_, i) => {
-              const page = i + Math.max(0, pageIndex - 2);
-              if (page >= pageCount) return null;
-              return (
-                <Button
-                  key={page}
-                  variant={page === pageIndex ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handlePageChange(page)}
-                  className={page === pageIndex ? "btn-primary" : ""}
-                >
-                  {page + 1}
-                </Button>
-              );
-            })}
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pageIndex - 1)}
+              disabled={pageIndex === 0}
+            >
+              Previous
+            </Button>
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: Math.min(5, pageCount) }, (_, i) => {
+                const page = i + Math.max(0, pageIndex - 2);
+                if (page >= pageCount) return null;
+                if (pageCount > 5 && i === 3) {
+                  return (
+                    <React.Fragment key="pagination-input">
+                      <input
+                        type="number"
+                        min={1}
+                        max={pageCount}
+                        value={paginationInput}
+                        onChange={e => setPaginationInput(e.target.value.replace(/\D/, ""))}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            const pageNum = Number(paginationInput);
+                            if (pageNum >= 1 && pageNum <= pageCount) {
+                              handlePageChange(pageNum - 1);
+                              setPaginationInput("");
+                            }
+                          }
+                        }}
+                        className="border rounded px-2 py-1 w-12 text-center mx-2"
+                        placeholder="Page"
+                      />
+                      <Button
+                        key={page}
+                        variant={page === pageIndex ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handlePageChange(page)}
+                        className={page === pageIndex ? "btn-primary" : ""}
+                      >
+                        {page + 1}
+                      </Button>
+                    </React.Fragment>
+                  );
+                }
+                return (
+                  <Button
+                    key={page}
+                    variant={page === pageIndex ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page)}
+                    className={page === pageIndex ? "btn-primary" : ""}
+                  >
+                    {page + 1}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(pageIndex + 1)}
+              disabled={pageIndex >= pageCount - 1}
+            >
+              Next
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(pageIndex + 1)}
-            disabled={pageIndex >= pageCount - 1}
-          >
-            Next
-          </Button>
         </div>
       </div>
     </div>
