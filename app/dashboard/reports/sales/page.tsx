@@ -12,6 +12,18 @@ export function getColumns(): ColumnDef<OrderBrand>[] {
       cell: ({ row }) => <div className="text-sm">{row.original.order_ref}</div>,
     },
     {
+      accessorKey: "location",
+      header: "Location",
+      width: 200,
+      cell: ({ row }) => <div className="text-sm">{row.original.location}</div>,
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+      width: 200,
+      cell: ({ row }) => <div className="text-sm">{row.original.date}</div>,
+    },
+    {
       accessorKey: "customer_name",
       header: "Customer Name",
       width: 200,

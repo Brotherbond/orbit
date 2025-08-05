@@ -10,6 +10,8 @@ export interface OrderBrand {
   brand_name: string;
   pcs_per_carton: string;
   cartons_sold: string;
+  location: string;
+  date: string;
   price_per_carton: string;
   sales_value: number;
   comments: string;
