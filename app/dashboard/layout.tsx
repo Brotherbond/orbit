@@ -54,7 +54,7 @@ export default function DashboardLayout({
           <DashboardHeader />
           <div className="flex">
             <DashboardSidebar />
-              <main className="flex-1 p-6">{children}</main>
+              <main className="flex-1 p-6 overflow-auto">{children}</main>
           </div>
         </div>
       </RolesProvider>
