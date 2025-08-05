@@ -2,6 +2,9 @@ export interface BrandPackage {
   uuid?: string;
   type: string;
   quantity: number;
+  breadth?: number;
+  height?: number;
+  length?: number;
   og_price: number;
   wholesale_price: number;
   retail_price: number;

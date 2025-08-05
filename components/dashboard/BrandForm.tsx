@@ -244,7 +244,7 @@ export function BrandForm({
                             <ErrorMessage name={`packages[${index}].quantity`} component="p" className="text-sm text-red-500" />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-[#444444]">Wholesale Price *</Label>
+                            <Label className="text-[#444444]">Wholesale Price</Label>
                             <Input
                               type="number"
                               name={`packages[${index}].wholesale_price`}
@@ -257,7 +257,7 @@ export function BrandForm({
                             <ErrorMessage name={`packages[${index}].wholesale_price`} component="p" className="text-sm text-red-500" />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-[#444444]">Retail Price *</Label>
+                            <Label className="text-[#444444]">Retail Price</Label>
                             <Input
                               type="number"
                               name={`packages[${index}].retail_price`}
@@ -299,7 +299,7 @@ export function BrandForm({
                             <ErrorMessage name={`packages[${index}].og_price`} component="p" className="text-sm text-red-500" />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-[#444444]">Distributor Price *</Label>
+                            <Label className="text-[#444444]">Distributor Price</Label>
                             <Input
                               type="number"
                               name={`packages[${index}].distributor_price`}
@@ -310,6 +310,45 @@ export function BrandForm({
                               step="0.01"
                             />
                             <ErrorMessage name={`packages[${index}].distributor_price`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Length</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].length`}
+                              value={pkg.length}
+                              onChange={e => setFieldValue(`packages[${index}].length`, Number(e.target.value))}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].length`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Breadth</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].breadth`}
+                              value={pkg.breadth}
+                              onChange={e => setFieldValue(`packages[${index}].breadth`, Number(e.target.value))}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].breadth`} component="p" className="text-sm text-red-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Height</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].height`}
+                              value={pkg.height}
+                              onChange={e => setFieldValue(`packages[${index}].height`, Number(e.target.value))}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].height`} component="p" className="text-sm text-red-500" />
                           </div>
                         </div>
                       </Card>
