@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store";
 import { useGetDashboardQuery } from "@/store/dashboard-api";
@@ -16,6 +16,7 @@ import { getColumns } from "./orders/page";
 import { ColumnDef } from "@/components/ui/data-table-types";
 import { DateFilter } from "@/components/dashboard/DateFilter";
 import { DailyRevenueWithDay } from "@/types/dashboard";
+import { formatLabelToTitleCase } from "@/lib/label-formatters";
 
 
 export default function DashboardPage() {
@@ -26,7 +27,8 @@ export default function DashboardPage() {
       : undefined
   );
   const dataTableRef = useRef<{ refresh: () => void }>(null)
-  const { toast } = useToast()
+  const { toast } = useToast();
+  const [periodType, setPeriodType] = useState('');
   const { data: session } = useSession()
   const router = useRouter()
 
@@ -37,28 +39,19 @@ export default function DashboardPage() {
     [session, router, toast]
   )
 
-const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
-  if (!dashboardData || !dashboardData.revenue) return [];
-  const { labels = [], data = [], period_type } = dashboardData.revenue;
-  return labels.map((label, idx) => {
-    let formattedDate = label;
-    let dayOfWeek = "";
-    if (period_type === "week") {
-      const dateObj = new Date(label);
-      const day = String(dateObj.getDate()).padStart(2, "0");
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const year = String(dateObj.getFullYear()).slice(-2);
-      dayOfWeek = dateObj.toLocaleDateString("en-US", { weekday: "short" });
-      formattedDate = `${dayOfWeek}`;
-    }
-    return {
-      date: label,
-      total: typeof data[idx] === "string" ? Number(data[idx]) : data[idx] ?? 0,
-      dayOfWeek,
-      formattedDate,
-    };
-  });
-}, [dashboardData]);
+  const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
+    if (!dashboardData || !dashboardData.revenue) return [];
+    const { labels = [], data = [], period_type } = dashboardData.revenue;
+    setPeriodType(formatLabelToTitleCase(['week', 'month', 'quarter'].includes(period_type) ? `${period_type}ly` : period_type));
+    return labels.map((label, idx) => {
+      return {
+        date: label,
+        total: typeof data[idx] === "string" ? Number(data[idx]) : data[idx] ?? 0,
+        dayOfWeek: label.slice(0, 3),
+        formattedDate: label,
+      };
+    });
+  }, [dashboardData]);
 
   if (isLoading) {
     return (
@@ -101,7 +94,7 @@ const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
         <div className="flex flex-col justify-between w-full">
           <Card className="h-full card-hover">
             <CardHeader>
-              <CardTitle className="text-[#444444]">Daily Revenue Trend</CardTitle>
+              <CardTitle className="text-[#444444]">{periodType} Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
