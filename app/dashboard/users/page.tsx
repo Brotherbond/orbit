@@ -148,7 +148,6 @@ export default function UsersPage() {
         searchKey="first_name"
         searchPlaceholder="Search users..."
         store="users"
-        fixedQuery={{ roles }}
         exportFileName="Users.xlsx"
         filters={[
           {

@@ -3,7 +3,7 @@ import { createEntity } from "./entityFactory";
 
 export const users = createEntity<User>({
   reducerPath: "usersApi",
-  entityEndpoint: "users",
+  entityEndpoint: "users/web",
 });
 
 export const {
