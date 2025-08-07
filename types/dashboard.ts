@@ -4,7 +4,7 @@ interface BrandCategoryPriceData {
   volume: number;
 }
 
-interface DailyRevenue {
+interface Revenue {
   date: string;
   total: number;
 }
@@ -21,7 +21,7 @@ export interface DashboardData {
   brand_category_price_data: BrandCategoryPriceData[];
 }
 
-export interface DailyRevenueWithDay extends DailyRevenue {
+export interface RevenueWithDay extends Revenue {
   dayOfWeek: string;
   formattedDate: string;
 }

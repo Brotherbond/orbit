@@ -15,16 +15,20 @@ import { useSession } from "next-auth/react";
 import { getColumns } from "./orders/page";
 import { ColumnDef } from "@/components/ui/data-table-types";
 import { DateFilter } from "@/components/dashboard/DateFilter";
-import { DailyRevenueWithDay } from "@/types/dashboard";
+import { RevenueWithDay } from "@/types/dashboard";
 import { formatLabelToTitleCase } from "@/lib/label-formatters";
 
 
 export default function DashboardPage() {
   const dateRange = useSelector((state: RootState) => state.dashboardFilters.dateRange);
+  const selectedFilter = useSelector((state: RootState) => state.dashboardFilters.selectedFilter);
+
   const { data: dashboardData, isLoading } = useGetDashboardQuery(
-    dateRange && dateRange.period_type
-      ? { period: dateRange.period_type }
-      : undefined
+    selectedFilter === "Custom" && dateRange.start_date && dateRange.end_date
+      ? { start_date: dateRange.start_date, end_date: dateRange.end_date }
+      : dateRange && dateRange.period_type
+        ? { period: dateRange.period_type }
+        : undefined
   );
   const dataTableRef = useRef<{ refresh: () => void }>(null)
   const { toast } = useToast();
@@ -39,7 +43,7 @@ export default function DashboardPage() {
     [session, router, toast]
   )
 
-  const sortedDailyRevenue: DailyRevenueWithDay[] = useMemo(() => {
+  const sortedRevenue: RevenueWithDay[] = useMemo(() => {
     if (!dashboardData || !dashboardData.revenue) return [];
     const { labels = [], data = [], period_type } = dashboardData.revenue;
     setPeriodType(formatLabelToTitleCase(['week', 'month', 'quarter'].includes(period_type) ? `${period_type}ly` : period_type));
@@ -98,7 +102,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={sortedDailyRevenue}>
+                <BarChart data={sortedRevenue}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eeeeee" />
                   <XAxis dataKey="formattedDate" stroke="#ababab" tick={{ fontSize: 10 }} />
                   <YAxis
