@@ -197,11 +197,43 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                           </p>
                         </div>
                         <div>
+                          <p className="text-sm text-[#ababab]">Retail Price (With Markup)</p>
+                          <p className="font-medium text-[#444444]">
+                            {pkg.retail_price_with_markup !== undefined
+                              ? `₦${Number(pkg.retail_price_with_markup).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                              : <span className="text-[#ababab]">N/A</span>}
+                          </p>
+                        </div>
+                        <div>
                           <p className="text-sm text-[#ababab]">Distributor Price</p>
                           <p className="font-medium text-[#444444]">
                             {pkg.distributor_price !== undefined
                               ? `₦${Number(pkg.distributor_price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                               : <span className="text-[#ababab]">N/A</span>}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-[#ababab]">Breadth</p>
+                          <p className="font-medium text-[#444444]">
+                            {pkg.breadth !== undefined ? pkg.breadth : <span className="text-[#ababab]">N/A</span>}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-[#ababab]">Height</p>
+                          <p className="font-medium text-[#444444]">
+                            {pkg.height !== undefined ? pkg.height : <span className="text-[#ababab]">N/A</span>}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-[#ababab]">Length</p>
+                          <p className="font-medium text-[#444444]">
+                            {pkg.length !== undefined ? pkg.length : <span className="text-[#ababab]">N/A</span>}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-[#ababab]">Weight</p>
+                          <p className="font-medium text-[#444444]">
+                            {pkg.weight !== undefined ? pkg.weight : <span className="text-[#ababab]">N/A</span>}
                           </p>
                         </div>
                       </div>
