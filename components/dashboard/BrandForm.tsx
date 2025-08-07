@@ -350,6 +350,19 @@ export function BrandForm({
                             />
                             <ErrorMessage name={`packages[${index}].height`} component="p" className="text-sm text-red-500" />
                           </div>
+                          <div className="space-y-2">
+                            <Label className="text-[#444444]">Weight</Label>
+                            <Input
+                              type="number"
+                              name={`packages[${index}].weight`}
+                              value={pkg.weight}
+                              onChange={e => setFieldValue(`packages[${index}].weight`, Number(e.target.value))}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.01"
+                            />
+                            <ErrorMessage name={`packages[${index}].weight`} component="p" className="text-sm text-red-500" />
+                          </div>
                         </div>
                       </Card>
                     ))}

@@ -5,6 +5,7 @@ export interface BrandPackage {
   breadth?: number;
   height?: number;
   length?: number;
+  weight?: number;
   og_price: number;
   wholesale_price: number;
   retail_price: number;
