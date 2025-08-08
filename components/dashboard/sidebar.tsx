@@ -16,7 +16,10 @@ import {
   Shield,
   UserCheck,
   LogOut,
+  Truck,
+  Warehouse,
   History,
+  PackageCheck,
 } from "lucide-react"
 import { useSession } from "next-auth/react"
 
@@ -33,6 +36,9 @@ const iconMap: Record<string, IconType> = {
   Brands: Package,
   Markets: Building2,
   Locations: MapPin,
+  Deliveries: PackageCheck,
+  Vehicles: Truck,
+  Warehouses: Warehouse,
   "Roles & Permissions": Shield,
   Reports: FileText,
   "Audit Logs": History,

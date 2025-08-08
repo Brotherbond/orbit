@@ -21,17 +21,23 @@ import { roles, useGetRolesQuery } from "./roles";
 import { settings, useGetSettingsQuery } from "./settings";
 import { orderBrands, useGetOrderBrandsQuery } from "./order-brands";
 import { orderEvents, useGetOrderEventsQuery } from "./order-events";
+import { useGetVehiclesQuery, vehicles } from "./vehicles";
+import { useGetWarehousesQuery, warehouses } from "./warehouses";
+import { deliveries, useGetDeliveriesQuery } from "./deliveries";
 
 export const store = configureStore({
   reducer: {
     [auditLogs.reducerPath]: auditLogs.reducer,
     [brands.reducerPath]: brands.reducer,
+    [deliveries.reducerPath]: deliveries.reducer,
     [distributors.reducerPath]: distributors.reducer,
     [distributorOrders.reducerPath]: distributorOrders.reducer,
     [distributorTargets.reducerPath]: distributorTargets.reducer,
     [imeVss.reducerPath]: imeVss.reducer,
     [locations.reducerPath]: locations.reducer,
     [markets.reducerPath]: markets.reducer,
+    [vehicles.reducerPath]: vehicles.reducer,
+    [warehouses.reducerPath]: warehouses.reducer,
     [orders.reducerPath]: orders.reducer,
     [orderBrands.reducerPath]: orderBrands.reducer,
     [orderEvents.reducerPath]: orderEvents.reducer,
@@ -45,12 +51,15 @@ export const store = configureStore({
     (getDefaultMiddleware() as any).concat([
       auditLogs.middleware,
       brands.middleware,
+      deliveries.middleware,
       distributors.middleware,
       distributorOrders.middleware,
       distributorTargets.middleware,
       imeVss.middleware,
       locations.middleware,
       markets.middleware,
+      vehicles.middleware,
+      warehouses.middleware,
       orders.middleware,
       orderBrands.middleware,
       orderEvents.middleware,
@@ -67,12 +76,15 @@ export type AppDispatch = typeof store.dispatch;
 export const storeHooks = {
   auditLogs: useGetAuditLogsQuery,
   brands: useGetBrandsQuery,
+  deliveries: useGetDeliveriesQuery,
   distributors: useGetDistributorsQuery,
   distributorOrders: useGetDistributorOrdersQuery,
   distributorTargets: useGetDistributorTargetsQuery,
   imeVss: useGetIMEVSSsQuery,
   locations: useGetLocationsQuery,
   markets: useGetMarketsQuery,
+  vehicles: useGetVehiclesQuery,
+  warehouses: useGetWarehousesQuery,
   orders: useGetOrdersQuery,
   orderBrands: useGetOrderBrandsQuery,
   orderEvents: useGetOrderEventsQuery,
@@ -84,6 +96,7 @@ export const storeHooks = {
 export const storeApis = {
   auditLogs,
   brands,
+  deliveries,
   distributors,
   distributorOrders,
   distributorTargets,
