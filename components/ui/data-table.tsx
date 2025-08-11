@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SelectWithFetch } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Table,
   TableBody,
@@ -141,22 +142,17 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
 ) {
+  const { dismiss } = useToast();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [paginationInput, setPaginationInput] = React.useState("");
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  const [paginationError, setPaginationError] = React.useState("");
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [pageIndex, setPageIndex] = React.useState(0);
-  const [pageSize, setPageSize] = React.useState(
-    per_page ?? PAGE_SIZE_OPTIONS[0]
-  );
+  const [pageSize, setPageSize] = React.useState(per_page ?? PAGE_SIZE_OPTIONS[0]);
   const [refreshCount, setRefreshCount] = React.useState(0);
-  const [filterState, setFilterState] = React.useState<{
-    [key: string]: string;
-  }>({});
+  const [filterState, setFilterState] = React.useState<{ [key: string]: string }>({});
   const [pendingFilterState, setPendingFilterState] = React.useState<{ [key: string]: string }>({});
   const [activeFilters, setActiveFilters] = React.useState<{ [key: string]: boolean }>({});
   const [filterDropdownOpen, setFilterDropdownOpen] = React.useState(false);
@@ -255,7 +251,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     pageCount: pageCount,
   });
 
-  // Handlers for pagination
+  // Pagination handlers
   const handlePageChange = (page: number) => {
     if (page < 0 || page >= pageCount) return;
     setPageIndex(page);
@@ -301,7 +297,6 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     <div
       className={`w-full card bg-white shadow-md rounded-lg p-4${className ? " " + className : ""}`}
     >
-      {/* Filter row */}
       {/* Search, refresh, export, columns row */}
       <div className="flex items-center justify-between py-4">
         <div className="flex items-center space-x-2">
@@ -662,7 +657,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                           ? "cursor-pointer select-none"
                           : ""
                       }
-                      style={width ? { minWidth:width } : undefined}
+                      style={width ? { minWidth: width } : undefined}
                     >
                       {header.isPlaceholder ? null : (
                         <span className="flex items-center">
@@ -754,7 +749,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
           Showing {total === 0 ? 0 : pageIndex * pageSize + 1} to{" "}
           {Math.min((pageIndex + 1) * pageSize, total)} of {total} results
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex-col items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -764,65 +759,91 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
             >
               Previous
             </Button>
-            <div className="flex items-center space-x-1">
-              {Array.from({ length: Math.min(5, pageCount) }, (_, i) => {
-                const page = i + Math.max(0, pageIndex - 2);
-                if (page >= pageCount) return null;
-                if (pageCount > 5 && i === 3) {
+            <div className="flex flex-col w-full">
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, pageCount) }, (_, i) => {
+                  const page = i + Math.max(0, pageIndex - 2);
+                  if (page >= pageCount) return null;
                   return (
-                    <React.Fragment key="pagination-input">
-                      <input
-                        type="number"
-                        min={1}
-                        max={pageCount}
-                        value={paginationInput}
-                        onChange={e => setPaginationInput(e.target.value.replace(/\D/, ""))}
-                        onKeyDown={e => {
-                          if (e.key === "Enter") {
-                            const pageNum = Number(paginationInput);
-                            if (pageNum >= 1 && pageNum <= pageCount) {
-                              handlePageChange(pageNum - 1);
-                              setPaginationInput("");
-                            }
-                          }
-                        }}
-                        className="border rounded px-2 py-1 w-12 text-center mx-2"
-                        placeholder="Page"
-                      />
-                      <Button
-                        key={page}
-                        variant={page === pageIndex ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handlePageChange(page)}
-                        className={page === pageIndex ? "btn-primary" : ""}
-                      >
-                        {page + 1}
-                      </Button>
-                    </React.Fragment>
+                    <Button
+                      key={page}
+                      variant={page === pageIndex ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handlePageChange(page)}
+                      className={page === pageIndex ? "btn-primary" : ""}
+                    >
+                      {page + 1}
+                    </Button>
                   );
-                }
-                return (
-                  <Button
-                    key={page}
-                    variant={page === pageIndex ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handlePageChange(page)}
-                    className={page === pageIndex ? "btn-primary" : ""}
-                  >
-                    {page + 1}
-                  </Button>
-                );
-              })}
+                })}
+                {pageCount > 5 && (
+                  <input
+                    type="number"
+                    min={1}
+                    max={pageCount}
+                    value={paginationInput}
+                    onChange={e => {
+                      const value = e.target.value.replace(/\D/, "");
+                      setPaginationInput(value);
+                      const pageNum = Number(value);
+                      if (
+                        value &&
+                        (isNaN(pageNum) || pageNum < 1 || pageNum > pageCount)
+                      ) {
+                        setPaginationError(`Max page is ${pageCount}`);
+                      } else {
+                        setPaginationError("");
+                      }
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        const value = (e.target as HTMLInputElement).value;
+                        const pageNum = Number(value);
+                        if (
+                          !value ||
+                          isNaN(pageNum) ||
+                          pageNum < 1 ||
+                          pageNum > pageCount
+                        ) {
+                          setPaginationError(`Max page is ${pageCount}`);
+                        } else {
+                          setPaginationError("");
+                          handlePageChange(pageNum - 1);
+                          setPaginationInput("");
+                        }
+                      }
+                    }}
+                    onBlur={e => {
+                      setPaginationInput("");
+                      setPaginationError("");
+                    }}
+                    className="border rounded px-2 py-1 w-16 text-center mx-2"
+                    placeholder="Page"
+                  />
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(pageIndex + 1)}
+                  disabled={pageIndex >= pageCount - 1}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(pageIndex + 1)}
-              disabled={pageIndex >= pageCount - 1}
-            >
-              Next
-            </Button>
           </div>
+          {paginationError && (
+            <div className="w-full flex">
+              <span
+                className="text-xs text-red-500 mt-1"
+                style={{
+                  marginLeft: `calc(${Math.min(5, pageCount)} * 2.5rem + 2.5rem)`,
+                }}
+              >
+                {paginationError}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
