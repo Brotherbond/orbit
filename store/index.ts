@@ -21,6 +21,7 @@ import { roles, useGetRolesQuery } from "./roles";
 import { settings, useGetSettingsQuery } from "./settings";
 import { orderBrands, useGetOrderBrandsQuery } from "./order-brands";
 import { orderEvents, useGetOrderEventsQuery } from "./order-events";
+import { imeVssPerformance, useGetIMEVSSsPerformanceQuery } from "./ime-vss-performance";
 
 export const store = configureStore({
   reducer: {
@@ -30,6 +31,7 @@ export const store = configureStore({
     [distributorOrders.reducerPath]: distributorOrders.reducer,
     [distributorTargets.reducerPath]: distributorTargets.reducer,
     [imeVss.reducerPath]: imeVss.reducer,
+    [imeVssPerformance.reducerPath]: imeVssPerformance.reducer,
     [locations.reducerPath]: locations.reducer,
     [markets.reducerPath]: markets.reducer,
     [orders.reducerPath]: orders.reducer,
@@ -49,6 +51,7 @@ export const store = configureStore({
       distributorOrders.middleware,
       distributorTargets.middleware,
       imeVss.middleware,
+      imeVssPerformance.middleware,
       locations.middleware,
       markets.middleware,
       orders.middleware,
@@ -71,6 +74,7 @@ export const storeHooks = {
   distributorOrders: useGetDistributorOrdersQuery,
   distributorTargets: useGetDistributorTargetsQuery,
   imeVss: useGetIMEVSSsQuery,
+  imeVssPerformance: useGetIMEVSSsPerformanceQuery,
   locations: useGetLocationsQuery,
   markets: useGetMarketsQuery,
   orders: useGetOrdersQuery,
@@ -88,6 +92,7 @@ export const storeApis = {
   distributorOrders,
   distributorTargets,
   imeVss,
+  imeVssPerformance,
   locations,
   markets,
   orders,

@@ -11,12 +11,14 @@ function DistributorLayoutContent({ children, }: { children: React.ReactNode }) 
   const getActiveTab = () => {
     if (pathname.includes('/orders')) return 'orders'
     if (pathname.includes('/sales')) return 'sales'
+    if (pathname.includes('/ime-vss')) return 'ime-vss'
     return 'view'
   }
 
   const tabs = [
     { id: 'orders', label: 'Order Lead Time', path: `/dashboard/reports/orders` },
     { id: 'sales', label: 'Sales', path: `/dashboard/reports/sales` },
+    { id: 'ime-vss', label: 'IME/VSS Performance', path: `/dashboard/reports/ime-vss` },
   ]
 
   const activeTab = getActiveTab()
