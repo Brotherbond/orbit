@@ -101,26 +101,32 @@ export const createPrimarySecondaryFormatter = <T>(
 };
 
 export const formatFirstCharToUpperCase = (str: string): string => {
-  if (!str) return '';
+  if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
-export const formatLabel = (str: string, substitute = ' '): string => {
-  if (!str) return '';
+export const formatLabel = (str: string, substitute = " "): string => {
+  if (!str) return "";
   return str.replaceAll(/_/g, substitute);
 };
 
-export const formatLabelToTitleCase = (str: string, substitute = ' '): string => {
-  if (!str) return '';
+export const formatLabelToTitleCase = (
+  str: string,
+  substitute = " ",
+): string => {
+  if (!str) return "";
   const formatted = formatLabel(str, substitute);
   return formatted
     .split(substitute)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(substitute);
 };
 
-export const formatLabelToSentenceCase = (str: string, substitute = ' '): string => {
-  if (!str) return '';
+export const formatLabelToSentenceCase = (
+  str: string,
+  substitute = " ",
+): string => {
+  if (!str) return "";
   const formatted = formatLabel(str, substitute).toLowerCase();
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };

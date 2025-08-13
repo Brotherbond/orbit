@@ -35,10 +35,10 @@ const columns: ColumnDef<unknown, unknown>[] = [
     width: 200,
     cell: ({ row }) => <div className="flex-col items-center">
       <div className="font-semibold text-[#444444]">
-        Daily Perf: {row.original.dates[0].value}
+        Daily: {row.original.dates[0].value}
       </div>
       <div className="text-sm text-muted-foreground">
-        Cumu. Perf: {row.original.dates[0].total}
+        Cumu.: {row.original.dates[0].total}
       </div>
     </div>,
   },
@@ -48,10 +48,10 @@ const columns: ColumnDef<unknown, unknown>[] = [
     width: 200,
     cell: ({ row }) => <div className="flex-col items-center">
       <div className="font-semibold text-[#444444]">
-        Daily Perf: {row.original.dates[1].value}
+        Daily: {row.original.dates[1].value}
       </div>
       <div className="text-sm text-muted-foreground">
-        Cumu. Perf: {row.original.dates[1].total}
+        Cumu.: {row.original.dates[1].total}
       </div>
     </div>,
   },
@@ -61,10 +61,10 @@ const columns: ColumnDef<unknown, unknown>[] = [
     width: 200,
     cell: ({ row }) => <div className="flex-col items-center">
       <div className="font-semibold text-[#444444]">
-        Daily Perf: {row.original.dates[2].value}
+        Daily: {row.original.dates[2].value}
       </div>
       <div className="text-sm text-muted-foreground">
-        Cumu. Perf: {row.original.dates[2].total}
+        Cumu.: {row.original.dates[2].total}
       </div>
     </div>,
   },
@@ -74,10 +74,10 @@ const columns: ColumnDef<unknown, unknown>[] = [
     width: 200,
     cell: ({ row }) => <div className="flex-col items-center">
       <div className="font-semibold text-[#444444]">
-        Daily Perf: {row.original.dates[3].value}
+        Daily: {row.original.dates[3].value}
       </div>
       <div className="text-sm text-muted-foreground">
-        Cumu. Perf: {row.original.dates[3].total}
+        Cumu.: {row.original.dates[3].total}
       </div>
     </div>,
   },
@@ -87,10 +87,10 @@ const columns: ColumnDef<unknown, unknown>[] = [
     width: 200,
     cell: ({ row }) => <div className="flex-col items-center">
       <div className="font-semibold text-[#444444]">
-        Daily Perf: {row.original.dates[4].value}
+        Daily: {row.original.dates[4].value}
       </div>
       <div className="text-sm text-muted-foreground">
-        Cumu. Perf: {row.original.dates[4].total}
+        Cumu.: {row.original.dates[4].total}
       </div>
     </div>,
   },

@@ -21,7 +21,10 @@ import { roles, useGetRolesQuery } from "./roles";
 import { settings, useGetSettingsQuery } from "./settings";
 import { orderBrands, useGetOrderBrandsQuery } from "./order-brands";
 import { orderEvents, useGetOrderEventsQuery } from "./order-events";
-import { imeVssPerformance, useGetIMEVSSsPerformanceQuery } from "./ime-vss-performance";
+import {
+  imeVssPerformance,
+  useGetIMEVSSsPerformanceQuery,
+} from "./ime-vss-performance";
 
 export const store = configureStore({
   reducer: {
