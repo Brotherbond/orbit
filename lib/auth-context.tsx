@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { apiClient, ApiResponse } from "./api-client"
+import { apiClient } from "./api-client"
 
 interface User {
   id: string

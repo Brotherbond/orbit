@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import BrandForm from "@/components/dashboard/BrandForm";
 import { useToast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api-client";
-import { useRouter } from "next/navigation";
-import * as Yup from "yup";
-import BrandForm from "@/components/dashboard/BrandForm";
 import { Brand, BrandPackage } from "@/types/brand";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import * as Yup from "yup";
 
 export default function EditBrandPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(false);

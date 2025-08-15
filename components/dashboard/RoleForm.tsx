@@ -76,19 +76,19 @@ export default function RoleForm({
     setIsLoading(true)
     try {
       let response;
-      
+
       if (isEdit && roleId) {
         response = await apiClient.put(`/roles/${roleId}`, values)
       } else {
         response = await apiClient.post("/roles", values)
       }
-      
+
       if (response.status === "success") {
-        toast({ 
-          title: "Success", 
-          description: isEdit ? "Role updated successfully" : "Role created successfully" 
+        toast({
+          title: "Success",
+          description: isEdit ? "Role updated successfully" : "Role created successfully"
         });
-        
+
         if (onSuccess) {
           onSuccess(response.data);
         } else if (isEdit && roleId) {

@@ -98,7 +98,7 @@ function getColumns(
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => router.push(`/dashboard/ime-vss/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
-              View
+              View Details
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/dashboard/ime-vss/${row.original.uuid}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />

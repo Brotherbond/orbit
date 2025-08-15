@@ -1,17 +1,17 @@
 "use client"
 
-import React, { useRef } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { MoreHorizontal, Plus, Eye, Edit, Trash2, Package } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
-import Image from "next/image"
+import { apiClient } from "@/lib/api-client"
 import { Brand } from "@/types/brand"
+import { Edit, Eye, MoreHorizontal, Package, Plus, Trash2 } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import React, { useRef } from "react"
 export default function BrandsPage() {
   const router = useRouter()
   const { toast } = useToast()

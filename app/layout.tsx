@@ -1,9 +1,9 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.scss"
 import { Providers } from "@/components/providers"
 import { Toaster } from "@/components/ui/toaster"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import type React from "react"
+import "./globals.scss"
 
 const inter = Inter({ subsets: ["latin"] })
 

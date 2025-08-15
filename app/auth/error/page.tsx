@@ -1,11 +1,11 @@
 "use client"
 
-import { useSearchParams } from "next/navigation"
-import Link from "next/link"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, ArrowLeft } from "lucide-react"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 
 const errorMessages: Record<string, string> = {
   Signin: "Try signing in with a different account.",

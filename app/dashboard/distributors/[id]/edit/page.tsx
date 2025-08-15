@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-import * as Yup from "yup"
-import UserForm from "@/components/dashboard/UserForm"
-import { useDistributor } from "../distributor-context"
+import { useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api-client";
+import { useToast } from "@/hooks/use-toast";
+import * as Yup from "yup";
+import UserForm from "@/components/dashboard/UserForm";
+import { useDistributor } from "../distributor-context";
 
 interface Distributor {
   first_name: string
@@ -80,7 +80,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
           },
           ime_vss: distributor?.ime_vss
         })
-        
+
         toast({
           title: "Success",
           description: "Distributor updated successfully",

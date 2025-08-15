@@ -89,7 +89,7 @@ export default function SettingsPage() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => router.push(`/dashboard/settings/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
-              View
+              View Details
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/dashboard/settings/${row.original.uuid}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />

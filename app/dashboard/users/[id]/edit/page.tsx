@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRoles } from "@/components/dashboard/RolesContext"
 import { useRouter } from "next/navigation"
 import { apiClient } from "@/lib/api-client"
+import { PageHeader } from "@/components/PageHeader"
 import { useToast } from "@/hooks/use-toast"
 import * as Yup from "yup"
 import UserForm from "@/components/dashboard/UserForm"
@@ -144,20 +145,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <button
-          type="button"
-          className="btn btn-ghost flex items-center"
-          onClick={() => router.back()}
-        >
-          <span className="mr-2">←</span>
-          Back
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Edit User</h1>
-          <p className="text-[#ababab]">Update user information</p>
-        </div>
-      </div>
+      <PageHeader title="Edit User" description="Update user information" />
       <UserForm
         title="User Information"
         description="Update the user details below"

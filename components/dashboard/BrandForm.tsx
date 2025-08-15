@@ -5,9 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ErrorMessage, FieldArray, Form, Formik } from "formik";
 import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
-import React from "react";
 import { BrandPackage } from "@/types/brand";
-
 interface BrandFormProps {
   mode: "create" | "edit";
   initialValues: any;
@@ -78,38 +76,38 @@ export function BrandForm({
                   className="hidden"
                 />
 
-<label htmlFor="image" className="flex items-center justify-center relative group">
-  {imageFile ? (
-    <>
-      <img
-        src={URL.createObjectURL(imageFile)}
-        alt="Preview"
-        className="h-16 w-16 rounded-md object-cover border shadow-md"
-      />
-      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
-        <span className="text-white text-xs font-medium">Click to change</span>
-      </div>
-    </>
-  ) : values.image ? (
-    <>
-      <img
-        src={values.image}
-        alt="Existing"
-        className="h-16 w-16 rounded-md object-cover border shadow-md"
-      />
-      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
-        <span className="text-white text-xs font-medium">Click to change</span>
-      </div>
-    </>
-  ) : (
-    <div className="h-16 w-16 flex items-center justify-center rounded-md border border-dashed text-[#888] text-sm hover:border-gray-400 hover:bg-gray-50 transition">
-      <span className="text-center px-2">Add Image</span>
-    </div>
-  )}
-</label>
-{(imageFile || values.image) && (
-  <div className="text-xs text-[#888] mt-2 text-center">Click the image to change</div>
-)}
+                <label htmlFor="image" className="flex items-center justify-center relative group">
+                  {imageFile ? (
+                    <>
+                      <img
+                        src={URL.createObjectURL(imageFile)}
+                        alt="Preview"
+                        className="h-16 w-16 rounded-md object-cover border shadow-md"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
+                        <span className="text-white text-xs font-medium">Click to change</span>
+                      </div>
+                    </>
+                  ) : values.image ? (
+                    <>
+                      <img
+                        src={values.image}
+                        alt="Existing"
+                        className="h-16 w-16 rounded-md object-cover border shadow-md"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
+                        <span className="text-white text-xs font-medium">Click to change</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="h-16 w-16 flex items-center justify-center rounded-md border border-dashed text-[#888] text-sm hover:border-gray-400 hover:bg-gray-50 transition">
+                      <span className="text-center px-2">Add Image</span>
+                    </div>
+                  )}
+                </label>
+                {(imageFile || values.image) && (
+                  <div className="text-xs text-[#888] mt-2 text-center">Click the image to change</div>
+                )}
               </div>
             </CardHeader>
 

@@ -117,12 +117,12 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       <Card className="max-w-2xl">
-<CardHeader>
-  <CardTitle>Order Information</CardTitle>
-  {session?.user?.role !== "treasury" && (
-    <CardDescription>Update the order status below</CardDescription>
-  )}
-</CardHeader>
+        <CardHeader>
+          <CardTitle>Order Information</CardTitle>
+          {session?.user?.role !== "treasury" && (
+            <CardDescription>Update the order status below</CardDescription>
+          )}
+        </CardHeader>
         <CardContent>
           <Formik
             enableReinitialize
@@ -175,7 +175,7 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
                           );
                         } else if (session?.user?.role === "treasury") {
                           filteredOptions = allOptions.filter(opt =>
-                            ["update_requested","confirmed", "pending"].includes(opt.value)
+                            ["update_requested", "confirmed", "pending"].includes(opt.value)
                           );
                         }
                         return filteredOptions.map(opt => (

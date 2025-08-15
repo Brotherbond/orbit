@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
 import { AuditLog } from "@/types/audit-log";
+import React, { useRef } from "react";
 
 
 function getColumns(): ColumnDef<AuditLog>[] {

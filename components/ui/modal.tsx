@@ -1,5 +1,5 @@
 // components/ui/modal.tsx
-import React, { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 
 type ModalSize =
   | "sm-center"

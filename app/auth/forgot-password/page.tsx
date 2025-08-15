@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
         email: sentEmail,
         reset_code: values.code,
       });
-      
+
       setValidatedCode(values.code);
       setStep("password");
     } catch (err) {
@@ -90,13 +90,13 @@ export default function ForgotPasswordPage() {
         password: values.password,
         password_confirmation: values.confirm,
       });
-      
+
       toast({
         title: "Password Reset Successful",
         description: "Your password has been reset. You can now log in.",
         variant: "default",
       });
-      
+
       router.push("/auth/login");
     } catch (err) {
       setError("Failed to reset password. Please try again.");
@@ -127,10 +127,10 @@ export default function ForgotPasswordPage() {
       <div className="max-w-md w-full space-y-8">
         <AuthCard
           title={
-            step === "email" 
-              ? "Reset Password" 
-              : step === "code" 
-                ? "Verify Code" 
+            step === "email"
+              ? "Reset Password"
+              : step === "code"
+                ? "Verify Code"
                 : "Set New Password"
           }
           description={
@@ -141,7 +141,7 @@ export default function ForgotPasswordPage() {
                 : "Create a new secure password for your account"
           }
         >
-          
+
           {step === "email" && (
             <Formik
               initialValues={initialEmailValues}
@@ -208,7 +208,7 @@ export default function ForgotPasswordPage() {
                         <span className="font-medium text-gray-900">{sentEmail}</span>
                       </p>
                     </div>
-                    
+
                     <div>
                       <Label htmlFor="code" className="sr-only">Verification Code</Label>
                       <Field
@@ -226,7 +226,7 @@ export default function ForgotPasswordPage() {
                       />
                       <ErrorMessage name="code" component="div" className="text-red-500 text-xs mt-2 text-center" />
                     </div>
-                    
+
                     <div className="text-center">
                       <p className="text-xs text-gray-500">
                         Didn&apos;t receive the code?{" "}
@@ -241,7 +241,7 @@ export default function ForgotPasswordPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700" disabled={isLoading}>
                     {isLoading ? "Verifying..." : "Verify Code"}
                   </Button>
@@ -272,7 +272,7 @@ export default function ForgotPasswordPage() {
                       Now create your new password.
                     </p>
                   </div>
-                  
+
                   <div>
                     <Label htmlFor="password">New Password</Label>
                     <div className="mt-1 relative">

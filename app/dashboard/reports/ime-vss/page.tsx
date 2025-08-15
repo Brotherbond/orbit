@@ -1,145 +1,113 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable, FilterConfig } from "@/components/ui/data-table";
+import { IMEVSSPerformance } from "@/types/ime-vss-performance";
+import { Row } from "@tanstack/react-table";
+import { useRef, useEffect } from "react";
+import { useGetIMEVSSsPerformanceQuery } from "@/store/ime-vss-performance";
 import { ColumnDef } from "@/components/ui/data-table-types";
+import { format } from "date-fns";
 
-const columns: ColumnDef<unknown, unknown>[] = [
+type IMEVSSRow = Row<IMEVSSPerformance>;
+
+const generateDayColumns = (maxDays: number = 21) => {
+  const dayColumns = [];
+
+  for (let i = 1; i <= maxDays; i++) {
+    const dayKey = `day_${i}`;
+    dayColumns.push({
+      accessorKey: `performance_by_day.${dayKey}`,
+      header: `Day ${i}`,
+      width: 100,
+      cell: ({ row }: { row: IMEVSSRow }) => {
+        const dayData = row.original.performance_by_day[dayKey];
+        return (
+          <div className="flex-col items-center" title={dayData?.date || ''}>
+            <div className="font-semibold text-[#444444]">
+              Daily: {dayData?.daily_performance || 0}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Cumu.: {dayData?.cummulative_performance || 0}
+            </div>
+          </div>
+        );
+      },
+    });
+  }
+
+  return dayColumns;
+};
+
+// Define columns with proper typing
+const columns = [
   {
-    accessorKey: "ime_vss",
+    accessorKey: "user",
     header: "IME/VSS",
     width: 200,
-    cell: ({ row }) => (
+    cell: ({ row }: { row: IMEVSSRow }) => (
       <div>
         <div className="font-medium">
-          {row.original.ime_vss.first_name} {row.original.ime_vss.last_name}
+          {row.original.user.first_name} {row.original.user.last_name}
         </div>
-        <div className="text-sm text-muted-foreground">{row.original.ime_vss.email}</div>
+        <div className="text-sm text-muted-foreground">{row.original.user.email}</div>
       </div>
     ),
   },
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
+    cell: ({ row }: { row: IMEVSSRow }) => (
       <Badge
-        variant={row.original.ime_vss.status === "active" ? "default" : "destructive"}
-        className={`status ${row.original.ime_vss.status === "active" ? "active" : "inactive"}`}
+        variant={row.original.user.status === "active" ? "default" : "destructive"}
+        className={`status ${row.original.user.status === "active" ? "active" : "inactive"}`}
       >
-        {row.original.ime_vss.status}
+        {row.original.user.status}
       </Badge>
     ),
   },
-  {
-    accessorKey: "day_1",
-    header: "Day 1",
-    width: 200,
-    cell: ({ row }) => <div className="flex-col items-center">
-      <div className="font-semibold text-[#444444]">
-        Daily: {row.original.dates[0].value}
-      </div>
-      <div className="text-sm text-muted-foreground">
-        Cumu.: {row.original.dates[0].total}
-      </div>
-    </div>,
-  },
-  {
-    accessorKey: "day_2",
-    header: "Day 2",
-    width: 200,
-    cell: ({ row }) => <div className="flex-col items-center">
-      <div className="font-semibold text-[#444444]">
-        Daily: {row.original.dates[1].value}
-      </div>
-      <div className="text-sm text-muted-foreground">
-        Cumu.: {row.original.dates[1].total}
-      </div>
-    </div>,
-  },
-  {
-    accessorKey: "day_3",
-    header: "Day 3",
-    width: 200,
-    cell: ({ row }) => <div className="flex-col items-center">
-      <div className="font-semibold text-[#444444]">
-        Daily: {row.original.dates[2].value}
-      </div>
-      <div className="text-sm text-muted-foreground">
-        Cumu.: {row.original.dates[2].total}
-      </div>
-    </div>,
-  },
-  {
-    accessorKey: "day_4",
-    header: "Day 4",
-    width: 200,
-    cell: ({ row }) => <div className="flex-col items-center">
-      <div className="font-semibold text-[#444444]">
-        Daily: {row.original.dates[3].value}
-      </div>
-      <div className="text-sm text-muted-foreground">
-        Cumu.: {row.original.dates[3].total}
-      </div>
-    </div>,
-  },
-  {
-    accessorKey: "day_5",
-    header: "Day 5",
-    width: 200,
-    cell: ({ row }) => <div className="flex-col items-center">
-      <div className="font-semibold text-[#444444]">
-        Daily: {row.original.dates[4].value}
-      </div>
-      <div className="text-sm text-muted-foreground">
-        Cumu.: {row.original.dates[4].total}
-      </div>
-    </div>,
-  },
+  ...generateDayColumns(),
 ];
 
-const data = [
-  {
-    ime_vss: {
-      "uuid": "3b4d7305-b132-451d-9dbe-c3e22de02870",
-      "first_name": "Austin13011",
-      "last_name": "IME13011",
-      "full_name": "Austin13011 IME13011",
-      "email": "austin.ime13011@example.com",
-      "phone": "+12345678913011",
-      "market": {
-        "uuid": "f91c6ec3-25ae-4ecb-8d8e-23c6f217939d",
-        "name": "Mushin market",
-        "type": "retail",
-        "full_name": "Mushin market (retail)",
-        "longitude": null,
-        "latitude": null,
-        "created_at": "2025-06-25 09:39 AM"
-      },
-      "email_verified_at": null,
-      "status": "active",
-      "role": {
-        "uuid": "d1a9a5e0-3514-4109-8da4-5d80bb4780df",
-        "name": "ime",
-        "created_at": "2025-08-07 12:32 PM"
-      },
-      "is_active": true,
-      "has_distributor": false,
-      "created_at": "2025-06-25 13:04 PM"
-    },
-    dates: [{ day: 1, date: "01-08-2025", value: 1000, total: 1000 }, { day: 2, date: "02-08-2025", value: 1500, total: 2500 }, { day: 3, date: "03-08-2025", value: 2000, total: 4500 }, { day: 4, date: "04-08-2025", value: 2500, total: 7000 }, { day: 5, date: "05-08-2025", value: 3000, total: 10000 }],
-  },
-]
-
 export default function ReportsPage() {
+  const { data: storeData, isLoading } = useGetIMEVSSsPerformanceQuery({});
+
+  const columnsRef = useRef<any>(columns);
+
+  const getDynamicColumns = (data: IMEVSSPerformance[] | undefined) => {
+    if (data && data.length > 0 && data[0].workday_count) {
+      const maxDays = data[0].workday_count;
+      return [
+        columns[0],
+        columns[1],
+        ...generateDayColumns(maxDays)
+      ] as any;
+    }
+    return columns as ColumnDef<IMEVSSPerformance>[];
+  };
+
+  useEffect(() => {
+    let performanceData: IMEVSSPerformance[] | undefined = (storeData as any)?.data?.items;
+    if (performanceData && performanceData.length > 0) {
+      columnsRef.current = getDynamicColumns(performanceData);
+    }
+  }, [storeData]);
+
+  // Define filters
+  const filters: FilterConfig[] = [
+    { type: "disableDefaultDateRange" },
+    { type: "month-year", label: "Month/Year", param: "month" }
+  ];
 
   return (
     <div className="space-y-6">
       <DataTable
-        columns={columns}
-        data={data}
-        // store="imeVssPerformance"
-        searchKey="ime_vss"
+        columns={columnsRef.current}
+        store="imeVssPerformance"
+        searchKey="user"
         searchPlaceholder="Search by ime/vss"
         exportFileName={`IME-VSS-Performance.xlsx`}
+        filters={filters}
+        per_page={20}
       />
     </div>
   );

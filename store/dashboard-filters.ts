@@ -1,12 +1,12 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type {
+  CustomDateRange,
   DateFilterOption,
   DateRange,
-  CustomDateRange,
 } from "@/lib/date-utils";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // Re-export types for backward compatibility
-export type { DateFilterOption, DateRange, CustomDateRange };
+export type { CustomDateRange, DateFilterOption, DateRange };
 
 interface DashboardFiltersState {
   selectedFilter: DateFilterOption;

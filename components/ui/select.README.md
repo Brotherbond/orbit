@@ -147,6 +147,7 @@ const fields = [
 ## Examples
 
 ### Users with Full Name and Email
+
 ```tsx
 <SelectWithFetch
   fetchUrl="/api/users?roles=ime,vss"
@@ -158,6 +159,7 @@ const fields = [
 ```
 
 ### Products with Name and Price
+
 ```tsx
 <SelectWithFetch
   fetchUrl="/api/products"
@@ -169,6 +171,7 @@ const fields = [
 ```
 
 ### Companies with Custom Search Parameter
+
 ```tsx
 <SelectWithFetch
   fetchUrl="/api/companies"
@@ -193,6 +196,7 @@ const fields = [
 If you're migrating from the old hardcoded implementation:
 
 **Before:**
+
 ```tsx
 <SelectWithFetch
   fetchUrl="/users?roles=ime,vss"
@@ -201,6 +205,7 @@ If you're migrating from the old hardcoded implementation:
 ```
 
 **After:**
+
 ```tsx
 <SelectWithFetch
   fetchUrl="/users?roles=ime,vss"

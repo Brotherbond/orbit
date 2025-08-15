@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { apiClient } from "./api-client";
-import { User } from "@/app/dashboard/users/page";
+import { User } from "@/types/user";
 
 export const authOptions: NextAuthOptions = {
   providers: [

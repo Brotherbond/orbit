@@ -1,16 +1,16 @@
 "use client";
-import React, { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import BulkUploadModal from "@/components/dashboard/BulkUploadModal";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
-import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api-client";
 import { User } from "@/types/user";
-import BulkUploadModal from "@/components/dashboard/BulkUploadModal";
+import { Edit, Eye, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { useRef, useState } from "react";
 
 const roles = "super-admin,sales-admin,manager,operations,treasury"
 
@@ -90,7 +90,7 @@ function getColumns(
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => router.push(`/dashboard/users/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
-              View
+              View Details
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/dashboard/users/${row.original.uuid}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />

@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api-client";
 import { Role } from "@/types/role";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 type RolesContextType = {
   roles: Role[];
@@ -11,7 +11,7 @@ type RolesContextType = {
 const RolesContext = createContext<RolesContextType>({
   roles: [],
   isLoading: false,
-  refreshRoles: () => {},
+  refreshRoles: () => { },
 });
 
 export const RolesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

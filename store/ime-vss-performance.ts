@@ -1,9 +1,9 @@
-import type { User } from "../types/user";
+import { IMEVSSPerformance } from "@/types/ime-vss-performance";
 import { createEntity } from "./entityFactory";
 
-export const imeVssPerformance = createEntity<User>({
-  reducerPath: "imeVssApi",
-  entityEndpoint: "users",
+export const imeVssPerformance = createEntity<IMEVSSPerformance>({
+  reducerPath: "imeVssPerformanceApi",
+  entityEndpoint: "reports/ime_vss_performance",
 });
 
 export const {

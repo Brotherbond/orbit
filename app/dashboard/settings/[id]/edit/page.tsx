@@ -69,9 +69,9 @@ export default function EditSettingPage({ params }: { params: { id: string } }) 
   const handleSubmit = async (values: SettingData, { setSubmitting, setFieldError }: any) => {
     setIsLoading(true)
     try {
-       await apiClient.put(`/settings/${params.id}`, values)
-         toast({ title: "Success", description: "Setting updated successfully" })
-        router.push(`/dashboard/settings/${params.id}`)
+      await apiClient.put(`/settings/${params.id}`, values)
+      toast({ title: "Success", description: "Setting updated successfully" })
+      router.push(`/dashboard/settings/${params.id}`)
     } catch (error: any) {
       toast({
         title: "Error",

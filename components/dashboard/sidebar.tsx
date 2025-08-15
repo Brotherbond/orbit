@@ -1,24 +1,26 @@
 "use client"
-import React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import {
-  Home,
-  Users,
-  Package,
-  ShoppingCart,
-  MapPin,
   Building2,
   FileText,
+  History,
+  Home,
+  LogOut,
+  MapPin,
+  Package,
+  PackageCheck,
   Settings,
   Shield,
+  ShoppingCart,
+  Truck,
   UserCheck,
-  LogOut,
-  History,
+  Users,
+  Warehouse,
 } from "lucide-react"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import React from "react"
 
 import { routeRoles } from "@/lib/route-roles"
 
@@ -33,6 +35,9 @@ const iconMap: Record<string, IconType> = {
   Brands: Package,
   Markets: Building2,
   Locations: MapPin,
+  Deliveries: PackageCheck,
+  Vehicles: Truck,
+  Warehouses: Warehouse,
   "Roles & Permissions": Shield,
   Reports: FileText,
   "Audit Logs": History,

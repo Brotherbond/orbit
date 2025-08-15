@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { FileIcon, UploadIcon, DownloadIcon, XIcon, CheckIcon } from "lucide-react";
+import { FileIcon, UploadIcon, DownloadIcon, XIcon } from "lucide-react";
 
 interface BulkUploadModalProps {
   open: boolean;
@@ -55,14 +55,14 @@ export function BulkUploadModal({
       setFile(null);
       return;
     }
-    
+
     setFile(selectedFile);
   };
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (e.type === "dragenter" || e.type === "dragover") {
       setDragActive(true);
     } else if (e.type === "dragleave") {
@@ -74,7 +74,7 @@ export function BulkUploadModal({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       validateAndSetFile(e.dataTransfer.files[0]);
     }
@@ -89,22 +89,22 @@ export function BulkUploadModal({
       });
       return;
     }
-    
+
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
-      
+
       await apiClient.post(apiUrl, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      
-      toast({ 
-        title: "Success", 
+
+      toast({
+        title: "Success",
         description: "Bulk upload successful",
-        variant: "default" 
+        variant: "default"
       });
-      
+
       setFile(null);
       onClose();
       if (onSuccess) onSuccess();
@@ -174,9 +174,9 @@ export function BulkUploadModal({
                       {(file.size / 1024).toFixed(2)} KB
                     </p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="gap-1 text-destructive hover:text-destructive"
                     onClick={removeFile}
                   >

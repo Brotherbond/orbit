@@ -143,12 +143,12 @@ body {
     }
 
     &.approved {
-      color: #12B636;
-      background: #1CD34412;
+      color: #12b636;
+      background: #1cd34412;
     }
 
     &.update_requested {
-      color: #FFFFFF;
+      color: #ffffff;
       background: #000000;
     }
 
@@ -168,8 +168,8 @@ body {
     }
 
     &.rejected {
-      color: #FFFFFF;
-      background: #FFB800;
+      color: #ffffff;
+      background: #ffb800;
     }
   }
 }
@@ -192,7 +192,7 @@ body {
   }
 }
 
-.no-card{
+.no-card {
   border: none !important;
   box-shadow: none !important;
 }

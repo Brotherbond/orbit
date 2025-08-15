@@ -1,28 +1,28 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { useToast } from "@/hooks/use-toast"
+import { apiClient } from "@/lib/api-client"
 import {
-  Trash2,
-  Mail,
-  Phone,
-  MapPin,
   Building,
   CreditCard,
+  Mail,
+  MapPin,
+  Phone,
+  Trash2,
   TrendingUp,
 } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
+import { memo } from "react"
 import {
   useDistributor,
-  useDistributorUser,
   useDistributorInfo,
-  useDistributorPerformance
+  useDistributorPerformance,
+  useDistributorUser
 } from "./distributor-context"
-import { memo } from "react"
 
 // Memoized components to prevent unnecessary re-renders
 const BusinessAndContactInformationCard = memo(() => {

@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { SelectWithFetch } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
 import {
   Table,
   TableBody,
@@ -38,6 +39,7 @@ import {
 export type FilterOption = { label: string; value: string };
 export type FilterConfig =
   | { type: "date"; label: string; param: string }
+  | { type: "month-year"; label: string; param: string }
   | { type: "select"; label: string; param: string; options: FilterOption[] }
   | {
     type: "selectWithFetch";
@@ -54,7 +56,7 @@ export type FilterConfig =
   | { type: "custom"; render: React.ReactNode }
   | { type: "disableDefaultDateRange" };
 
-import { storeHooks, storeApis } from "@/store";
+import { storeApis } from "@/store";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 interface DataTableProps<TData, TValue> {
@@ -63,7 +65,7 @@ interface DataTableProps<TData, TValue> {
   searchKey?: string;
   searchPlaceholder?: string;
   onRowClick?: (row: TData) => void;
-  store?: keyof typeof storeHooks;
+  store?: keyof typeof storeApis;
   exportFileName?: string;
   className?: string;
   per_page?: number;
@@ -198,8 +200,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     };
   }, [store, params, fixedQuery, filterParams, pageIndex, pageSize]);
 
-  const storeHook = store ? storeHooks[store] : undefined;
-  const storeQuery = storeHook ? storeHook(storeParams ?? skipToken) : undefined;
+  const storeQuery = store ? storeApis[store].useGetAllQuery(storeParams ?? skipToken) : undefined;
 
   // Only refetch when user clicks Refresh
   React.useEffect(() => {
@@ -329,171 +330,191 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
               />
             </div>
           )}
-          <DropdownMenu open={filterDropdownOpen} onOpenChange={setFilterDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                {Object.values(activeFilters).some(Boolean) || Object.values(filterState).some(v => v && v !== "all") ? (
-                  <Filter className="mr-2 h-4 w-4 fill-current text-primary" />
-                ) : (
-                  <Filter className="mr-2 h-4 w-4" />
-                )}
-                Filter
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              sideOffset={4}
-              className="min-w-[18rem] p-2"
-              onInteractOutside={(e) => {
-                const target = e.target as Element;
-                if (target.closest('[data-radix-select-content]') ||
-                  target.closest('[data-radix-popper-content-wrapper]')) {
-                  e.preventDefault();
-                }
-              }}
-            >
-              {effectiveFilters.map((filter, idx) => {
-                if (filter.type === "custom" && "render" in filter) {
-                  return (
-                    <div key={idx} className="flex flex-col min-w-[8rem] px-2 py-1">
-                      {filter.render}
-                    </div>
-                  );
-                }
-                if (
-                  "param" in filter &&
-                  "label" in filter &&
-                  (filter.type === "date" ||
-                    filter.type === "text" ||
-                    filter.type === "select" ||
-                    filter.type === "selectWithFetch")
-                ) {
-                  return (
-                    <div key={filter.param} className="flex flex-col min-w-[8rem] px-2 py-2 border-b last:border-b-0">
-                      <DropdownMenuCheckboxItem
-                        checked={!!activeFilters[filter.param]}
-                        indicatorClassName="border border-[black]"
-                        onCheckedChange={(checked) => {
-                          setActiveFilters((prev) => ({
-                            ...prev,
-                            [filter.param]: checked,
-                          }));
-                          if (!checked) {
-                            setPendingFilterState((prev) => {
-                              const next = { ...prev };
-                              delete next[filter.param];
-                              return next;
-                            });
-                          }
-                        }}
-                        className="font-medium"
-                      >
-                        {filter.label}
-                      </DropdownMenuCheckboxItem>
-                      {!!activeFilters[filter.param] && (
-                        <div className="mt-2 pl-6">
-                          {filter.type === "date" && (
-                            <Input
-                              type="date"
-                              className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
-                              value={pendingFilterState[filter.param] || ""}
-                              onChange={(e) =>
-                                setPendingFilterState((s) => ({
-                                  ...s,
-                                  [filter.param]: e.target.value,
-                                }))
+          {
+            effectiveFilters?.length ?
+              <DropdownMenu open={filterDropdownOpen} onOpenChange={setFilterDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    {Object.values(activeFilters).some(Boolean) || Object.values(filterState).some(v => v && v !== "all") ? (
+                      <Filter className="mr-2 h-4 w-4 fill-current text-primary" />
+                    ) : (
+                      <Filter className="mr-2 h-4 w-4" />
+                    )}
+                    Filter
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={4}
+                  className="min-w-[18rem] p-2"
+                  onInteractOutside={(e) => {
+                    const target = e.target as Element;
+                    if (target.closest('[data-radix-select-content]') ||
+                      target.closest('[data-radix-popper-content-wrapper]')) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
+                  {effectiveFilters.map((filter, idx) => {
+                    if (filter.type === "custom" && "render" in filter) {
+                      return (
+                        <div key={idx} className="flex flex-col min-w-[8rem] px-2 py-1">
+                          {filter.render}
+                        </div>
+                      );
+                    }
+                    if (
+                      "param" in filter &&
+                      "label" in filter &&
+                      (filter.type === "date" ||
+                        filter.type === "month-year" ||
+                        filter.type === "text" ||
+                        filter.type === "select" ||
+                        filter.type === "selectWithFetch")
+                    ) {
+                      return (
+                        <div key={filter.param} className="flex flex-col min-w-[8rem] px-2 py-2 border-b last:border-b-0">
+                          <DropdownMenuCheckboxItem
+                            checked={!!activeFilters[filter.param]}
+                            indicatorClassName="border border-[black]"
+                            onCheckedChange={(checked) => {
+                              setActiveFilters((prev) => ({
+                                ...prev,
+                                [filter.param]: checked,
+                              }));
+                              if (!checked) {
+                                setPendingFilterState((prev) => {
+                                  const next = { ...prev };
+                                  delete next[filter.param];
+                                  return next;
+                                });
                               }
-                              placeholder={filter.label}
-                            />
-                          )}
-                          {filter.type === "select" && "options" in filter && (
-                            <select
-                              className="w-full h-9 px-2 py-1 rounded text-[14px] border bg-gray-50 focus:bg-white focus:border-primary"
-                              value={pendingFilterState[filter.param] || "all"}
-                              onChange={(e) =>
-                                setPendingFilterState((s) => ({
-                                  ...s,
-                                  [filter.param]: e.target.value,
-                                }))
-                              }
-                              aria-label={filter.label}
-                            >
-                              {(filter.options as FilterOption[]).map((opt) => (
-                                <option key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </option>
-                              ))}
-                            </select>
-                          )}
-                          {filter.type === "text" && (
-                            <Input
-                              type="text"
-                              className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
-                              value={pendingFilterState[filter.param] || ""}
-                              onChange={(e) =>
-                                setPendingFilterState((s) => ({
-                                  ...s,
-                                  [filter.param]: e.target.value,
-                                }))
-                              }
-                              placeholder={filter.label}
-                            />
-                          )}
-                          {filter.type === "selectWithFetch" && "fetchUrl" in filter && (
-                            <div className="w-full">
-                              <SelectWithFetch className="text-[14px]"
-                                fetchUrl={filter.fetchUrl}
-                                value={pendingFilterState[filter.param] || ""}
-                                onChange={(value) =>
-                                  setPendingFilterState((s) => ({
-                                    ...s,
-                                    [filter.param]: value,
-                                  }))
-                                }
-                                valueKey={filter.valueKey}
-                                labelKey={filter.labelKey}
-                                searchParam={filter.searchParam}
-                                placeholder={filter.placeholder || filter.label}
-                                labelFormatter={filter.labelFormatter}
-                              />
+                            }}
+                            className="font-medium"
+                          >
+                            {filter.label}
+                          </DropdownMenuCheckboxItem>
+                          {!!activeFilters[filter.param] && (
+                            <div className="mt-2 pl-6">
+                              {filter.type === "date" && (
+                                <Input
+                                  type="date"
+                                  className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
+                                  value={pendingFilterState[filter.param] || ""}
+                                  onChange={(e) =>
+                                    setPendingFilterState((s) => ({
+                                      ...s,
+                                      [filter.param]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder={filter.label}
+                                />
+                              )}
+                              {filter.type === "month-year" && (
+                                <div className="w-full">
+                                  <MonthYearPicker
+                                    month={pendingFilterState["month"] || ""}
+                                    year={pendingFilterState["year"] || ""}
+                                    onChange={(month, year) =>
+                                      setPendingFilterState((s) => ({
+                                        ...s,
+                                        "month": month,
+                                        "year": year,
+                                      }))
+                                    }
+                                  />
+                                </div>
+                              )}
+                              {filter.type === "select" && "options" in filter && (
+                                <select
+                                  className="w-full h-9 px-2 py-1 rounded text-[14px] border bg-gray-50 focus:bg-white focus:border-primary"
+                                  value={pendingFilterState[filter.param] || "all"}
+                                  onChange={(e) =>
+                                    setPendingFilterState((s) => ({
+                                      ...s,
+                                      [filter.param]: e.target.value,
+                                    }))
+                                  }
+                                  aria-label={filter.label}
+                                >
+                                  {(filter.options as FilterOption[]).map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                              {filter.type === "text" && (
+                                <Input
+                                  type="text"
+                                  className="w-full h-9 px-2 py-1 rounded border bg-gray-50 focus:bg-white focus:border-primary"
+                                  value={pendingFilterState[filter.param] || ""}
+                                  onChange={(e) =>
+                                    setPendingFilterState((s) => ({
+                                      ...s,
+                                      [filter.param]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder={filter.label}
+                                />
+                              )}
+                              {filter.type === "selectWithFetch" && "fetchUrl" in filter && (
+                                <div className="w-full">
+                                  <SelectWithFetch className="text-[14px]"
+                                    fetchUrl={filter.fetchUrl}
+                                    value={pendingFilterState[filter.param] || ""}
+                                    onChange={(value) =>
+                                      setPendingFilterState((s) => ({
+                                        ...s,
+                                        [filter.param]: value,
+                                      }))
+                                    }
+                                    valueKey={filter.valueKey}
+                                    labelKey={filter.labelKey}
+                                    searchParam={filter.searchParam}
+                                    placeholder={filter.placeholder || filter.label}
+                                    labelFormatter={filter.labelFormatter}
+                                  />
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
-                      )}
+                      );
+                    }
+                    return null;
+                  })}
+                  {Object.values(activeFilters).some(Boolean) && (
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setPendingFilterState({});
+                          setFilterState({});
+                          setActiveFilters({});
+                          setFilterDropdownOpen(false);
+                        }}
+                        data-testid="filter-reset"
+                      >
+                        Reset
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setFilterState(pendingFilterState);
+                          setFilterDropdownOpen(false);
+                        }}
+                        data-testid="filter-apply"
+                      >
+                        Apply
+                      </Button>
                     </div>
-                  );
-                }
-                return null;
-              })}
-              {Object.values(activeFilters).some(Boolean) && (
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setPendingFilterState({});
-                      setFilterState({});
-                      setActiveFilters({});
-                      setFilterDropdownOpen(false);
-                    }}
-                    data-testid="filter-reset"
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setFilterState(pendingFilterState);
-                      setFilterDropdownOpen(false);
-                    }}
-                    data-testid="filter-apply"
-                  >
-                    Apply
-                  </Button>
-                </div>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              : <></>
+          }
         </div>
         <div className="flex items-center space-x-2">
           <Button

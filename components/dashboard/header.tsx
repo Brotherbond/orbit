@@ -1,7 +1,7 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import Link from "next/link"
-import { Bell, Search, User, Settings, LogOut, Key } from "lucide-react"
-import { useSession, signOut } from "next-auth/react"
-import Image from "next/image"
+import { Input } from "@/components/ui/input"
 import Logo from "@/images/orbit-logo.png"
-import { Badge } from "@/components/ui/badge"
+import { Bell, Key, LogOut, Search, Settings, User } from "lucide-react"
+import { signOut, useSession } from "next-auth/react"
+import Image from "next/image"
+import Link from "next/link"
 
 export function DashboardHeader() {
   const { data: session } = useSession()

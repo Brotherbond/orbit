@@ -29,7 +29,7 @@ export default function RolesPage() {
     {
       accessorKey: "access_type",
       header: "Access Type",
-      cell: ({ row }) => `${row.original.access_type?.charAt(0)?.toUpperCase()||''}${row.original.access_type?.slice(1)?.toLowerCase()||''}` || "N/A",
+      cell: ({ row }) => `${row.original.access_type?.charAt(0)?.toUpperCase() || ''}${row.original.access_type?.slice(1)?.toLowerCase() || ''}` || "N/A",
     },
     {
       accessorKey: "description",
@@ -54,7 +54,7 @@ export default function RolesPage() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => router.push(`/dashboard/roles/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
-              View
+              View Details
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/dashboard/roles/${row.original.uuid}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />

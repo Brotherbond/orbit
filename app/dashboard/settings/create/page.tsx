@@ -33,12 +33,12 @@ export default function CreateSettingPage() {
     status: Yup.string().oneOf(["active", "inactive"]).required(),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
       await apiClient.post("/settings", values)
-        toast({ title: "Success", description: "Setting created successfully" })
-        router.push("/dashboard/settings")
+      toast({ title: "Success", description: "Setting created successfully" })
+      resetForm();
     } catch (error: any) {
       toast({
         title: "Error",

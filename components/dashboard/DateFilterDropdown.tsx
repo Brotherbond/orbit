@@ -1,6 +1,5 @@
 "use client"
 
-import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -9,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DATE_FILTER_OPTIONS, type DateFilterOption } from "@/lib/date-utils"
+import { ChevronDown } from "lucide-react"
 
 interface DateFilterDropdownProps {
   selectedFilter: DateFilterOption
@@ -16,10 +16,10 @@ interface DateFilterDropdownProps {
   onFilterChange: (filter: DateFilterOption) => void
 }
 
-export function DateFilterDropdown({ 
-  selectedFilter, 
-  displayText, 
-  onFilterChange 
+export function DateFilterDropdown({
+  selectedFilter,
+  displayText,
+  onFilterChange
 }: DateFilterDropdownProps) {
   const availableOptions = DATE_FILTER_OPTIONS.filter(option => option !== selectedFilter)
 
@@ -33,7 +33,7 @@ export function DateFilterDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[140px]">
         {availableOptions.map((option) => (
-          <DropdownMenuItem 
+          <DropdownMenuItem
             key={option}
             onClick={() => onFilterChange(option)}
           >

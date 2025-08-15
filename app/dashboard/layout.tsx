@@ -1,17 +1,17 @@
 "use client"
 
-import Link from "next/link"
-import Image from "next/image"
-import type React from "react"
-import Logo from "@/images/orbit-logo.png"
-import { useSession } from "next-auth/react"
-import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import { DashboardHeader } from "@/components/dashboard/header"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import { AuthProvider } from "@/lib/auth-context"
 import { RolesProvider } from "@/components/dashboard/RolesContext"
+import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import SessionTimeout from "@/components/SessionTimeout"
+import Logo from "@/images/orbit-logo.png"
+import { AuthProvider } from "@/lib/auth-context"
+import { useSession } from "next-auth/react"
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import type React from "react"
+import { useEffect } from "react"
 
 
 export default function DashboardLayout({
@@ -54,7 +54,7 @@ export default function DashboardLayout({
           <DashboardHeader />
           <div className="flex">
             <DashboardSidebar />
-              <main className="flex-1 p-6 overflow-auto">{children}</main>
+            <main className="flex-1 p-6 overflow-auto">{children}</main>
           </div>
         </div>
       </RolesProvider>

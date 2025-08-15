@@ -1,9 +1,9 @@
 "use client"
 
-import { usePathname, useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { usePathname, useRouter } from "next/navigation"
 import { DistributorProvider, useDistributor, useDistributorInfo } from "./distributor-context"
 
 function DistributorLayoutContent({
@@ -90,9 +90,9 @@ function DistributorLayoutContent({
 // Separate component for user name to avoid unnecessary re-renders
 function DistributorUserName() {
   const { distributor } = useDistributor()
-  
+
   if (!distributor?.user) return null
-  
+
   return (
     <p className="text-[#ababab]">
       {distributor.user.first_name} {distributor.user.last_name}

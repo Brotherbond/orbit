@@ -1,17 +1,14 @@
-"use client"
-
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Edit, Trash2, Package } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-import Image from "next/image"
-import { Brand } from "@/types/brand"
-
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Edit, Trash2, Package } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
+import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
+import { Brand } from "@/types/brand";
 export default function BrandDetailPage({ params }: { params: { id: string } }) {
   const [brand, setBrand] = useState<Brand | null>(null)
   const [isLoading, setIsLoading] = useState(true)

@@ -1,35 +1,30 @@
+import { brands } from "@/store/brands";
+import { distributors } from "@/store/distributors";
+import { imeVss } from "@/store/ime-vss";
+import { orders } from "@/store/orders";
 import { configureStore } from "@reduxjs/toolkit";
-import { brands, useGetBrandsQuery } from "@/store/brands";
-import { distributors, useGetDistributorsQuery } from "@/store/distributors";
-import { imeVss, useGetIMEVSSsQuery } from "@/store/ime-vss";
-import { orders, useGetOrdersQuery } from "@/store/orders";
-import { users, useGetUsersQuery } from "./users";
-import {
-  distributorOrders,
-  useGetDistributorOrdersQuery,
-} from "./distributor-orders";
-import { auditLogs, useGetAuditLogsQuery } from "./audit-logs";
-import {
-  distributorTargets,
-  useGetDistributorTargetsQuery,
-} from "./distributor-targets";
+import { auditLogs } from "./audit-logs";
 import { dashboardApi } from "./dashboard-api";
 import dashboardFiltersReducer from "./dashboard-filters";
-import { locations, useGetLocationsQuery } from "./locations";
-import { markets, useGetMarketsQuery } from "./markets";
-import { roles, useGetRolesQuery } from "./roles";
-import { settings, useGetSettingsQuery } from "./settings";
-import { orderBrands, useGetOrderBrandsQuery } from "./order-brands";
-import { orderEvents, useGetOrderEventsQuery } from "./order-events";
-import {
-  imeVssPerformance,
-  useGetIMEVSSsPerformanceQuery,
-} from "./ime-vss-performance";
+import { deliveries } from "./deliveries";
+import { distributorOrders } from "./distributor-orders";
+import { distributorTargets } from "./distributor-targets";
+import { imeVssPerformance } from "./ime-vss-performance";
+import { locations } from "./locations";
+import { markets } from "./markets";
+import { orderBrands } from "./order-brands";
+import { orderEvents } from "./order-events";
+import { roles } from "./roles";
+import { settings } from "./settings";
+import { users } from "./users";
+import { vehicles } from "./vehicles";
+import { warehouses } from "./warehouses";
 
 export const store = configureStore({
   reducer: {
     [auditLogs.reducerPath]: auditLogs.reducer,
     [brands.reducerPath]: brands.reducer,
+    [deliveries.reducerPath]: deliveries.reducer,
     [distributors.reducerPath]: distributors.reducer,
     [distributorOrders.reducerPath]: distributorOrders.reducer,
     [distributorTargets.reducerPath]: distributorTargets.reducer,
@@ -37,6 +32,8 @@ export const store = configureStore({
     [imeVssPerformance.reducerPath]: imeVssPerformance.reducer,
     [locations.reducerPath]: locations.reducer,
     [markets.reducerPath]: markets.reducer,
+    [vehicles.reducerPath]: vehicles.reducer,
+    [warehouses.reducerPath]: warehouses.reducer,
     [orders.reducerPath]: orders.reducer,
     [orderBrands.reducerPath]: orderBrands.reducer,
     [orderEvents.reducerPath]: orderEvents.reducer,
@@ -50,6 +47,7 @@ export const store = configureStore({
     (getDefaultMiddleware() as any).concat([
       auditLogs.middleware,
       brands.middleware,
+      deliveries.middleware,
       distributors.middleware,
       distributorOrders.middleware,
       distributorTargets.middleware,
@@ -57,6 +55,8 @@ export const store = configureStore({
       imeVssPerformance.middleware,
       locations.middleware,
       markets.middleware,
+      vehicles.middleware,
+      warehouses.middleware,
       orders.middleware,
       orderBrands.middleware,
       orderEvents.middleware,
@@ -69,28 +69,10 @@ export const store = configureStore({
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
-export const storeHooks = {
-  auditLogs: useGetAuditLogsQuery,
-  brands: useGetBrandsQuery,
-  distributors: useGetDistributorsQuery,
-  distributorOrders: useGetDistributorOrdersQuery,
-  distributorTargets: useGetDistributorTargetsQuery,
-  imeVss: useGetIMEVSSsQuery,
-  imeVssPerformance: useGetIMEVSSsPerformanceQuery,
-  locations: useGetLocationsQuery,
-  markets: useGetMarketsQuery,
-  orders: useGetOrdersQuery,
-  orderBrands: useGetOrderBrandsQuery,
-  orderEvents: useGetOrderEventsQuery,
-  roles: useGetRolesQuery,
-  settings: useGetSettingsQuery,
-  users: useGetUsersQuery,
-};
-
 export const storeApis = {
   auditLogs,
   brands,
+  deliveries,
   distributors,
   distributorOrders,
   distributorTargets,
@@ -103,5 +85,7 @@ export const storeApis = {
   orderEvents,
   roles,
   settings,
+  vehicles,
+  warehouses,
   users,
 };

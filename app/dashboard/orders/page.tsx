@@ -35,7 +35,7 @@ export default function OrdersPage() {
       label: "Status",
       param: "status",
       options: [
-        { label: "All Statuses", value: "all" },
+        { label: "All", value: "all" },
         { label: "Pending", value: "pending" },
         { label: "Confirmed", value: "confirmed" },
         { label: "Update Requested", value: "update_requested" },

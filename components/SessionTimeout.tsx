@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useRef } from "react"
 import { signOut } from "next-auth/react"
+import { useEffect, useRef } from "react"
 
 
 const TIMEOUT_MS = Number(process.env.NEXT_PUBLIC_SESSION_TIMEOUT_IN_MINUTES || 15) * 60 * 1000

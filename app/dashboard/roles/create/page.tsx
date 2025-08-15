@@ -1,6 +1,5 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
 import RoleForm, { RoleFormValues } from "@/components/dashboard/RoleForm"
 
 export default function CreateRolePage() {

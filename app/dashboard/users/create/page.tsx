@@ -1,13 +1,12 @@
-"use client"
-
-import { useState } from "react"
-import { useRoles } from "@/components/dashboard/RolesContext"
-import { useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-import * as Yup from "yup"
-import UserForm from "@/components/dashboard/UserForm"
-import { Role } from "@/types/role"
+"use client";
+import { useState } from "react";
+import { useRoles } from "@/components/dashboard/RolesContext";
+import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/PageHeader";
+import { apiClient } from "@/lib/api-client";
+import { useToast } from "@/hooks/use-toast";
+import * as Yup from "yup";
+import UserForm from "@/components/dashboard/UserForm";
 
 export default function CreateUserPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
@@ -35,7 +34,7 @@ export default function CreateUserPage() {
     send_notification: Yup.boolean(),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
       await apiClient.post("/users", values)
@@ -43,7 +42,7 @@ export default function CreateUserPage() {
         title: "Success",
         description: "User created successfully",
       })
-      // router.push("/dashboard/users")
+      resetForm();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -115,23 +114,7 @@ export default function CreateUserPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <button
-          type="button"
-          className="btn btn-ghost flex items-center"
-          onClick={() => router.back()}
-        >
-          <span className="mr-2">
-            {/* Use an icon library if available */}
-            ←
-          </span>
-          Back
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Create User</h1>
-          <p className="text-[#ababab]">Add a new user to the system</p>
-        </div>
-      </div>
+      <PageHeader title="Create User" description="Add a new user to the system" />
       <UserForm
         title="User Information"
         description="Enter the details for the new user"

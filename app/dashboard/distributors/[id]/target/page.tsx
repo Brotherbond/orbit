@@ -11,11 +11,11 @@ import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import {
-    Calendar, Save,
-    X,
-    Plus,
-    Trash2,
-    MoreHorizontal
+  Calendar, Save,
+  X,
+  Plus,
+  Trash2,
+  MoreHorizontal
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { apiClient } from "@/lib/api-client"
@@ -64,7 +64,7 @@ export default function DistributorTargetPage() {
         ...values,
         user_id: distributorUser.uuid
       }
-      
+
       await apiClient.post(`/targets`, payload)
       toast({
         title: "Success",
@@ -376,7 +376,7 @@ function getColumns(
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={() => handleDeleteTarget(row.original.uuid!)}
                 className="text-red-600"
               >
