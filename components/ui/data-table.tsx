@@ -91,26 +91,37 @@ const exportToExcel = (
       (col: any) =>
         col.getIsVisible() &&
         col.id !== "actions" &&
-        typeof col.columnDef.header === "string" &&
-        typeof col.columnDef.accessorKey === "string"
-    )
-    .map((col: any) => ({
-      accessorKey: col.columnDef.accessorKey as string,
-      header: col.columnDef.header as string,
-    }));
-
-  // Transform data for export
-  const rows = tableData.map((row) => {
+        typeof col.columnDef.header === "string"
+    );
+  const rows = table.getRowModel().rows.map((row: any) => {
     const obj: { [key: string]: unknown } = {};
-    visibleCols.forEach((col: { accessorKey: string; header: string }) => {
-      obj[col.header] = col.accessorKey
-        .split(".")
-        .reduce(
-          (acc: any, k: string) =>
-            acc && typeof acc === "object" ? acc[k] : undefined,
-          row
-        );
-    });
+    table
+      .getAllLeafColumns()
+      .filter(
+        (col: any) =>
+          col.getIsVisible() &&
+          col.id !== "actions" &&
+          typeof col.columnDef.header === "string"
+      )
+      .forEach((col: any) => {
+        const header = col.columnDef.header;
+        let value = "";
+        if (typeof col.columnDef.exportValue === "function") {
+          value = String(col.columnDef.exportValue(row.original));
+        } else if (col.columnDef.accessorKey) {
+          // Support dot notation for nested keys
+          let extracted = col.columnDef.accessorKey
+            .split(".")
+            .reduce((acc: any, k: string) => (acc ? acc[k] : ""), row.original);
+
+          if (extracted && typeof extracted === "object") {
+            value = JSON.stringify(extracted);
+          } else {
+            value = extracted ?? "";
+          }
+        }
+        obj[header] = value;
+      });
     return obj;
   });
 
@@ -603,13 +614,33 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                           .accessorKey as string,
                         header: col.columnDef.header as string,
                       }));
-                    const rows = allRows.map((row) => {
+                    const rows = allRows.map((rowData) => {
                       const obj: { [key: string]: unknown } = {};
-                      visibleCols.forEach((col) => {
-                        obj[col.header] = col.accessorKey
-                          .split(".")
-                          .reduce((acc, k) => acc?.[k], row);
-                      });
+                      table
+                        .getAllLeafColumns()
+                        .filter(
+                          (col: any) =>
+                            col.getIsVisible() &&
+                            col.id !== "actions" &&
+                            typeof col.columnDef.header === "string"
+                        )
+                        .forEach((col: any) => {
+                          const header = col.columnDef.header;
+                          let value = "";
+                          if (typeof col.columnDef.exportValue === "function") {
+                            value = String(col.columnDef.exportValue(rowData));
+                          } else if (col.columnDef.accessorKey) {
+                            let extracted = col.columnDef.accessorKey
+                              .split(".")
+                              .reduce((acc: any, k: string) => (acc ? acc[k] : ""), rowData);
+                            if (extracted && typeof extracted === "object") {
+                              value = JSON.stringify(extracted);
+                            } else {
+                              value = extracted ?? "";
+                            }
+                          }
+                          obj[header] = value;
+                        });
                       return obj;
                     });
                     const ws = XLSX.utils.json_to_sheet(rows);

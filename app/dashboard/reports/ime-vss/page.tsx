@@ -6,7 +6,6 @@ import { Row } from "@tanstack/react-table";
 import { useRef, useEffect } from "react";
 import { useGetIMEVSSsPerformanceQuery } from "@/store/ime-vss-performance";
 import { ColumnDef } from "@/components/ui/data-table-types";
-import { format } from "date-fns";
 
 type IMEVSSRow = Row<IMEVSSPerformance>;
 
@@ -32,6 +31,10 @@ const generateDayColumns = (maxDays: number = 21) => {
           </div>
         );
       },
+      exportValue: (row: IMEVSSPerformance) => {
+        const dayData = row.performance_by_day?.[dayKey];
+        return `Daily: ${dayData?.daily_performance ?? 0}, \nCumu.: ${dayData?.cummulative_performance ?? 0}`;
+      },
     });
   }
 
@@ -41,7 +44,7 @@ const generateDayColumns = (maxDays: number = 21) => {
 // Define columns with proper typing
 const columns = [
   {
-    accessorKey: "user",
+    accessorKey: "user.full_name",
     header: "IME/VSS",
     width: 200,
     cell: ({ row }: { row: IMEVSSRow }) => (
@@ -54,7 +57,7 @@ const columns = [
     ),
   },
   {
-    accessorKey: "status",
+    accessorKey: "user.status",
     header: "Status",
     cell: ({ row }: { row: IMEVSSRow }) => (
       <Badge
