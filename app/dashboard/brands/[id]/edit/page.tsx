@@ -28,7 +28,7 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
             uuid: pkg.uuid,
             type: pkg.type || "",
             quantity: pkg.quantity || 0,
-            breadth: pkg.breadth || 0,
+            width: pkg.width || 0,
             height: pkg.height || 0,
             length: pkg.length || 0,
             weight: pkg.weight || 0,
@@ -62,7 +62,7 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
         Yup.object({
           type: Yup.string().required("Type is required"),
           quantity: Yup.number().min(1, "Quantity must be greater than 0").required("Quantity is required"),
-          breadth: Yup.number().min(0, "Breadth must be at least 0"),
+          width: Yup.number().min(0, "Width must be at least 0"),
           height: Yup.number().min(0, "Height must be at least 0"),
           length: Yup.number().min(0, "Length must be at least 0"),
           weight: Yup.number().min(0, "Weight must be at least 0"),

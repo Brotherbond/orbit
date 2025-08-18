@@ -22,7 +22,7 @@ export default function CreateBrandPage() {
       {
         type: "",
         quantity: 0,
-        breadth: 0,
+        width: 0,
         height: 0,
         length: 0,
         weight: 0,
@@ -44,7 +44,7 @@ export default function CreateBrandPage() {
         Yup.object({
           type: Yup.string().required("Type is required"),
           quantity: Yup.number().min(1, "Quantity must be greater than 0").required("Quantity is required"),
-          breadth: Yup.number().min(0, "Breadth must be at least 0"),
+          width: Yup.number().min(0, "Width must be at least 0"),
           height: Yup.number().min(0, "Height must be at least 0"),
           length: Yup.number().min(0, "Length must be at least 0"),
           weight: Yup.number().min(0, "Weight must be at least 0"),

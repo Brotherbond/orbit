@@ -2,7 +2,7 @@ export interface BrandPackage {
   uuid?: string;
   type: string;
   quantity: number;
-  breadth?: number;
+  width?: number;
   height?: number;
   length?: number;
   weight?: number;
