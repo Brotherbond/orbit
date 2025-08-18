@@ -65,9 +65,8 @@ export default function DeliveryDetailPage({ params }: { params: { id: string } 
                 variant="destructive"
                 onClick={() =>
                   handleDelete({
-                    entity: "delivery",
+                    storeName: "deliveries",
                     uuid: delivery.uuid,
-                    endpoint: "/deliveries",
                     onSuccess: () => router.push("/dashboard/deliveries"),
                   })
                 }
@@ -105,6 +104,10 @@ export default function DeliveryDetailPage({ params }: { params: { id: string } 
             <div>
               <p className="text-medium font-semibold text-[#333333] mb-1">Order Weight (kg)</p>
               <p className="font-sm text-sm text-[#666666]">{delivery.total_order_weight}</p>
+            </div>
+            <div>
+              <p className="text-medium font-semibold text-[#333333] mb-1">Order Density (kg/m³)</p>
+              <p className="font-sm text-sm text-[#666666]">{delivery.total_order_density}</p>
             </div>
             <div>
               <p className="text-medium font-semibold text-[#333333] mb-1">Created At</p>

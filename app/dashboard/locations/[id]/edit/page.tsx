@@ -12,6 +12,7 @@ import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup"
 
 interface LocationData {
+  street: string
   city: string
   state: string
   region: string
@@ -21,6 +22,7 @@ interface LocationData {
 
 export default function EditLocationPage({ params }: { params: { id: string } }) {
   const [initialValues, setInitialValues] = useState<LocationData>({
+    street: "",
     city: "",
     state: "",
     region: "",
@@ -43,6 +45,7 @@ export default function EditLocationPage({ params }: { params: { id: string } })
       const item = data.data?.item || data.item
       if (item) {
         setInitialValues({
+          street: item.street || "",
           city: item.city || "",
           state: item.state || "",
           region: item.region || "",
@@ -59,6 +62,7 @@ export default function EditLocationPage({ params }: { params: { id: string } })
   }
 
   const validationSchema = Yup.object({
+    street: Yup.string().required("Street is required"),
     city: Yup.string().required("City is required"),
     state: Yup.string().required("State is required"),
     region: Yup.string().required("Region is required"),
@@ -116,6 +120,17 @@ export default function EditLocationPage({ params }: { params: { id: string } })
           >
             {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
               <Form className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="street">Street *</Label>
+                  <Input
+                    id="street"
+                    name="street"
+                    value={values.street}
+                    onChange={handleChange}
+                    placeholder="Enter street"
+                  />
+                  <ErrorMessage name="street" component="p" className="text-sm text-red-500" />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="city">City *</Label>
                   <Input

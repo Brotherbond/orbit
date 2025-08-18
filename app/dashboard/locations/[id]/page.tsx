@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 
 interface LocationDetail {
   uuid: string
+  street: string
   city: string
   state: string
   region: string
@@ -134,6 +135,10 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
             <CardTitle className="text-[#444444]">Location Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <span className="text-[#ababab]">Street</span>
+              <div className="font-medium text-[#444444]">{location.street || "—"}</div>
+            </div>
             <div className="space-y-2">
               <span className="text-[#ababab]">City</span>
               <div className="font-medium text-[#444444]">{location.city}</div>

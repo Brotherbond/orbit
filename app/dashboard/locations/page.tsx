@@ -38,11 +38,11 @@ function getColumns(
 
   return [
     {
-      accessorKey: "name",
-      header: "Location Name",
+      accessorKey: "street",
+      header: "Street",
       cell: ({ row }) => (
         <div>
-          <div className="font-medium text-[#444444]">{row.original.name}</div>
+          <div className="font-medium text-[#444444]">{row.original.street}</div>
           <div className="text-sm text-[#ababab]">
             {row.original.city}, {row.original.state}
           </div>

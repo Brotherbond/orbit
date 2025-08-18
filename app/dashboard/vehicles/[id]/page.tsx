@@ -82,6 +82,10 @@ export default function VehicleDetailPage({ params }: { params: { id: string } }
               <p className="font-sm text-sm text-[#666666]">{vehicle.max_weight}</p>
             </div>
             <div>
+              <p className="text-medium font-semibold text-[#333333] mb-1">Density</p>
+              <p className="font-sm text-sm text-[#666666]">{vehicle.density}</p>
+            </div>
+            <div>
               <p className="text-medium font-semibold text-[#333333] mb-1">Created At</p>
               <p className="font-sm text-sm text-[#666666]">{vehicle.created_at}</p>
             </div>

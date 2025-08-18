@@ -118,6 +118,24 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
       ),
     },
     {
+      accessorKey: "self_pickup",
+      header: "Self Pickup",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {row.original.self_pickup ? "Yes" : "No"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "promos",
+      header: "Promos",
+      cell: ({ row }) => (
+        <div className="text-sm">
+          {(row.original.promos?.type || "None")}
+        </div>
+      ),
+    },
+    {
       accessorKey: "total_amount",
       header: "Value",
       cell: ({ row }) => <div className="font-medium">₦{parseFloat(row.original.total_amount).toLocaleString()}</div>,

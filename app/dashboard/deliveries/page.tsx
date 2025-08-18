@@ -94,6 +94,11 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
       cell: ({ row }) => <div className="text-sm">{row.original.total_order_weight}</div>,
     },
     {
+      accessorKey: "total_order_density",
+      header: "Order Density (kg/m³)",
+      cell: ({ row }) => <div className="text-sm">{row.original.total_order_density}</div>,
+    },
+    {
       accessorKey: "created_at",
       header: "Created At",
       cell: ({ row }) => row.original.created_at,
@@ -120,9 +125,8 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
             <DropdownMenuItem
               onClick={() =>
                 handleDelete({
-                  entity: "delivery",
+                  storeName: "deliveries",
                   uuid: row.original.uuid,
-                  endpoint: "/deliveries",
                 })
               }
               className="text-red-600"

@@ -290,6 +290,18 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               <p className="text-medium font-semibold text-[#333333] mb-1">Status</p>
               <StatusBadge status={order.status || "N/A"} />
             </div>
+            <div>
+              <p className="text-medium font-semibold text-[#333333] mb-1">Self Pickup</p>
+              <p className="font-sm text-sm text-[#666666]">
+                {order.self_pickup ? "Yes" : "No"}
+              </p>
+            </div>
+            <div>
+              <p className="text-medium font-semibold text-[#333333] mb-1">Promos</p>
+              <p className="font-sm text-sm text-[#666666]">
+                {order.promos?.type || "None"}
+              </p>
+            </div>
           </div>
           {/* Products Table */}
           <div className="mb-6">

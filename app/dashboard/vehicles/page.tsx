@@ -112,6 +112,11 @@ export function getColumns(session: any, router: any, toast: any): ColumnDef<Veh
       cell: ({ row }) => <div className="text-sm">{row.original.max_weight}</div>,
     },
     {
+      accessorKey: "density",
+      header: "Density",
+      cell: ({ row }) => <div className="text-sm">{row.original.density}</div>,
+    },
+    {
       accessorKey: "created_at",
       header: "Created At",
       cell: ({ row }) => row.original.created_at,

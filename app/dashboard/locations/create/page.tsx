@@ -19,6 +19,7 @@ export default function CreateLocationPage() {
   const { toast } = useToast()
 
   const initialValues = {
+    street: "",
     city: "",
     state: "",
     region: "",
@@ -26,6 +27,7 @@ export default function CreateLocationPage() {
   }
 
   const validationSchema = Yup.object({
+    street: Yup.string().required("Street is required"),
     city: Yup.string().required("City is required"),
     state: Yup.string().required("State is required"),
     region: Yup.string().required("Region is required"),
@@ -83,6 +85,17 @@ export default function CreateLocationPage() {
           >
             {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
               <Form className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="street">Street *</Label>
+                  <Input
+                    id="street"
+                    name="street"
+                    value={values.street}
+                    onChange={handleChange}
+                    placeholder="Enter street"
+                  />
+                  <ErrorMessage name="street" component="p" className="text-sm text-red-500" />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="city">City *</Label>
                   <Input
