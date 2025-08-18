@@ -1,5 +1,6 @@
 import { StatusBadgeProps } from "@/components/ui/status-badge";
 import { User } from "./user";
+import { Promo } from "./promo";
 
 export interface OrderBrand {
   uuid: string;
@@ -40,6 +41,8 @@ export interface Order {
   total_amount: string;
   created_at: string;
   status: StatusBadgeProps["status"];
+  status_progress: string;
+  self_pickup: string;
   brands: OrderBrand[];
-  promos: any;
+  promos: Promo;
 }
