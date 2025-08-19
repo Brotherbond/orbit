@@ -68,12 +68,12 @@ export function DashboardHeader() {
                   Change Password
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              {/* <DropdownMenuItem asChild>
                 <Link href="" className="flex items-center cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
