@@ -23,17 +23,14 @@ const generateDayColumns = (maxDays: number = 21) => {
         return (
           <div className="flex-col items-center" title={dayData?.date || ''}>
             <div className="font-semibold text-[#444444]">
-              Daily: {dayData?.daily_performance || 0}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Cumu.: {dayData?.cummulative_performance || 0}
+              <span className="text-[#22c55e]">{dayData?.daily_performance || 0}</span> | <span className="text-[#ea580c]">{dayData?.cummulative_performance || 0}</span>
             </div>
           </div>
         );
       },
       exportValue: (row: IMEVSSPerformance) => {
         const dayData = row.performance_by_day?.[dayKey];
-        return `Daily: ${dayData?.daily_performance ?? 0}, \nCumu.: ${dayData?.cummulative_performance ?? 0}`;
+        return `${dayData?.daily_performance ?? 0} | ${dayData?.cummulative_performance ?? 0}`;
       },
     });
   }
@@ -103,6 +100,9 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center text-xs gap-1 ml-2">
+        <span className="font-medium">Keys:</span><span>Daily performance<span className="text-green-600 font-semibold">: Green</span>, Cumulative performance<span className="text-orange-500 font-semibold">: Orange</span></span>
+      </div>
       <DataTable
         columns={columnsRef.current}
         store="imeVssPerformance"

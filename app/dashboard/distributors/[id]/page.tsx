@@ -191,14 +191,6 @@ const PerformanceMetricsCard = memo(() => {
             {(performance?.target_volume || 0).toLocaleString()}
           </span>
         </div>
-        <Separator />
-        <div className="flex justify-between items-center">
-          <span className="text-[#ababab]">Growth Rate</span>
-          <div className="flex items-center text-green-600">
-            <TrendingUp className="h-4 w-4 mr-1" />
-            <span className="font-bold">{performance?.growth_rate || 0}%</span>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )
