@@ -323,17 +323,17 @@ export function BrandForm({
                             <ErrorMessage name={`packages[${index}].length`} component="p" className="text-sm text-red-500" />
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-[#444444]">Breadth</Label>
+                            <Label className="text-[#444444]">Width</Label>
                             <Input
                               type="number"
-                              name={`packages[${index}].breadth`}
-                              value={pkg.breadth}
-                              onChange={e => setFieldValue(`packages[${index}].breadth`, Number(e.target.value))}
+                              name={`packages[${index}].width`}
+                              value={pkg.width}
+                              onChange={e => setFieldValue(`packages[${index}].width`, Number(e.target.value))}
                               placeholder="0.00"
                               min="0"
                               step="0.01"
                             />
-                            <ErrorMessage name={`packages[${index}].breadth`} component="p" className="text-sm text-red-500" />
+                            <ErrorMessage name={`packages[${index}].width`} component="p" className="text-sm text-red-500" />
                           </div>
                           <div className="space-y-2">
                             <Label className="text-[#444444]">Height</Label>

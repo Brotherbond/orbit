@@ -210,9 +210,9 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-[#ababab]">Breadth</p>
+                          <p className="text-sm text-[#ababab]">Width</p>
                           <p className="font-medium text-[#444444]">
-                            {pkg.breadth !== undefined ? pkg.breadth : <span className="text-[#ababab]">N/A</span>}
+                            {pkg.width !== undefined ? pkg.width : <span className="text-[#ababab]">N/A</span>}
                           </p>
                         </div>
                         <div>
