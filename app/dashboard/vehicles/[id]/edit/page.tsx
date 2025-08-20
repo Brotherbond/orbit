@@ -39,21 +39,12 @@ export default function EditVehiclePage({ params }: { params: { id: string } }) 
         width: values.width,
         max_weight: values.max_weight,
       };
-      const response = await updateVehicle({ id: params.id, data }).unwrap();
+      await updateVehicle({ id: params.id, data }).unwrap();
       toast({ title: "Success", description: "Vehicle updated successfully" });
       fetchVehicle();
       router.push(`/dashboard/vehicles/${params.id}`);
-    } catch (error: any) {
-      console.error("Error updating vehicle:", error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update vehicle",
-        variant: "destructive",
-      });
-      setFieldError("type", error?.errors?.type || "");
-    } finally {
-      setSubmitting(false);
-    }
+    } catch (error: any) {setFieldError("type", error?.errors?.type || "");} 
+    finally {setSubmitting(false);}
   };
 
   const fields = [

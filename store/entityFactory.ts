@@ -93,23 +93,23 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
         case "GET_SINGLE":
           result = await apiClient.get(url);
           return {
-            data: result.data?.items,
+            data: result?.data?.items,
           };
         case "GET_BY_ID":
         case "GET":
           result = await apiClient.get(url);
           return {
-            data: result.data?.item,
+            data: result?.data?.item,
           };
         case "POST":
           result = await apiClient.post(url, body);
-          return { data: result.data?.item };
+          return { data: result?.data?.item };
         case "PUT":
           result = await apiClient.put(url, body);
-          return { data: result.data?.item };
+          return { data: result?.data?.item };
         case "DELETE":
           result = await apiClient.delete(url);
-          return { data: result.data || { success: true } };
+          return { data: result?.data || { success: true } };
         default:
           return {
             error: {

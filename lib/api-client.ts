@@ -78,13 +78,17 @@ class ApiClient {
             (response.config as ApiRequestConfig)?.showToast !== false;
           if (showToast) {
             if (Array.isArray(errors) && errors.length > 0) {
-              errors.forEach((err: any) => {
-                if (typeof err === "string") {
-                  showError(err, "Error");
-                } else if (err && typeof err.message === "string") {
-                  showError(err.message, "Error");
-                }
-              });
+              const errorMessages = errors
+                .map((err: any) =>
+                  typeof err === "string"
+                    ? err
+                    : err && typeof err.message === "string"
+                      ? err.message
+                      : "",
+                )
+                .filter(Boolean)
+                .join("\n");
+              showError(errorMessages, "Error");
             } else {
               showError(message, "Error");
             }
@@ -114,13 +118,17 @@ class ApiClient {
         if (showToast) {
           const errors = error.response?.data?.errors;
           if (Array.isArray(errors) && errors.length > 0) {
-            errors.forEach((err: any) => {
-              if (typeof err === "string") {
-                showError(err, "Error");
-              } else if (err && typeof err.message === "string") {
-                showError(err.message, "Error");
-              }
-            });
+            const errorMessages = errors
+              .map((err: any) =>
+                typeof err === "string"
+                  ? err
+                  : err && typeof err.message === "string"
+                    ? err.message
+                    : "",
+              )
+              .filter(Boolean)
+              .join("\n");
+            showError(errorMessages, "Error");
           } else {
             showError(message, "Error");
           }

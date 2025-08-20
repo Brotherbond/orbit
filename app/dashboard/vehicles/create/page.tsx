@@ -49,16 +49,16 @@ export default function CreateVehiclePage() {
   ]
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
-    const payload = {
-      ...values,
-      fuel_per_km: Number(values.fuel_per_km),
-      cost_supply_per_km: Number(values.cost_supply_per_km),
-      height: Number(values.height),
-      length: Number(values.length),
-      width: Number(values.width),
-      max_weight: Number(values.max_weight),
-    }
     try {
+      const payload = {
+        ...values,
+        fuel_per_km: Number(values.fuel_per_km),
+        cost_supply_per_km: Number(values.cost_supply_per_km),
+        height: Number(values.height),
+        length: Number(values.length),
+        width: Number(values.width),
+        max_weight: Number(values.max_weight),
+      }
       await createVehicle(payload).unwrap()
       toast({
         title: "Success",
@@ -66,14 +66,8 @@ export default function CreateVehiclePage() {
       })
       dispatch(vehicles.util.resetApiState())
       helpers.resetForm()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to create vehicle",
-        variant: "destructive",
-      })
-    }
-    helpers.setSubmitting(false)
+    } catch (error: any) { helpers.setFieldError("type", error?.errors?.type || ""); }
+    finally { helpers.setSubmitting(false) }
   }
 
   return (

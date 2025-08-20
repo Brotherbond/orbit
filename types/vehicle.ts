@@ -6,7 +6,7 @@ export interface Vehicle {
   length: number; // vehicle length in meters
   width: number; // vehicle width in meters
   cost_supply_per_km: number;
-  density:number;
+  density: number;
   max_weight: number; // maximum weight capacity in kg
   vehicle_number: string;
   created_at: string;

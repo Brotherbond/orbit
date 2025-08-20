@@ -65,7 +65,7 @@ export async function handleDelete({
     }
 
     // Reset the store by invalidating all queries
-    store.dispatch(storeApi.util.resetApiState());
+    setTimeout(() => { store.dispatch(storeApi.util.resetApiState()); }, 500);
 
     toast({
       title: "Success",
