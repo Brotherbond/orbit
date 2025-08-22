@@ -1,8 +1,9 @@
 "use client"
 
 import { VehicleForm } from "@/components/dashboard/VehicleForm"
-import ViewPageHeader from "@/components/ViewPageHeader"
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { useToast } from "@/hooks/use-toast"
+import { catchError } from "@/lib/utils"
 import { useUpdateVehicleMutation } from "@/store/vehicles"
 import type { Vehicle } from "@/types/vehicle"
 import { useRouter } from "next/navigation"
@@ -43,8 +44,11 @@ export default function EditVehiclePage({ params }: { params: { id: string } }) 
       toast({ title: "Success", description: "Vehicle updated successfully" });
       fetchVehicle();
       router.push(`/dashboard/vehicles/${params.id}`);
-    } catch (error: any) {setFieldError("type", error?.errors?.type || "");} 
-    finally {setSubmitting(false);}
+    } catch (error: any) {
+      catchError(error, setFieldError);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const fields = [
@@ -59,7 +63,7 @@ export default function EditVehiclePage({ params }: { params: { id: string } }) 
   ];
 
   return (
-    <div className="space-y-6">
+    <div>
       <ViewPageHeader title="Update Vehicle" description="Edit vehicle information below" />
       <VehicleForm
         title="Update Vehicle"

@@ -126,7 +126,7 @@ const columns: ColumnDef<unknown, unknown>[] = [
 export default function ReportsPage() {
 
   return (
-    <div className="space-y-6">
+    <div>
       <DataTable
         columns={columns}
         store="orderEvents"

@@ -2,13 +2,13 @@
 import BulkUploadModal from "@/components/dashboard/BulkUploadModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import ListPageHeader from "@/components/dashboard/ListPageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api-client";
+import { handleDelete } from "@/lib/handleDelete";
 import { User } from "@/types/user";
-import { Edit, Eye, MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 
@@ -16,28 +16,8 @@ const roles = "super-admin,sales-admin,manager,operations,treasury"
 
 function getColumns(
   router: any,
-  toast: any,
   refreshTable: () => void
 ): ColumnDef<User>[] {
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return
-
-    try {
-      await apiClient.delete(`/users/${uuid}`)
-      toast({
-        title: "Success",
-        description: "User deleted successfully",
-      })
-      refreshTable()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete user",
-        variant: "destructive",
-      })
-    }
-  }
-
   return [
     {
       accessorKey: "first_name",
@@ -74,7 +54,7 @@ function getColumns(
     },
     {
       accessorKey: "created_at",
-      header: "Created",
+      header: "Created At",
       cell: ({ row }) => row.original.created_at,
     },
     {
@@ -96,7 +76,16 @@ function getColumns(
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original.uuid)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() =>
+                handleDelete({
+                  storeName: "users",
+                  uuid: row.original.uuid,
+                  onSuccess: refreshTable,
+                })
+              }
+              className="text-red-600"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -109,7 +98,6 @@ function getColumns(
 
 export default function UsersPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
   const refreshTable = () => {
@@ -117,37 +105,31 @@ export default function UsersPage() {
   }
 
   const columns = React.useMemo(
-    () => getColumns(router, toast, refreshTable),
-    [router, toast]
+    () => getColumns(router, refreshTable),
+    [router]
   )
 
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Users</h1>
-          <p className="text-[#ababab]">Manage system users and their permissions</p>
-        </div>
-        <div className="flex gap-2">
-          <Button className="btn-primary" onClick={() => setBulkModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Bulk Users
-          </Button>
-          <Button className="btn-primary" onClick={() => router.push("/dashboard/users/create")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add User
-          </Button>
-        </div>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Users"
+        description="Manage system users and their permissions"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/users/create")}
+        addLabel="Add User"
+        showBulkAddButton={true}
+        onBulkAdd={() => setBulkModalOpen(true)}
+        bulkAddLabel="Add Bulk Users"
+      />
 
       <DataTable
         ref={dataTableRef}
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="first_name"
         searchPlaceholder="Search users..."
-        store="users"
+        store="webUsers"
         exportFileName="Users.xlsx"
         filters={[
           {

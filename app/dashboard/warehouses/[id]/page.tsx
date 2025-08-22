@@ -1,58 +1,33 @@
 "use client";
-import { useWarehouseContext } from "./warehouse-context";
-import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { handleDelete } from "@/lib/handleDelete";
+import { Card, CardContent } from "@/components/ui/card";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { useToast } from "@/hooks/use-toast";
+import { handleDelete } from "@/lib/handleDelete";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useWarehouseContext } from "./warehouse-context";
 
 export default function WarehouseDetailPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const user = session?.user;
-  const { warehouse, isLoading, fetchWarehouse } = useWarehouseContext();
+  const { warehouse, fetchWarehouse } = useWarehouseContext();
   const router = useRouter();
   const { toast } = useToast();
-
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!warehouse) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">Warehouse not found</p>
-      </div>
-    )
-  }
 
   const userRole = user?.role?.toLowerCase() || ""
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold text-[#444444]">
-              Warehouse Details
-            </h1>
-          </div>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader
+        title="Warehouse Details"
+        description={`Warehouse Code: ${warehouse.warehouse_code}`}
+        showDeleteButton={["admin", "manager"].includes(userRole)}
+        deleteOptions={{
+          storeName: "warehouses",
+          uuid: warehouse.uuid,
+        }}
+      />
       {/* Main Content */}
       <Card className="w-full max-w-3xl">
         <CardContent className="p-6">
@@ -65,9 +40,8 @@ export default function WarehouseDetailPage({ params }: { params: { id: string }
                 variant="destructive"
                 onClick={() =>
                   handleDelete({
-                    entity: "warehouse",
+                    storeName: "warehouses",
                     uuid: warehouse.uuid,
-                    endpoint: "/warehouses",
                     onSuccess: () => router.push("/dashboard/warehouses"),
                   })
                 }

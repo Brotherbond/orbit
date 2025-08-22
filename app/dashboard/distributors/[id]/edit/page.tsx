@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { apiClient } from "@/lib/api-client";
-import { useToast } from "@/hooks/use-toast";
-import * as Yup from "yup";
 import UserForm from "@/components/dashboard/UserForm";
+import { useToast } from "@/hooks/use-toast";
+import { useUpdateDistributorMutation } from "@/store/distributors";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+import * as Yup from "yup";
 import { useDistributor } from "../distributor-context";
+import { catchError } from "@/lib/utils";
 
 interface Distributor {
   first_name: string
@@ -23,13 +24,15 @@ export default function EditDistributorPage({ params }: { params: { id: string }
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
-  const { distributor, isLoading: isDataLoading, error, updateDistributor } = useDistributor()
+  const { distributor, updateDistributor } = useDistributor()
+  const [updateDistributorMutation] = useUpdateDistributorMutation()
 
   const initialValues = useMemo<Distributor>(() => {
     if (!distributor) {
       return {
         first_name: "",
         last_name: "",
+        category: "",
         email: "",
         phone: "",
         business_name: "",
@@ -42,6 +45,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     return {
       first_name: distributor.user?.first_name || "",
       last_name: distributor.user?.last_name || "",
+      category: distributor.category || "",
       email: distributor.user?.email || "",
       phone: distributor.user?.phone || "",
       business_name: distributor.business_name || "",
@@ -54,6 +58,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
   const validationSchema = useMemo(() => Yup.object({
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
+    category: Yup.string().required("Category is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     phone: Yup.string(),
     business_name: Yup.string().required("Business name is required"),
@@ -63,46 +68,31 @@ export default function EditDistributorPage({ params }: { params: { id: string }
   }), [])
 
   const handleSubmit = useCallback(async (values: Distributor, { setSubmitting, setFieldError }: any) => {
-    setIsLoading(true)
     try {
-      const { data, status } = await apiClient.put(`/distributors/${params.id}`, values)
-      if (status === "success") {
-        // Update the context with new data
-        updateDistributor({
-          business_name: values.business_name,
-          address: values.address,
-          user: {
-            ...distributor?.user!,
-            first_name: values.first_name,
-            last_name: values.last_name,
-            email: values.email,
-            phone: values.phone,
-          },
-          ime_vss: distributor?.ime_vss
-        })
-
-        toast({
-          title: "Success",
-          description: "Distributor updated successfully",
-        })
-        router.push(`/dashboard/distributors/${params.id}`)
-      }
-    } catch (error: any) {
+      await updateDistributorMutation({ id: params.id, data: values }).unwrap();
+      updateDistributor({
+        business_name: values.business_name,
+        address: values.address,
+        user: {
+          ...distributor?.user!,
+          first_name: values.first_name,
+          last_name: values.last_name,
+          email: values.email,
+          phone: values.phone,
+        },
+        ime_vss: distributor?.ime_vss
+      });
       toast({
-        title: "Error",
-        description: error?.message || "Failed to update distributor",
-        variant: "destructive",
-      })
-      if (error.response?.data?.errors) {
-        Object.entries(error.response.data.errors).forEach(([field, message]) => {
-          setFieldError(field, message as string)
-        })
-      }
+        title: "Success",
+        description: "Distributor updated successfully",
+      });
+      router.push(`/dashboard/distributors/${params.id}`);
+    } catch (error: any) {
+      catchError(error, setFieldError);
     } finally {
-      setIsLoading(false)
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }, [params.id, distributor, updateDistributor, toast, router])
+  }, [params.id, distributor, updateDistributor, toast, router, updateDistributorMutation])
 
   const fields = useMemo(() => [
     {
@@ -111,6 +101,13 @@ export default function EditDistributorPage({ params }: { params: { id: string }
       type: "text" as const,
       required: true,
       placeholder: "Enter business name",
+    },
+    {
+      name: "category",
+      label: "Category",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter category",
     },
     {
       name: "first_name",
@@ -165,27 +162,10 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     },
   ], [])
 
-  if (isDataLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
 
-  if (error || !distributor) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">{error || "Distributor not found"}</p>
-      </div>
-    )
-  }
 
   return (
-    <div className="space-y-6">
+    <div>
       <UserForm
         title="Distributor Information"
         description="Update the distributor details below"

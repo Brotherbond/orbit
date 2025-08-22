@@ -1,17 +1,17 @@
 "use client"
 
-import React, { useRef, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
+import ListPageHeader from "@/components/dashboard/ListPageHeader"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
+import { handleDelete } from "@/lib/handleDelete"
 import { User } from "@/types/user"
-import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import React, { useRef, useState } from "react"
 
 interface ImeVss extends User { }
 
@@ -19,28 +19,8 @@ const roles = "ime,vss"
 
 function getColumns(
   router: any,
-  toast: any,
   refreshTable: () => void
 ): ColumnDef<ImeVss>[] {
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this IME-VSS user?")) return
-
-    try {
-      await apiClient.delete(`/users/${uuid}`)
-      toast({
-        title: "Success",
-        description: "IME-VSS user deleted successfully",
-      })
-      refreshTable()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete IME-VSS user",
-        variant: "destructive",
-      })
-    }
-  }
-
   return [
     {
       accessorKey: "first_name",
@@ -82,7 +62,7 @@ function getColumns(
     },
     {
       accessorKey: "created_at",
-      header: "Created",
+      header: "Created At",
       cell: ({ row }) => row.original.created_at,
     },
     {
@@ -104,7 +84,16 @@ function getColumns(
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original.uuid)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() =>
+                handleDelete({
+                  storeName: "imeVss",
+                  uuid: row.original.uuid,
+                  onSuccess: refreshTable,
+                })
+              }
+              className="text-red-600"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -117,7 +106,6 @@ function getColumns(
 
 export default function ImeVssPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
   const refreshTable = () => {
@@ -125,36 +113,30 @@ export default function ImeVssPage() {
   }
 
   const columns = React.useMemo(
-    () => getColumns(router, toast, refreshTable),
-    [router, toast]
+    () => getColumns(router, refreshTable),
+    [router]
   )
 
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">IME-VSS</h1>
-          <p className="text-[#ababab]">Manage IME-VSS users and their permissions</p>
-        </div>
-        <div className="flex gap-2">
-          <Button className="btn-primary" onClick={() => setBulkModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Bulk IME/VSS
-          </Button>
-          <Button className="btn-primary" onClick={() => router.push("/dashboard/ime-vss/create")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add IME-VSS User
-          </Button>
-        </div>
-      </div>
+    <div>
+      <ListPageHeader
+        title="IME-VSS"
+        description="Manage IME-VSSs and their permissions"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/ime-vss/create")}
+        addLabel="Add IME-VSS"
+        showBulkAddButton={true}
+        onBulkAdd={() => setBulkModalOpen(true)}
+        bulkAddLabel="Add Bulk IME/VSS"
+      />
 
       <DataTable
         ref={dataTableRef}
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="first_name"
-        searchPlaceholder="Search IME-VSS users..."
+        searchPlaceholder="Search IME-VSSs..."
         store="imeVss"
         fixedQuery={{ roles }}
         filters={[

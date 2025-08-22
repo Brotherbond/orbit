@@ -1,74 +1,114 @@
 "use client";
-import { useDeliveryContext } from "../delivery-context";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { apiClient } from "@/lib/api-client";
+import { DeliveryForm } from "@/components/dashboard/DeliveryForm";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { useToast } from "@/hooks/use-toast";
+import { catchError } from "@/lib/utils";
+import { useUpdateDeliveryMutation } from "@/store/deliveries";
+import type { Delivery } from "@/types/delivery";
+import { useRouter } from "next/navigation";
 import * as Yup from "yup";
-import { DeliveryForm } from "@/components/dashboard/DeliveryForm"
-import type { Delivery } from "@/types/delivery"
+import { useDeliveryContext } from "../delivery-context";
 
 export default function EditDeliveryPage({ params }: { params: { id: string } }) {
   const { delivery, isLoading, fetchDelivery } = useDeliveryContext();
-  const { data: session } = useSession()
   const router = useRouter()
   const { toast } = useToast()
-
+  const [updateDelivery] = useUpdateDeliveryMutation();
+  if (!delivery) {
+    return null;
+  }
   const validationSchema = Yup.object({
-    distance: Yup.number().required("Distance is required"),
-    cost_ratio: Yup.number().required("Cost ratio is required"),
-    delivery_burn_rate: Yup.number().required("Burn rate is required"),
-    total_order_volume: Yup.number().required("Order volume is required"),
-    total_order_weight: Yup.number().required("Order weight is required"),
+    order_id: Yup.string().required("Order is required"),
+    vehicle_id: Yup.string().required("Vehicle is required"),
+    distance: Yup.string().required("Distance is required"),
+    cost_ratio: Yup.string().required("Cost Ratio is required"),
+    delivery_burn_rate: Yup.string().required("Burn Rate is required"),
+    from: Yup.string().required("From location is required"),
+    to: Yup.string().required("To location is required"),
   });
 
-  const handleSubmit = async (values: Delivery, { setSubmitting, setFieldError }: any) => {
+  const initialValues = { ...delivery, order_id: delivery?.order?.uuid, vehicle_id: delivery?.vehicle?.uuid, to: delivery?.to?.uuid, from: delivery?.from?.uuid };
+
+  const handleSubmit = async (values: Delivery, helpers: any) => {
+    const payload = {
+      ...values,
+      distance: Number(values.distance),
+      cost_ratio: Number(values.cost_ratio),
+      delivery_burn_rate: Number(values.delivery_burn_rate),
+    };
     try {
-      const payload = {
-        distance: values.distance,
-        cost_ratio: values.cost_ratio,
-        delivery_burn_rate: values.delivery_burn_rate,
-        total_order_volume: values.total_order_volume,
-        total_order_weight: values.total_order_weight,
-      };
-      const response = await apiClient.put<any>(`/deliveries/${params.id}`, payload);
-      if (response.status === "success") {
-        toast({ title: "Success", description: "Delivery updated successfully" });
-        fetchDelivery();
-        router.push(`/dashboard/deliveries/${params.id}`);
-      }
+      await updateDelivery({ id: params.id, data: payload }).unwrap();
+      toast({ title: "Success", description: "Delivery updated successfully" });
+      fetchDelivery();
+      router.push(`/dashboard/deliveries/${params.id}`);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update delivery",
-        variant: "destructive",
-      });
-      setFieldError("distance", error.response?.data?.errors?.distance || "");
+      catchError(error, helpers.setFieldError);
     } finally {
-      setSubmitting(false);
+      helpers.setSubmitting(false);
     }
   };
 
   const fields = [
+    {
+      name: "order_id",
+      label: "Order",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/orders",
+      valueKey: "uuid",
+      labelKey: "ref",
+      placeholder: "Select order",
+    },
+    {
+      name: "vehicle_id",
+      label: "Vehicle",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/vehicles",
+      valueKey: "uuid",
+      labelKey: "type",
+      placeholder: "Select vehicle",
+    },
+    {
+      name: "from",
+      label: "From Location",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/locations",
+      valueKey: "uuid",
+      labelKey: "full_location",
+      placeholder: "Select from location",
+    },
+    {
+      name: "to",
+      label: "To Location",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/locations",
+      valueKey: "uuid",
+      labelKey: "full_location",
+      placeholder: "Select to location",
+    },
     { name: "distance", label: "Distance (km)", type: "text" as const, required: true, placeholder: "Distance" },
-    { name: "cost_ratio", label: "Cost Ratio", type: "text" as const, required: true, placeholder: "Cost Ratio" },
-    { name: "delivery_burn_rate", label: "Burn Rate", type: "text" as const, required: true, placeholder: "Burn Rate" },
-    { name: "total_order_volume", label: "Order Volume (m³)", type: "text" as const, required: true, placeholder: "Order Volume" },
-    { name: "total_order_weight", label: "Order Weight (kg)", type: "text" as const, required: true, placeholder: "Order Weight" },
+    // { name: "cost_ratio", label: "Cost Ratio", type: "text" as const, required: true, placeholder: "Cost Ratio" },
+    // { name: "delivery_burn_rate", label: "Burn Rate", type: "text" as const, required: true, placeholder: "Burn Rate" },
   ];
 
   return (
-    <DeliveryForm
-      title="Update Delivery"
-      description="Edit delivery information below"
-      initialValues={delivery as Delivery}
-      validationSchema={validationSchema}
-      fields={fields}
-      isLoading={isLoading}
-      onSubmit={handleSubmit}
-      submitLabel="Update Delivery"
-      onCancel={() => router.back()}
-      cardClassName="max-w-2xl"
-    />
+    <div>
+      <ViewPageHeader title="Update Delivery" description="Edit delivery information below" />
+      <DeliveryForm
+        title="Delivery Information"
+        description="Edit delivery information below"
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        fields={fields}
+        isLoading={isLoading}
+        onSubmit={handleSubmit}
+        submitLabel="Update Delivery"
+        onCancel={() => router.back()}
+        cardClassName="max-w-2xl"
+      />
+    </div>
   )
 }

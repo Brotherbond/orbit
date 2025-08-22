@@ -7,6 +7,7 @@ export interface Location {
   street: string;
   city: string;
   state: string;
+  region: string;
   country: string;
   postal_code: string;
   latitude: number;

@@ -1,117 +1,128 @@
 "use client";
-import { useDeliveryContext } from "./delivery-context";
-import { useRouter } from "next/navigation";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { handleDelete } from "@/lib/handleDelete";
 import { useToast } from "@/hooks/use-toast";
+import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import type { ComponentType, SVGProps } from "react";
+import { useDeliveryContext } from "./delivery-context";
+import { formatLabelToTitleCase } from "@/lib/label-formatters";
 
 export default function DeliveryDetailPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const user = session?.user;
-  const { delivery, isLoading, fetchDelivery } = useDeliveryContext();
+  const { delivery } = useDeliveryContext();
   const router = useRouter();
   const { toast } = useToast();
 
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!delivery) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">Delivery not found</p>
-      </div>
-    )
-  }
+  const icons: Record<string, ComponentType<SVGProps<SVGSVGElement>> | undefined> = {
+    orderRef: Package,
+    vehicleNumber: Truck,
+    vehicleType: Truck,
+    distance: Ruler,
+    costRatio: Percent,
+    burnRate: Flame,
+    orderVolume: Boxes,
+    orderWeight: Scale,
+    status: Calendar,
+    createdAt: Calendar,
+  };
 
   const userRole = user?.role?.toLowerCase() || ""
 
+  const Icon = ({ name }: { name: keyof typeof icons }) => {
+    const Cmp = icons[name];
+    return Cmp ? <Cmp className="h-5 w-5 text-[#ababab]" /> : null;
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold text-[#444444]">
-              Delivery Details
-            </h1>
-          </div>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader
+        title="Delivery Details"
+        description="View detailed information about this delivery"
+        showEditButton={true}
+        editHref={`/dashboard/deliveries/${delivery.uuid}/edit`}
+        showDeleteButton={["super-admin", "admin", "manager"].includes(userRole)}
+        deleteOptions={{
+          storeName: "deliveries",
+          uuid: delivery.uuid,
+        }}
+      />
       {/* Main Content */}
       <Card className="w-full max-w-3xl">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="mb-6 text-[#FF6600] font-bold text-lg">
-              Delivery ID: {delivery.uuid}
-            </div>
-            {["admin", "manager"].includes(userRole) && (
-              <Button
-                variant="destructive"
-                onClick={() =>
-                  handleDelete({
-                    storeName: "deliveries",
-                    uuid: delivery.uuid,
-                    onSuccess: () => router.push("/dashboard/deliveries"),
-                  })
-                }
-              >
-                Delete Delivery
-              </Button>
-            )}
-          </div>
           {/* Delivery Information Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Order Ref</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.order?.ref}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="flex items-center space-x-3">
+              <Icon name="orderRef" />
+              <div>
+                <p className="text-sm text-[#ababab]">Order Ref</p>
+                <p className="font-medium text-[#444444]">{delivery.order?.ref}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Vehicle Type</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.vehicle?.type}</p>
+            <div className="flex items-center space-x-3">
+              <Icon name="vehicleNumber" />
+              <div>
+                <p className="text-sm text-[#ababab]">Vehicle Number</p>
+                <p className="font-medium text-[#444444]">{delivery.vehicle?.vehicle_number}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Distance (km)</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.distance}</p>
+            <div className="flex items-center space-x-3">
+              <Icon name="vehicleType" />
+              <div>
+                <p className="text-sm text-[#ababab]">Vehicle Type</p>
+                <p className="font-medium text-[#444444]">{delivery.vehicle?.type}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Cost Ratio</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.cost_ratio}</p>
+            <div className="flex items-center space-x-3">
+              <Icon name="status" />
+              <div>
+                <p className="text-sm text-[#ababab]">Status</p>
+                <p className="font-medium text-[#444444]">{formatLabelToTitleCase(delivery.status)}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Burn Rate</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.delivery_burn_rate}</p>
+            <div className="flex items-center space-x-3">
+              <Icon name="distance" />
+              <div>
+                <p className="text-sm text-[#ababab]">Distance (km)</p>
+                <p className="font-medium text-[#444444]">{delivery.distance}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Order Volume (m³)</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.total_order_volume}</p>
+            <div className="flex items-center space-x-3">
+              <Icon name="costRatio" />
+              <div>
+                <p className="text-sm text-[#ababab]">Cost Ratio</p>
+                <p className="font-medium text-[#444444]">{delivery.cost_ratio}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Order Weight (kg)</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.total_order_weight}</p>
+            <div className="flex items-center space-x-3">
+              <Icon name="burnRate" />
+              <div>
+                <p className="text-sm text-[#ababab]">Burn Rate</p>
+                <p className="font-medium text-[#444444]">{delivery.delivery_burn_rate}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Order Density (kg/m³)</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.total_order_density}</p>
+            <div className="flex items-center space-x-3">
+              <Icon name="orderVolume" />
+              <div>
+                <p className="text-sm text-[#ababab]">Order Volume (m³)</p>
+                <p className="font-medium text-[#444444]">{delivery.total_order_volume}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-medium font-semibold text-[#333333] mb-1">Created At</p>
-              <p className="font-sm text-sm text-[#666666]">{delivery.created_at}</p>
+            <div className="flex items-center space-x-3">
+              <Icon name="orderWeight" />
+              <div>
+                <p className="text-sm text-[#ababab]">Order Weight (kg)</p>
+                <p className="font-medium text-[#444444]">{delivery.total_order_weight}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Icon name="createdAt" />
+              <div>
+                <p className="text-sm text-[#ababab]">Created At</p>
+                <p className="font-medium text-[#444444]">{delivery.created_at}</p>
+              </div>
             </div>
           </div>
         </CardContent>

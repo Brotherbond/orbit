@@ -1,20 +1,20 @@
 "use client"
 
+import ListPageHeader from "@/components/dashboard/ListPageHeader"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useToast } from "@/hooks/use-toast"
-import { apiClient } from "@/lib/api-client"
+import { handleDelete } from "@/lib/handleDelete"
 import { Brand } from "@/types/brand"
-import { Edit, Eye, MoreHorizontal, Package, Plus, Trash2 } from "lucide-react"
+import { Edit, Eye, MoreHorizontal, Package, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import React, { useRef } from "react"
+
 export default function BrandsPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
   const refreshTable = () => {
@@ -22,22 +22,19 @@ export default function BrandsPage() {
   }
 
   const columns = React.useMemo(
-    () => getColumns(router, toast, refreshTable),
-    [router, toast]
+    () => getColumns(router, refreshTable),
+    [router]
   )
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Brands</h1>
-          <p className="text-[#ababab]">Manage product brands and their packages</p>
-        </div>
-        <Button className="btn-primary" onClick={() => router.push("/dashboard/brands/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Brand
-        </Button>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Brands"
+        description="Manage product brands and their packages"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/brands/create")}
+        addLabel="Add Brand"
+      />
 
       <DataTable
         ref={dataTableRef}
@@ -65,28 +62,8 @@ export default function BrandsPage() {
 
 function getColumns(
   router: any,
-  toast: any,
   refreshTable: () => void
 ): ColumnDef<Brand>[] {
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this brand?")) return
-
-    try {
-      await apiClient.delete(`/brands/${uuid}`)
-      toast({
-        title: "Success",
-        description: "Brand deleted successfully",
-      })
-      refreshTable()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete brand",
-        variant: "destructive",
-      })
-    }
-  }
-
   return [
     {
       accessorKey: "image",
@@ -144,7 +121,7 @@ function getColumns(
     },
     {
       accessorKey: "created_at",
-      header: "Created",
+      header: "Created At",
       cell: ({ row }) => row.original.created_at,
     },
     {
@@ -166,7 +143,16 @@ function getColumns(
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original.uuid)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() =>
+                handleDelete({
+                  storeName: "brands",
+                  uuid: row.original.uuid,
+                  onSuccess: refreshTable,
+                })
+              }
+              className="text-red-600"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>

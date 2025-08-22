@@ -16,76 +16,125 @@ import { orderBrands } from "./order-brands";
 import { orderEvents } from "./order-events";
 import { roles } from "./roles";
 import { settings } from "./settings";
+import { targets } from "./targets";
 import { users } from "./users";
 import { vehicles } from "./vehicles";
 import { warehouses } from "./warehouses";
+import { webUsers } from "./web-users";
+import { AnyAction } from "@reduxjs/toolkit";
+
+const autoResetMiddleware =
+  (storeAPI: any) => (next: any) => (action: AnyAction) => {
+    // Check for fulfilled mutation actions
+    if (action.type && action.type.endsWith("/fulfilled")) {
+      // Pattern: brandsApi/executeMutation/fulfilled
+      const match = action.type.match(/^(\w+)\/executeMutation\/fulfilled$/);
+      if (match) {
+        const [, reducerPath] = match;
+
+        // Get the actual endpoint name from meta.arg.endpointName
+        const endpointName = action.meta?.arg?.endpointName;
+
+        if (endpointName) {
+          // Check if this is a mutation that should trigger a reset
+          const isMutation =
+            endpointName.startsWith("create") ||
+            endpointName.startsWith("update") ||
+            endpointName.startsWith("delete");
+
+          if (isMutation) {
+            // Find the matching API and reset its state
+            const apiEntry = Object.values(storeApis).find(
+              (api: any) => api.reducerPath === reducerPath,
+            );
+
+            if (apiEntry && apiEntry.util?.resetApiState) {
+              setTimeout(() => {
+                storeAPI.dispatch(apiEntry.util.resetApiState());
+              }, 500);
+            }
+          }
+        }
+      }
+    }
+
+    return next(action);
+  };
 
 export const store = configureStore({
   reducer: {
     [auditLogs.reducerPath]: auditLogs.reducer,
     [brands.reducerPath]: brands.reducer,
+    [dashboardApi.reducerPath]: dashboardApi.reducer,
+    dashboardFilters: dashboardFiltersReducer,
     [deliveries.reducerPath]: deliveries.reducer,
-    [distributors.reducerPath]: distributors.reducer,
     [distributorOrders.reducerPath]: distributorOrders.reducer,
     [distributorTargets.reducerPath]: distributorTargets.reducer,
+    [distributors.reducerPath]: distributors.reducer,
     [imeVss.reducerPath]: imeVss.reducer,
     [imeVssPerformance.reducerPath]: imeVssPerformance.reducer,
     [locations.reducerPath]: locations.reducer,
     [markets.reducerPath]: markets.reducer,
-    [vehicles.reducerPath]: vehicles.reducer,
-    [warehouses.reducerPath]: warehouses.reducer,
-    [orders.reducerPath]: orders.reducer,
     [orderBrands.reducerPath]: orderBrands.reducer,
     [orderEvents.reducerPath]: orderEvents.reducer,
+    [orders.reducerPath]: orders.reducer,
     [roles.reducerPath]: roles.reducer,
     [settings.reducerPath]: settings.reducer,
+    [targets.reducerPath]: targets.reducer,
     [users.reducerPath]: users.reducer,
-    dashboardFilters: dashboardFiltersReducer,
-    [dashboardApi.reducerPath]: dashboardApi.reducer,
+    [vehicles.reducerPath]: vehicles.reducer,
+    [warehouses.reducerPath]: warehouses.reducer,
+    [webUsers.reducerPath]: webUsers.reducer,
   } as any,
   middleware: (getDefaultMiddleware) =>
     (getDefaultMiddleware() as any).concat([
+      autoResetMiddleware,
       auditLogs.middleware,
       brands.middleware,
+      dashboardApi.middleware,
       deliveries.middleware,
-      distributors.middleware,
       distributorOrders.middleware,
       distributorTargets.middleware,
+      distributors.middleware,
       imeVss.middleware,
       imeVssPerformance.middleware,
       locations.middleware,
       markets.middleware,
-      vehicles.middleware,
-      warehouses.middleware,
-      orders.middleware,
       orderBrands.middleware,
       orderEvents.middleware,
+      orders.middleware,
       roles.middleware,
       settings.middleware,
+      targets.middleware,
       users.middleware,
-      dashboardApi.middleware,
+      vehicles.middleware,
+      warehouses.middleware,
+      webUsers.middleware,
     ]) as any,
 });
 
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
 export const storeApis = {
   auditLogs,
   brands,
   deliveries,
-  distributors,
   distributorOrders,
   distributorTargets,
+  distributors,
   imeVss,
   imeVssPerformance,
   locations,
   markets,
-  orders,
   orderBrands,
   orderEvents,
+  orders,
   roles,
   settings,
+  targets,
+  users,
   vehicles,
   warehouses,
-  users,
+  webUsers,
 };
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

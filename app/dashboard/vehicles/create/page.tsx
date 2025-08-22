@@ -1,18 +1,17 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { useToast } from "@/hooks/use-toast"
-import * as Yup from "yup"
-import { useCreateVehicleMutation, vehicles } from "@/store/vehicles"
-import { useDispatch } from "react-redux"
+import { useToast } from "@/hooks/use-toast";
+import { catchError } from "@/lib/utils";
+import { useCreateVehicleMutation } from "@/store/vehicles";
+import { useRouter } from "next/navigation";
+import * as Yup from "yup";
 
-import { VehicleForm } from "@/components/dashboard/VehicleForm"
-import ViewPageHeader from "@/components/ViewPageHeader"
+import { VehicleForm } from "@/components/dashboard/VehicleForm";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 
 export default function CreateVehiclePage() {
   const router = useRouter()
   const { toast } = useToast()
-  const dispatch = useDispatch()
   const [createVehicle, { isLoading: isCreating }] = useCreateVehicleMutation()
 
   const initialValues = {
@@ -41,7 +40,7 @@ export default function CreateVehiclePage() {
     { name: "vehicle_number", label: "Vehicle Number", type: "text" as const, required: true, placeholder: "Vehicle Number" },
     { name: "type", label: "Vehicle Type", type: "text" as const, required: true, placeholder: "Vehicle Type" },
     { name: "fuel_per_km", label: "Fuel per Km (L)", type: "text" as const, required: true, placeholder: "Fuel per Km" },
-    { name: "cost_supply_per_km", label: "Cost Supply per Km", type: "text" as const, required: true, placeholder: "Cost Supply per Km" },
+    { name: "cost_supply_per_km", label: "Cost of Supply per Km", type: "text" as const, required: true, placeholder: "Cost Supply per Km" },
     { name: "height", label: "Height (m)", type: "text" as const, required: true, placeholder: "Height" },
     { name: "length", label: "Length (m)", type: "text" as const, required: true, placeholder: "Length" },
     { name: "width", label: "Width (m)", type: "text" as const, required: true, placeholder: "Width" },
@@ -64,17 +63,19 @@ export default function CreateVehiclePage() {
         title: "Success",
         description: "Vehicle created successfully",
       })
-      dispatch(vehicles.util.resetApiState())
       helpers.resetForm()
-    } catch (error: any) { helpers.setFieldError("type", error?.errors?.type || ""); }
-    finally { helpers.setSubmitting(false) }
+    } catch (error: any) {
+      catchError(error, helpers.setFieldError);
+    } finally {
+      helpers.setSubmitting(false)
+    }
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       <ViewPageHeader title="Create Vehicle" description="Add a new vehicle to the system" />
       <VehicleForm
-        title="Create Vehicle"
+        title="Vehicle Information"
         description="Add a new vehicle to the system"
         initialValues={initialValues}
         validationSchema={validationSchema}

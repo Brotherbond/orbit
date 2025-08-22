@@ -1,8 +1,8 @@
 "use client";
-import { useMemo } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { ColumnDef } from "@/components/ui/data-table-types";
 import { OrderBrand } from "@/types/order";
+import { useMemo } from "react";
 
 export function getColumns(): ColumnDef<OrderBrand>[] {
   return [
@@ -88,7 +88,7 @@ export function getColumns(): ColumnDef<OrderBrand>[] {
 export default function ReportsPage() {
   const columns = useMemo(() => getColumns(), []);
   return (
-    <div className="space-y-6">
+    <div>
       <DataTable
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         store="orderBrands"

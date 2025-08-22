@@ -1,6 +1,7 @@
 import { StatusBadgeProps } from "@/components/ui/status-badge";
 import { Order } from "./order";
 import { Vehicle } from "./vehicle";
+import { Location } from "./location";
 
 export interface Delivery {
   uuid: string;
@@ -18,11 +19,4 @@ export interface Delivery {
   vehicle_coverage: number; // vehicle coverage in km
   status: StatusBadgeProps["status"];
   created_at: string;
-
-  // status: string; // delivery status
-  // expected_delivery_date: Date; // expected delivery date
-  // actual_delivery_date: Date; // actual delivery date
-  // delivery_address: string; // delivery address
-  // recipient_name: string; // name of the recipient
-  // recipient_phone: string; // phone number of the recipient
 }

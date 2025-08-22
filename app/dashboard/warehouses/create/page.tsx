@@ -1,10 +1,12 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { useToast } from "@/hooks/use-toast"
-import * as Yup from "yup"
-import { useCreateWarehouseMutation } from "@/store/warehouses"
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { WarehouseForm } from "@/components/dashboard/WarehouseForm"
+import { useToast } from "@/hooks/use-toast"
+import { catchError } from "@/lib/utils"
+import { useCreateWarehouseMutation } from "@/store/warehouses"
+import { useRouter } from "next/navigation"
+import * as Yup from "yup"
 
 export default function CreateWarehousePage() {
   const router = useRouter()
@@ -15,23 +17,17 @@ export default function CreateWarehousePage() {
     warehouse_code: "",
     address: "",
     location_id: "",
-    longitude: "",
-    latitude: "",
   }
 
   const validationSchema = Yup.object({
     warehouse_code: Yup.string().required("Warehouse code is required"),
     address: Yup.string().required("Address is required"),
     location_id: Yup.string().required("Location is required"),
-    longitude: Yup.string().required("Longitude is required"),
-    latitude: Yup.string().required("Latitude is required"),
   })
 
   const fields = [
     { name: "warehouse_code", label: "Warehouse Code", type: "text" as const, required: true, placeholder: "Warehouse Code" },
     { name: "address", label: "Address", type: "text" as const, required: true, placeholder: "Address" },
-    { name: "longitude", label: "Longitude", type: "text" as const, required: true, placeholder: "Longitude" },
-    { name: "latitude", label: "Latitude", type: "text" as const, required: true, placeholder: "Latitude" },
     {
       name: "location_id",
       label: "Location",
@@ -53,26 +49,26 @@ export default function CreateWarehousePage() {
       })
       helpers.resetForm()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to create warehouse",
-        variant: "destructive",
-      })
+      catchError(error, helpers.setFieldError);
+    } finally {
+      helpers.setSubmitting(false)
     }
-    helpers.setSubmitting(false)
   }
 
   return (
-    <WarehouseForm
-      title="Create Warehouse"
-      description="Add a new warehouse to the system"
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      fields={fields}
-      isLoading={isCreating}
-      onSubmit={handleSubmit}
-      submitLabel="Create Warehouse"
-      onCancel={() => router.back()}
-    />
+    <>
+      <ViewPageHeader title="Create Warehouse" description="Add a new warehouse to the system" />
+      <WarehouseForm
+        title="Warehouse Information"
+        description="Add a new warehouse to the system"
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        fields={fields}
+        isLoading={isCreating}
+        onSubmit={handleSubmit}
+        submitLabel="Create Warehouse"
+        onCancel={() => router.back()}
+      />
+    </>
   )
 }

@@ -1,20 +1,18 @@
 "use client"
 
-import { redirect, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
+import { handleDelete } from "@/lib/handleDelete"
 import { Setting } from "@/types/setting"
+import { Edit, Eye, MoreHorizontal, Plus, Trash2 } from "lucide-react"
+import { redirect, useRouter } from "next/navigation"
 
 
 export default function SettingsPage() {
   const router = useRouter()
-  const { toast } = useToast();
   redirect("/dashboard");
 
   const columns: ColumnDef<Setting>[] = [
@@ -73,7 +71,7 @@ export default function SettingsPage() {
     },
     {
       accessorKey: "created_at",
-      header: "Created",
+      header: "Created At",
       cell: ({ row }) => row.original.created_at,
     },
     {
@@ -95,7 +93,16 @@ export default function SettingsPage() {
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original.uuid)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() =>
+                handleDelete({
+                  storeName: "settings",
+                  uuid: row.original.uuid,
+                  onSuccess: router.refresh,
+                })
+              }
+              className="text-red-600"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -106,26 +113,9 @@ export default function SettingsPage() {
   ]
 
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this setting?")) return
-
-    try {
-      await apiClient.delete(`/settings/${id}`)
-      toast({
-        title: "Success",
-        description: "Setting deleted successfully",
-      })
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete setting",
-        variant: "destructive",
-      })
-    }
-  }
 
   return (
-    <div className="space-y-6">
+    <div>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#444444]">Settings</h1>

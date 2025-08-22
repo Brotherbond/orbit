@@ -94,7 +94,7 @@ export default function LoginPage() {
                       />
                       <Mail className="h-5 w-5 text-[#ababab] absolute left-3 top-1/2 transform -translate-y-1/2" />
                     </div>
-                      <ErrorMessage name="email" component="div" className="text-red-500 text-xs mt-1" />
+                    <ErrorMessage name="email" component="div" className="text-red-500 text-xs mt-1" />
                   </div>
 
                   <div>
@@ -127,7 +127,7 @@ export default function LoginPage() {
                         )}
                       </button>
                     </div>
-                      <ErrorMessage name="password" component="div" className="text-red-500 text-xs mt-1" />
+                    <ErrorMessage name="password" component="div" className="text-red-500 text-xs mt-1" />
                   </div>
                 </div>
 

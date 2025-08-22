@@ -5,6 +5,7 @@ export interface Distributor {
   uuid: string;
   user: User;
   business_name: string;
+  category: string;
   address: string;
   business_type: string;
   registration_number?: string;

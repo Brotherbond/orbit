@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api-client";
-import { useRouter } from "next/navigation";
-import * as Yup from "yup";
 import BrandForm from "@/components/dashboard/BrandForm";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
+import { useToast } from "@/hooks/use-toast";
+import { catchError } from "@/lib/utils";
+import { useCreateBrandMutation } from "@/store/brands";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import * as Yup from "yup";
 
 
 export default function CreateBrandPage() {
@@ -13,6 +15,7 @@ export default function CreateBrandPage() {
 
   const router = useRouter();
   const { toast } = useToast();
+  const [createBrand] = useCreateBrandMutation();
 
   const initialValues = {
     name: "",
@@ -58,8 +61,7 @@ export default function CreateBrandPage() {
       .min(1, "At least one package is required"),
   });
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
-    setIsLoading(true);
+  const handleSubmit = async (values: typeof initialValues, helpers: any) => {
     try {
       const formData = new FormData();
       formData.append("name", values.name);
@@ -73,50 +75,33 @@ export default function CreateBrandPage() {
           formData.append(`packages[${idx}][${key}]`, String(val));
         });
       });
-      await apiClient.post("/brands", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await createBrand(formData as any).unwrap();
       toast({
         title: "Success",
         description: "Brand created successfully",
       });
-      resetForm();
+      helpers.resetForm();
       setImageFile(null);
     } catch (error: any) {
-      let errorSet = false;
-      if (Array.isArray(error.errors)) {
-        error.errors.forEach((err: any) => {
-          if (err && typeof err.field === "string" && typeof err.message === "string") {
-            setFieldError(err.field, err.message);
-            errorSet = true;
-          }
-        });
-      }
-      if (!errorSet) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to create brand",
-          variant: "destructive",
-        });
-      }
+      catchError(error, helpers.setFieldError);
     } finally {
-      setIsLoading(false);
-      setSubmitting(false);
+      helpers.setSubmitting(false);
     }
   };
 
   return (
-    <BrandForm
-      mode="create"
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      isLoading={isLoading}
-      imageFile={imageFile}
-      setImageFile={setImageFile}
-      onSubmit={handleSubmit}
-      onBack={() => router.back()}
-    />
+    <>
+      <ViewPageHeader title="Create Brand" description="Add a new brand to the system" />
+      <BrandForm
+        mode="create"
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        isLoading={isLoading}
+        imageFile={imageFile}
+        setImageFile={setImageFile}
+        onSubmit={handleSubmit}
+        onBack={() => router.back()}
+      />
+    </>
   );
 }

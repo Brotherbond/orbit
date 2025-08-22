@@ -1,16 +1,16 @@
 "use client";
-import { useState } from "react";
 import { useRoles } from "@/components/dashboard/RolesContext";
-import { useRouter } from "next/navigation";
-import { PageHeader } from "@/components/PageHeader";
-import { apiClient } from "@/lib/api-client";
-import { useToast } from "@/hooks/use-toast";
-import * as Yup from "yup";
 import UserForm from "@/components/dashboard/UserForm";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
+import { useToast } from "@/hooks/use-toast";
+import { catchError } from "@/lib/utils";
+import { useCreateUserMutation } from "@/store/users";
+import { useRouter } from "next/navigation";
+import * as Yup from "yup";
 
 export default function CreateUserPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
-  const [isLoading, setIsLoading] = useState(false)
+  const [createUser, { isLoading }] = useCreateUserMutation()
   const router = useRouter()
   const { toast } = useToast()
 
@@ -33,28 +33,6 @@ export default function CreateUserPage() {
     role_id: Yup.string().required("Role is required"),
     send_notification: Yup.boolean(),
   })
-
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
-    setIsLoading(true)
-    try {
-      await apiClient.post("/users", values)
-      toast({
-        title: "Success",
-        description: "User created successfully",
-      })
-      resetForm();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create user",
-        variant: "destructive",
-      })
-      setFieldError("email", error.response?.data?.errors?.email || "")
-    } finally {
-      setIsLoading(false)
-      setSubmitting(false)
-    }
-  }
 
   const fields = [
     {
@@ -100,10 +78,7 @@ export default function CreateUserPage() {
       placeholder: "Select role",
       options: roles
         .filter((role) => !["vss", "ime", "distributor"].includes(role.name.toLowerCase()))
-        .map((role) => ({
-          label: role.name,
-          value: role.uuid,
-        })),
+        .map((role) => ({ label: role.name, value: role.uuid })),
     },
     {
       name: "send_notification",
@@ -112,12 +87,27 @@ export default function CreateUserPage() {
     },
   ]
 
+  const handleSubmit = async (values: typeof initialValues, helpers: any) => {
+    try {
+      await createUser(values).unwrap()
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      })
+      helpers.resetForm()
+    } catch (error: any) {
+      catchError(error, helpers.setFieldError);
+    } finally {
+      helpers.setSubmitting(false)
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      <PageHeader title="Create User" description="Add a new user to the system" />
+    <div>
+      <ViewPageHeader title="Create User" description="Add a new user to the system" />
       <UserForm
         title="User Information"
-        description="Enter the details for the new user"
+        description="Add a new user to the system"
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}

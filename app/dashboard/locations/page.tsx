@@ -1,41 +1,21 @@
 "use client"
 
-import React, { useRef } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import ListPageHeader from "@/components/dashboard/ListPageHeader"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
+import { handleDelete } from "@/lib/handleDelete"
 import { Location } from "@/types/location"
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import React, { useRef } from "react"
 
 function getColumns(
   router: any,
-  toast: any,
   refreshTable: () => void
 ): ColumnDef<Location>[] {
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this location?")) return
-
-    try {
-      await apiClient.delete(`/locations/${uuid}`)
-      toast({
-        title: "Success",
-        description: "Location deleted successfully",
-      })
-      refreshTable()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete location",
-        variant: "destructive",
-      })
-    }
-  }
-
   return [
     {
       accessorKey: "street",
@@ -78,14 +58,15 @@ function getColumns(
       cell: ({ row }) => (
         <div className="text-sm text-[#ababab]">
           {row.original.latitude && row.original.longitude
-            ? `${row.original.latitude.toFixed(4)}, ${row.original.longitude.toFixed(4)}`
+            ? `${Number(row.original.longitude)?.toFixed(4)}, ${Number(row.original.latitude)?.toFixed(4)}`
             : "Not set"}
         </div>
       ),
     },
     {
       accessorKey: "created_at",
-      header: "Created",
+      header: "Created At",
+      width: 200,
       cell: ({ row }) => row.original.created_at,
     },
     {
@@ -107,7 +88,16 @@ function getColumns(
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original.uuid)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() =>
+                handleDelete({
+                  storeName: "locations",
+                  uuid: row.original.uuid,
+                  onSuccess: refreshTable,
+                })
+              }
+              className="text-red-600"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -120,7 +110,6 @@ function getColumns(
 
 export default function LocationsPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
   const refreshTable = () => {
@@ -128,22 +117,19 @@ export default function LocationsPage() {
   }
 
   const columns = React.useMemo(
-    () => getColumns(router, toast, refreshTable),
-    [router, toast]
+    () => getColumns(router, refreshTable),
+    [router]
   )
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Locations</h1>
-          <p className="text-[#ababab]">Manage geographical locations and addresses</p>
-        </div>
-        <Button className="btn-primary" onClick={() => router.push("/dashboard/locations/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Location
-        </Button>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Locations"
+        description="Manage geographical locations and addresses"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/locations/create")}
+        addLabel="Add Location"
+      />
 
       <DataTable
         ref={dataTableRef}

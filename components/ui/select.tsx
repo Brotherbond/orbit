@@ -1,12 +1,12 @@
 "use client"
 
-import * as React from "react"
-import * as SelectPrimitive from "@radix-ui/react-select"
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { apiClient } from "@/lib/api-client"
+import { cn } from "@/lib/utils"
+import * as SelectPrimitive from "@radix-ui/react-select"
+import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import * as React from "react"
+import { useEffect, useState } from "react"
 
 interface SelectWithFetchProps<T = any> {
   fetchUrl: string

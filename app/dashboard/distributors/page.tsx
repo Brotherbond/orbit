@@ -1,43 +1,23 @@
 "use client"
 
-import React, { useRef, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
+import ListPageHeader from "@/components/dashboard/ListPageHeader"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { MoreHorizontal, Plus, Eye, Edit, Trash2, TrendingUp } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
+import { handleDelete } from "@/lib/handleDelete"
 import { Distributor } from "@/types/distributor"
-import BulkUploadModal from "@/components/dashboard/BulkUploadModal"
+import { Edit, Eye, MoreHorizontal, Trash2, TrendingUp } from "lucide-react"
+import { useRouter } from "next/navigation"
+import React, { useRef, useState } from "react"
 
 
 function getColumns(
   router: any,
-  toast: any,
   refreshTable: () => void
 ): ColumnDef<Distributor>[] {
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this distributor?")) return
-
-    try {
-      await apiClient.delete(`/distributors/${uuid}`)
-      toast({
-        title: "Success",
-        description: "Distributor deleted successfully",
-      })
-      refreshTable()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete distributor",
-        variant: "destructive",
-      })
-    }
-  }
-
   return [
     {
       accessorKey: "business_name",
@@ -128,7 +108,16 @@ function getColumns(
               <Eye className="mr-2 h-4 w-4" />
               View Orders
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original.uuid)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() =>
+                handleDelete({
+                  storeName: "distributors",
+                  uuid: row.original.uuid,
+                  onSuccess: refreshTable,
+                })
+              }
+              className="text-red-600"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -141,7 +130,6 @@ function getColumns(
 
 export default function DistributorsPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
   const refreshTable = () => {
@@ -149,8 +137,8 @@ export default function DistributorsPage() {
   }
 
   const columns = React.useMemo(
-    () => getColumns(router, toast, refreshTable),
-    [router, toast]
+    () => getColumns(router, refreshTable),
+    [router]
   )
 
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
@@ -179,23 +167,17 @@ export default function DistributorsPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Distributors</h1>
-          <p className="text-[#ababab]">Manage distributors and their business information</p>
-        </div>
-        <div className="flex gap-2">
-          <Button className="btn-primary" onClick={() => setBulkModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Bulk Distributors
-          </Button>
-          <Button className="btn-primary" onClick={() => router.push("/dashboard/distributors/create")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Distributor
-          </Button>
-        </div>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Distributors"
+        description="Manage distributors and their business information"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/distributors/create")}
+        addLabel="Add Distributor"
+        showBulkAddButton={true}
+        onBulkAdd={() => setBulkModalOpen(true)}
+        bulkAddLabel="Add Bulk Distributors"
+      />
 
       <DataTable
         ref={dataTableRef}

@@ -1,8 +1,8 @@
 "use client";
-import React, { createContext, useContext, useCallback } from "react";
-import { useGetOrderQuery } from "@/store/orders";
 import { useToast } from "@/hooks/use-toast";
+import { useGetOrderQuery } from "@/store/orders";
 import type { Order } from "@/types/order";
+import React, { createContext, useCallback, useContext } from "react";
 
 interface OrderContextValue {
   order: Order | null;

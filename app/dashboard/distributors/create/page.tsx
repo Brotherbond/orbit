@@ -1,21 +1,25 @@
 "use client"
 
 import UserForm from "@/components/dashboard/UserForm"
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { useToast } from "@/hooks/use-toast"
-import { apiClient } from "@/lib/api-client"
 import { userFullNameEmailFormatter } from "@/lib/label-formatters"
+import { catchError } from "@/lib/utils"
+import { useCreateDistributorMutation } from "@/store/distributors"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useDispatch } from "react-redux"
 import * as Yup from "yup"
 
 export default function CreateDistributorPage() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [createDistributor, { isLoading }] = useCreateDistributorMutation()
   const router = useRouter()
   const { toast } = useToast()
+  const dispatch = useDispatch()
 
   const initialValues = {
     first_name: "",
     last_name: "",
+    category: "",
     email: "",
     phone: "",
     password: "",
@@ -28,6 +32,7 @@ export default function CreateDistributorPage() {
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
+    category: Yup.string().required("Category is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     phone: Yup.string(),
     password: Yup.string().required("Password is required"),
@@ -37,31 +42,18 @@ export default function CreateDistributorPage() {
     send_notification: Yup.boolean(),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
-    setIsLoading(true)
+  const handleSubmit = async (values: typeof initialValues, helpers: any) => {
     try {
-      const { data, status } = await apiClient.post("/distributors", values)
-      if (status === "success") {
-        toast({
-          title: "Success",
-          description: "Distributor created successfully",
-        });
-        resetForm();
-      }
-    } catch (error: any) {
+      await createDistributor(values).unwrap()
       toast({
-        title: "Error",
-        description: error.message || "Failed to create distributor",
-        variant: "destructive",
+        title: "Success",
+        description: "Distributor created successfully",
       })
-      if (error.response?.data?.errors) {
-        Object.entries(error.response.data.errors).forEach(([field, message]) => {
-          setFieldError(field, message as string)
-        })
-      }
+      helpers.resetForm()
+    } catch (error: any) {
+      catchError(error, helpers.setFieldError);
     } finally {
-      setIsLoading(false)
-      setSubmitting(false)
+      helpers.setSubmitting(false)
     }
   }
 
@@ -72,6 +64,13 @@ export default function CreateDistributorPage() {
       type: "text" as const,
       required: true,
       placeholder: "Enter business name",
+    },
+    {
+      name: "category",
+      label: "Category",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter category",
     },
     {
       name: "first_name",
@@ -134,25 +133,10 @@ export default function CreateDistributorPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <button
-          type="button"
-          className="btn btn-ghost flex items-center"
-          onClick={() => router.back()}
-        >
-          <span className="mr-2">
-            ←
-          </span>
-          Back
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Create Distributor</h1>
-          <p className="text-[#ababab]">Add a new distributor to the system</p>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader title="Create Distributor" description="Add a new distributor to the system" />
       <UserForm
-        title="Distributor Information"
+        title="Create Distributor"
         description="Enter the details for the new distributor"
         initialValues={initialValues}
         validationSchema={validationSchema}

@@ -1,11 +1,11 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, FilterConfig } from "@/components/ui/data-table";
+import { ColumnDef } from "@/components/ui/data-table-types";
+import { useGetIMEVSSsPerformanceQuery } from "@/store/ime-vss-performance";
 import { IMEVSSPerformance } from "@/types/ime-vss-performance";
 import { Row } from "@tanstack/react-table";
-import { useRef, useEffect } from "react";
-import { useGetIMEVSSsPerformanceQuery } from "@/store/ime-vss-performance";
-import { ColumnDef } from "@/components/ui/data-table-types";
+import { useEffect, useRef } from "react";
 
 type IMEVSSRow = Row<IMEVSSPerformance>;
 
@@ -99,8 +99,8 @@ export default function ReportsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center text-xs gap-1 ml-2">
+    <div>
+      <div className="flex items-center text-xs gap-1 m-4">
         <span className="font-medium">Keys:</span><span>Daily performance<span className="text-green-600 font-semibold">: Green</span>, Cumulative performance<span className="text-orange-500 font-semibold">: Orange</span></span>
       </div>
       <DataTable

@@ -1,19 +1,17 @@
-"use client"
-
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@/components/ui/data-table-types"
-import { MoreHorizontal, Plus, Eye, Edit, Trash2, MapPin, Users } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-import { Market } from "@/types/market"
+"use client";
+import ListPageHeader from "@/components/dashboard/ListPageHeader";
+import { Button } from "@/components/ui/button";
+import { DataTable } from "@/components/ui/data-table";
+import type { ColumnDef } from "@/components/ui/data-table-types";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { handleDelete } from "@/lib/handleDelete";
+import { Market } from "@/types/market";
+import { Edit, Eye, MapPin, MoreHorizontal, Trash2, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 
 export default function MarketsPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const columns: ColumnDef<Market>[] = [
     {
       accessorKey: "name",
@@ -56,7 +54,7 @@ export default function MarketsPage() {
     },
     {
       accessorKey: "created_at",
-      header: "Created",
+      header: "Created At",
       cell: ({ row }) => row.original.created_at,
     },
     {
@@ -78,7 +76,7 @@ export default function MarketsPage() {
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original.uuid)} className="text-red-600">
+            <DropdownMenuItem onClick={() => onDeleteMarket(row.original.uuid)} className="text-red-600">
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -89,37 +87,23 @@ export default function MarketsPage() {
   ]
 
 
-  const handleDelete = async (uuid: string) => {
-    if (!confirm("Are you sure you want to delete this market?")) return
-
-    try {
-      await apiClient.delete(`/markets/${uuid}`)
-      router.refresh()
-      toast({
-        title: "Success",
-        description: "Market deleted successfully",
-      })
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete market",
-        variant: "destructive",
-      })
-    }
+  const onDeleteMarket = (uuid: string) => {
+    handleDelete({
+      storeName: "markets",
+      uuid,
+      onSuccess: router.refresh,
+    })
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Markets</h1>
-          <p className="text-[#ababab]">Manage market regions and territories</p>
-        </div>
-        <Button className="btn-primary" onClick={() => router.push("/dashboard/markets/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Market
-        </Button>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Markets"
+        description="Manage market regions and territories"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/markets/create")}
+        addLabel="Add Market"
+      />
 
       <DataTable
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}

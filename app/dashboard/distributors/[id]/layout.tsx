@@ -1,8 +1,9 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+import { ViewPageHeader } from "@/components/dashboard/ViewPageHeader"
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
 import { cn } from "@/lib/utils"
-import { ArrowLeft } from "lucide-react"
+import { notFound } from "next/navigation"
 import { usePathname, useRouter } from "next/navigation"
 import { DistributorProvider, useDistributor, useDistributorInfo } from "./distributor-context"
 
@@ -15,8 +16,15 @@ function DistributorLayoutContent({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { distributor, isLoading, error } = useDistributor()
   const distributorInfo = useDistributorInfo()
-  const isLoading = !distributorInfo.business_name
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
+
+  if (error || !distributor) {
+    notFound()
+  }
 
   // Determine the active tab based on the current path
   const getActiveTab = () => {
@@ -36,34 +44,19 @@ function DistributorLayoutContent({
   const activeTab = getActiveTab()
 
   return (
-    <div className="space-y-6">
-      {/* Header with Distributor Name */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.push('/dashboard/distributors')}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            {isLoading ? (
-              <div className="animate-pulse">
-                <div className="h-8 bg-gray-200 rounded w-48 mb-1"></div>
-                <div className="h-4 bg-gray-200 rounded w-32"></div>
-              </div>
-            ) : (
-              <>
-                <h1 className="text-3xl font-bold text-[#444444]">
-                  {distributorInfo.business_name || "Distributor"}
-                </h1>
-                <DistributorUserName />
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader
+        title={distributorInfo.business_name || "Distributor"}
+        description={<DistributorUserName />}
+        showDeleteButton={true}
+        deleteOptions={{
+          storeName: "distributors",
+          uuid: params.id,
+        }}
+      />
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 mb-4">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           {tabs.map((tab) => (
             <button
@@ -87,7 +80,6 @@ function DistributorLayoutContent({
   )
 }
 
-// Separate component for user name to avoid unnecessary re-renders
 function DistributorUserName() {
   const { distributor } = useDistributor()
 

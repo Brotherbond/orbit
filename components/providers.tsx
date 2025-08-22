@@ -1,11 +1,11 @@
 "use client"
 
-import { SessionProvider } from "next-auth/react"
-import { Provider as ReduxProvider } from "react-redux"
 import { store } from "@/store"
-import type React from "react"
-import { useState, useEffect } from "react"
+import { SessionProvider } from "next-auth/react"
 import { usePathname } from "next/navigation"
+import type React from "react"
+import { useEffect, useState } from "react"
+import { Provider as ReduxProvider } from "react-redux"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

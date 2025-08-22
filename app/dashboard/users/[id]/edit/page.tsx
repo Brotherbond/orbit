@@ -1,60 +1,30 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRoles } from "@/components/dashboard/RolesContext"
-import { useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api-client"
-import { PageHeader } from "@/components/PageHeader"
-import { useToast } from "@/hooks/use-toast"
-import * as Yup from "yup"
-import UserForm from "@/components/dashboard/UserForm"
-import { User } from "@/types/user"
+import { useRoles } from "@/components/dashboard/RolesContext";
+import UserForm from "@/components/dashboard/UserForm";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
+import { useToast } from "@/hooks/use-toast";
+import { catchError } from "@/lib/utils";
+import { useUpdateUserMutation } from "@/store/users";
+import { useRouter } from "next/navigation";
+import * as Yup from "yup";
+import { useUserContext } from "../user-context";
 
 export default function EditUserPage({ params }: { params: { id: string } }) {
-  const [initialValues, setInitialValues] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    role_id: "",
-    status: "active",
-  })
-  const [userData, setUserData] = useState<User | null>(null)
   const { roles, isLoading: isRolesLoading } = useRoles()
-  const [isLoading, setIsLoading] = useState(false)
-
   const router = useRouter()
   const { toast } = useToast()
+  const [updateUser] = useUpdateUserMutation()
+  const { user, isLoading, fetchUser } = useUserContext();
 
-  useEffect(() => {
-    fetchUser()
-  }, [params.id])
-
-  const fetchUser = async () => {
-    try {
-      const { data } = await apiClient.get<{ item: User }>(`/users/${params.id}`)
-      setUserData(data.item)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch user data",
-        variant: "destructive",
-      })
-    }
-  }
-
-  useEffect(() => {
-    if (userData && roles.length > 0) {
-      setInitialValues({
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        email: userData.email,
-        phone: userData.phone,
-        role_id: userData.role?.uuid || "",
-        status: userData.status,
-      })
-    }
-  }, [userData, roles])
+  const initialValues = {
+    first_name: user?.first_name || "",
+    last_name: user?.last_name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    role_id: user?.role?.uuid || "",
+    status: user?.status || "active",
+  };
 
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
@@ -103,10 +73,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
       placeholder: "Select role",
       options: roles
         .filter((role) => !["vss", "ime", "distributor"].includes(role.name.toLowerCase()))
-        .map((role) => ({
-          label: role.name,
-          value: role.uuid,
-        })),
+        .map((role) => ({ label: role.name, value: role.uuid })),
     },
     {
       name: "status",
@@ -122,37 +89,28 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
   ]
 
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
-    setIsLoading(true)
     try {
-      await apiClient.put(`/users/${params.id}`, values)
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-      })
-      router.push(`/dashboard/users/${params.id}`)
+      await updateUser({ id: params.id, data: values }).unwrap();
+      toast({ title: "Success", description: "User updated successfully" });
+      fetchUser();
+      router.push(`/dashboard/users/${params.id}`);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update user",
-        variant: "destructive",
-      })
-      setFieldError("email", error.response?.data?.errors?.email || "")
+      catchError(error, setFieldError);
     } finally {
-      setIsLoading(false)
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
-    <div className="space-y-6">
-      <PageHeader title="Edit User" description="Update user information" />
+    <div>
+      <ViewPageHeader title="Update User" description="Edit user information below" />
       <UserForm
-        title="User Information"
-        description="Update the user details below"
+        title="Update User"
+        description="Edit user information below"
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
-        isLoading={false}
+        isLoading={isLoading || isRolesLoading}
         onSubmit={handleSubmit}
         submitLabel="Update User"
         onCancel={() => router.back()}

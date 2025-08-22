@@ -1,26 +1,26 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useOrderContext } from "./order-context";
-import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "@/components/ui/status-badge";
-import SuccessIcon from "@/images/success.svg";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import Modal from "@/components/ui/modal";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
+import SuccessIcon from "@/images/success.svg";
+import { apiClient } from "@/lib/api-client";
 import type { Order } from "@/types/order";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useOrderContext } from "./order-context";
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const user = session?.user;
-  const { order, isLoading, fetchOrder } = useOrderContext();
+  const { order, fetchOrder } = useOrderContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,11 +38,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       const response = await apiClient.get<{ items: any[] }>(`/orders/${params.id}/messages`);
       setMessages(response.data.items ?? []);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to fetch messages",
-        variant: "destructive",
-      });
     } finally {
       setIsMessagesLoading(false);
     }
@@ -63,11 +58,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       });
       fetchOrder();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || `Failed to update order status to ${status}`,
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -80,11 +70,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
   const handleSubmitUpdate = async () => {
     if (!updateMessage.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a message",
-        variant: "destructive",
-      });
       return;
     }
     setIsSubmitting(true);
@@ -104,11 +89,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
       fetchMessages();
       fetchOrder();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to send update request",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -116,26 +96,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
 
   const handleConfirmPayment = () => updateOrderStatus("confirmed");
   const handleApproveOrder = () => updateOrderStatus("approved");
-
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!order) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">Order not found</p>
-      </div>
-    )
-  }
 
   const userRole = user?.role?.toLowerCase() || ""
 
@@ -207,21 +167,12 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold text-[#444444]">
-              Order Details
-            </h1>
-          </div>
-        </div>
-      </div>
+      <ViewPageHeader
+        title="Order Details"
+        description={order.ref ? `#${order.ref}` : ""}
+      />
       {/* Main Content */}
       <Card className="w-full max-w-3xl">
         <CardContent className="p-6">

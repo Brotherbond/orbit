@@ -1,17 +1,19 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
-import { Formik, Form, Field, ErrorMessage } from "formik"
-import * as Yup from "yup"
+import { apiClient } from "@/lib/api-client"
+import { useCreateRoleMutation, useUpdateRoleMutation } from "@/store/roles"
+import type { Permission } from "@/types/role"
+import { ErrorMessage, Field, Form, Formik } from "formik"
+import { Save } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import * as Yup from "yup"
 
 export interface RoleFormValues {
   name: string
@@ -53,6 +55,8 @@ export default function RoleForm({
 
   const router = useRouter()
   const { toast } = useToast()
+  const [updateRole] = useUpdateRoleMutation()
+  const [createRole] = useCreateRoleMutation()
 
   useEffect(() => {
     // Fetch permissions
@@ -75,35 +79,36 @@ export default function RoleForm({
   const handleSubmit = async (values: RoleFormValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
-      let response;
-
       if (isEdit && roleId) {
-        response = await apiClient.put(`/roles/${roleId}`, values)
-      } else {
-        response = await apiClient.post("/roles", values)
-      }
-
-      if (response.status === "success") {
+        // Map string[] to Permission[]
+        const permissionsPayload: Permission[] = values.permissions.map((uuid) => ({ uuid } as Permission));
+        await updateRole({ id: roleId, data: { ...values, permissions: permissionsPayload } }).unwrap()
         toast({
           title: "Success",
-          description: isEdit ? "Role updated successfully" : "Role created successfully"
+          description: "Role updated successfully"
         });
-
         if (onSuccess) {
-          onSuccess(response.data);
-        } else if (isEdit && roleId) {
+          onSuccess(values);
+        } else {
           router.push(`/dashboard/roles/${roleId}`);
+        }
+      } else {
+        const permissionsPayload: Permission[] = values.permissions.map((uuid) => ({ uuid } as Permission));
+        await createRole({ ...values, permissions: permissionsPayload }).unwrap()
+        toast({
+          title: "Success",
+          description: "Role created successfully"
+        });
+        if (onSuccess) {
+          onSuccess(values);
         } else {
           resetForm();
         }
       }
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || `Failed to ${isEdit ? 'update' : 'create'} role`,
-        variant: "destructive",
-      })
-      setFieldError("name", error.response?.data?.errors?.name || "")
+      if (error?.errors) {
+        setFieldError("name", error.errors.name || "")
+      }
     } finally {
       setIsLoading(false)
       setSubmitting(false)
@@ -112,17 +117,7 @@ export default function RoleForm({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">{title}</h1>
-          <p className="text-[#ababab]">{description}</p>
-        </div>
-      </div>
-      <Card className="max-w-2xl">
+      <Card className="max-w-3xl">
         <CardHeader>
           <CardTitle>Role Information</CardTitle>
           <CardDescription>Enter the details for the role</CardDescription>
@@ -136,59 +131,63 @@ export default function RoleForm({
           >
             {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
               <Form className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={values.name}
-                    onChange={handleChange}
-                    placeholder="Enter role name"
-                  />
-                  <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name *</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      value={values.name}
+                      onChange={handleChange}
+                      placeholder="Enter role name"
+                    />
+                    <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Input
+                      id="description"
+                      name="description"
+                      value={values.description}
+                      onChange={handleChange}
+                      placeholder="Enter description"
+                    />
+                    <ErrorMessage name="description" component="p" className="text-sm text-red-500" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Input
-                    id="description"
-                    name="description"
-                    value={values.description}
-                    onChange={handleChange}
-                    placeholder="Enter description"
-                  />
-                  <ErrorMessage name="description" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={values.status}
-                    onValueChange={(value) => setFieldValue("status", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="access_type">Access Type</Label>
-                  <Select
-                    value={values.access_type}
-                    onValueChange={(value) => setFieldValue("access_type", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="web">Web</SelectItem>
-                      <SelectItem value="mobile">Mobile</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="status">Status</Label>
+                    <Select
+                      value={values.status}
+                      onValueChange={(value) => setFieldValue("status", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="access_type">Access Type</Label>
+                    <Select
+                      value={values.access_type}
+                      onValueChange={(value) => setFieldValue("access_type", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="web">Web</SelectItem>
+                        <SelectItem value="mobile">Mobile</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Permissions</Label>

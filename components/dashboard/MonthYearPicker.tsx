@@ -9,16 +9,16 @@ interface MonthYearPickerProps {
   placeholder?: string
 }
 
-export function MonthYearPicker({ 
-  month, 
-  year, 
+export function MonthYearPicker({
+  month,
+  year,
   onChange
 }: MonthYearPickerProps) {
   // Use current date as default
   const currentDate = new Date()
   const selectedMonth = month || format(currentDate, "MM")
   const selectedYear = year || format(currentDate, "yyyy")
-  
+
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 10 }, (_, i) => currentYear - i)
   const months = [

@@ -1,5 +1,6 @@
 "use client";
 
+import ListPageHeader from "@/components/dashboard/ListPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
@@ -42,7 +43,7 @@ function getColumns(): ColumnDef<AuditLog>[] {
     },
     {
       accessorKey: "created_at",
-      header: "Created",
+      header: "Created At",
       cell: ({ row }) => row.original.created_at,
     },
   ]
@@ -53,13 +54,11 @@ export default function AuditLogs() {
   const columns = React.useMemo(() => getColumns(), [])
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Audit Logs</h1>
-          <p className="text-[#ababab]">Check audit logs</p>
-        </div>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Audit Logs"
+        description="Check audit logs"
+      />
       <DataTable
         ref={dataTableRef}
         searchKey="search"

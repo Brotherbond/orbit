@@ -1,6 +1,25 @@
 "use client";
 
-import * as React from "react";
+import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { SelectWithFetch } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useToast } from "@/components/ui/use-toast";
+import { apiClient } from "@/lib/api-client";
 import {
   type ColumnFiltersState,
   type SortingState,
@@ -12,29 +31,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { type ColumnDef } from "./data-table-types";
-import { ChevronDown, Search, Download, RefreshCw, Filter } from "lucide-react";
+import { ChevronDown, Download, Filter, RefreshCw, Search } from "lucide-react";
+import * as React from "react";
 import * as XLSX from "xlsx";
-import { apiClient } from "@/lib/api-client";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { SelectWithFetch } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
-import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { type ColumnDef } from "./data-table-types";
 
 export type FilterOption = { label: string; value: string };
 export type FilterConfig =
@@ -211,7 +211,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     };
   }, [store, params, fixedQuery, filterParams, pageIndex, pageSize]);
 
-  const storeQuery = store ? storeApis[store].useGetAllQuery(storeParams ?? skipToken) : undefined;
+  const storeQuery = store ? storeApis[store]?.useGetAllQuery(storeParams ?? skipToken) : undefined;
 
   // Only refetch when user clicks Refresh
   React.useEffect(() => {

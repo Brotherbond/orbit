@@ -1,6 +1,6 @@
 import { StatusBadgeProps } from "@/components/ui/status-badge";
-import { User } from "./user";
 import { Promo } from "./promo";
+import { User } from "./user";
 
 export interface OrderBrand {
   uuid: string;
@@ -30,6 +30,7 @@ export interface Order {
   ref: string;
   delivery_image: string;
   fulfilled_token: string;
+  market: string;
   ime_vss: User;
   distributor_user: User & {
     distributor_details: {

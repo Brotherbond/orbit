@@ -1,18 +1,17 @@
-"use client"
+"use client";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api-client";
+import { Role } from "@/types/role";
+import { Calendar, FileText, Laptop, Shield, Smartphone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Edit, Trash2, Calendar, Laptop, Smartphone } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-import { Badge } from "@/components/ui/badge"
-import { Role } from "@/types/role"
 
 export default function RoleDetailPage({ params }: { params: { id: string } }) {
   const [role, setRole] = useState<Role | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const { toast } = useToast()
 
@@ -20,7 +19,6 @@ export default function RoleDetailPage({ params }: { params: { id: string } }) {
 
   const fetchRole = async () => {
     try {
-      setIsLoading(true)
       const { data } = await apiClient.get<{ item: Role }>(`/roles/${params.id}`)
       setRole(data.item ?? null)
     } catch (error: any) {
@@ -29,75 +27,22 @@ export default function RoleDetailPage({ params }: { params: { id: string } }) {
         description: "Failed to fetch role details",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
     }
-  }
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this role?")) return
-
-    try {
-      await apiClient.delete(`/roles/${params.id}`)
-      toast({
-        title: "Success",
-        description: "Role deleted successfully",
-      })
-      router.push("/dashboard/roles")
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete role",
-        variant: "destructive",
-      })
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!role) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">Role not found</p>
-      </div>
-    )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-[#444444]">
-              {role.name}
-            </h1>
-            <p className="text-[#ababab]">Role Details</p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => router.push(`/dashboard/roles/${role.uuid}/edit`)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader
+        title={role.name}
+        description="Role Details"
+        showEditButton={true}
+        editHref={`/dashboard/roles/${role.uuid}/edit`}
+        showDeleteButton={true}
+        deleteOptions={{
+          storeName: "roles",
+          uuid: params.id,
+        }}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -105,14 +50,18 @@ export default function RoleDetailPage({ params }: { params: { id: string } }) {
             <CardTitle className="text-[#444444]">Role Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Description</span>
-              <div className="font-medium text-[#444444]">{role.description}</div>
+            <div className="flex items-center space-x-3">
+              <FileText className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">Description</p>
+                <p className="font-medium text-[#444444]">{role.description}</p>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Status</span>
+            <div className="flex items-center space-x-3">
+              <Shield className="h-5 w-5 text-[#ababab]" />
               <div>
+                <p className="text-sm text-[#ababab]">Status</p>
                 <Badge variant={role.status === "active" ? "primary" : "destructive"}>
                   {role.status === "active" ? "Active" : "Inactive"}
                 </Badge>

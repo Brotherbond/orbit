@@ -1,15 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { PasswordField } from "@/components/ui/password-field"
-import { Form, Formik } from "formik"
-import * as Yup from "yup"
-import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { apiClient } from "@/lib/api-client"
+import { Form, Formik } from "formik"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import * as Yup from "yup"
 
 export default function ChangePasswordPage() {
   const router = useRouter()
@@ -53,7 +53,7 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       <div className="flex items-center space-x-4 mb-4">
         <Button
           type="button"

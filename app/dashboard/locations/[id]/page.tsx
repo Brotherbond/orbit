@@ -1,12 +1,12 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Edit, Trash2, Calendar } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
+import { apiClient } from "@/lib/api-client"
+import { Calendar, MapPin, Navigation } from "lucide-react"
+import { useRouter } from "next/navigation"
+import React, { useEffect, useState } from "react"
 
 interface LocationDetail {
   uuid: string
@@ -16,6 +16,8 @@ interface LocationDetail {
   region: string
   country: string
   full_location: string
+  latitude?: number
+  longitude?: number
   markets_count: number
   markets: Array<{
     uuid: string
@@ -40,13 +42,11 @@ interface LocationDetail {
 
 export default function LocationDetailPage({ params }: { params: { id: string } }) {
   const [location, setLocation] = useState<LocationDetail | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const { toast } = useToast()
 
   const fetchLocation = React.useCallback(async () => {
     try {
-      setIsLoading(true)
       const { data } = await apiClient.get<{ item: LocationDetail }>(`/locations/${params.id}`)
       setLocation(data.item ?? null)
     } catch (error: any) {
@@ -55,8 +55,6 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
         description: "Failed to fetch location details",
         variant: "destructive",
       })
-    } finally {
-      setIsLoading(false)
     }
   }, [params.id, toast])
 
@@ -64,70 +62,19 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
     fetchLocation()
   }, [fetchLocation])
 
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this location?")) return
-
-    try {
-      await apiClient.delete(`/locations/${params.id}`)
-      toast({
-        title: "Success",
-        description: "Location deleted successfully",
-      })
-      router.push("/dashboard/locations")
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete location",
-        variant: "destructive",
-      })
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!location) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">Location not found</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-[#444444]">
-              {location.full_location}
-            </h1>
-            <p className="text-[#ababab]">Location Details</p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => router.push(`/dashboard/locations/${location.uuid}/edit`)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader
+        title={location.full_location}
+        description="Location Details"
+        showEditButton={true}
+        editHref={`/dashboard/locations/${location.uuid}/edit`}
+        showDeleteButton={true}
+        deleteOptions={{
+          storeName: "locations",
+          uuid: params.id,
+        }}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -135,29 +82,58 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
             <CardTitle className="text-[#444444]">Location Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Street</span>
-              <div className="font-medium text-[#444444]">{location.street || "—"}</div>
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">Street</p>
+                <p className="font-medium text-[#444444]">{location.street || "—"}</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">City</span>
-              <div className="font-medium text-[#444444]">{location.city}</div>
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">City</p>
+                <p className="font-medium text-[#444444]">{location.city}</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">State</span>
-              <div className="font-medium text-[#444444]">{location.state}</div>
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">State</p>
+                <p className="font-medium text-[#444444]">{location.state}</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Region</span>
-              <div className="font-medium text-[#444444]">{location.region}</div>
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">Region</p>
+                <p className="font-medium text-[#444444]">{location.region}</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Country</span>
-              <div className="font-medium text-[#444444]">{location.country}</div>
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">Country</p>
+                <p className="font-medium text-[#444444]">{location.country}</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Markets Count</span>
-              <div className="font-medium text-[#444444]">{location.markets_count}</div>
+            <div className="flex items-center space-x-3">
+              <Navigation className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">Coordinates</p>
+                <p className="font-medium text-[#444444]">
+                  {location.latitude && location.longitude
+                    ? `${Number(location.longitude)?.toFixed(6)}, ${Number(location.latitude)?.toFixed(6)}`
+                    : "Not set"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">Markets Count</p>
+                <p className="font-medium text-[#444444]">{location.markets_count}</p>
+              </div>
             </div>
             <div className="space-y-2">
               <span className="text-[#ababab]">Markets</span>
@@ -199,3 +175,4 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
     </div>
   )
 }
+

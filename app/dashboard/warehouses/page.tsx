@@ -1,16 +1,17 @@
 "use client";
-import React, { useRef } from "react";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import BulkUploadModal from "@/components/dashboard/BulkUploadModal";
+import ListPageHeader from "@/components/dashboard/ListPageHeader";
+import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import type { Warehouse } from "@/types/warehouse";
-import { Button } from "@/components/ui/button";
-import { Plus, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { handleDelete } from "@/lib/handleDelete";
-import BulkUploadModal from "@/components/dashboard/BulkUploadModal";
+import type { Warehouse } from "@/types/warehouse";
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import React, { useRef } from "react";
 
 
 export default function WarehousesPage() {
@@ -25,31 +26,25 @@ export default function WarehousesPage() {
   }
 
   const columns = React.useMemo(
-    () => getColumns(session, router, toast, refreshTable),
-    [session, router, toast]
+    () => getColumns(router, refreshTable),
+    [router]
   )
 
   // Filter config for warehouses
   const filters: import("@/components/ui/data-table").FilterConfig[] = []
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Warehouses</h1>
-          <p className="text-[#ababab]">Manage and track all warehouses in the system</p>
-        </div>
-        <div className="flex gap-2">
-          <Button className="btn-primary" onClick={() => setBulkOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Bulk Warehouses
-          </Button>
-          <Button className="btn-primary" onClick={() => router.push("/dashboard/warehouses/create")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Warehouse
-          </Button>
-        </div>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Warehouses"
+        description="Manage and track all warehouses in the system"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/warehouses/create")}
+        addLabel="Add Warehouse"
+        showBulkAddButton={true}
+        onBulkAdd={() => setBulkOpen(true)}
+        bulkAddLabel="Add Bulk Warehouses"
+      />
       <DataTable
         ref={dataTableRef}
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
@@ -72,7 +67,7 @@ export default function WarehousesPage() {
   )
 }
 
-export function getColumns(session: any, router: any, toast: any, refreshTable: () => void): ColumnDef<Warehouse>[] {
+export function getColumns(router: any, refreshTable: () => void): ColumnDef<Warehouse>[] {
   return [
     {
       accessorKey: "warehouse_code",
@@ -88,16 +83,6 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
       accessorKey: "location.name",
       header: "Location",
       cell: ({ row }) => <div className="text-sm">{row.original.location?.full_location}</div>,
-    },
-    {
-      accessorKey: "longitude",
-      header: "Longitude",
-      cell: ({ row }) => <div className="text-sm">{row.original.longitude}</div>,
-    },
-    {
-      accessorKey: "latitude",
-      header: "Latitude",
-      cell: ({ row }) => <div className="text-sm">{row.original.latitude}</div>,
     },
     {
       accessorKey: "created_at",
@@ -126,9 +111,9 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
             <DropdownMenuItem
               onClick={() =>
                 handleDelete({
-                  entity: "warehouse",
+                  storeName: "warehouses",
                   uuid: row.original.uuid,
-                  endpoint: "/warehouses",
+                  onSuccess: refreshTable,
                 })
               }
               className="text-red-600"

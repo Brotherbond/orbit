@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
 import { useRoles } from "@/components/dashboard/RolesContext"
-import { useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-import * as Yup from "yup"
 import UserForm from "@/components/dashboard/UserForm"
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
+import { useToast } from "@/hooks/use-toast"
+import { catchError } from "@/lib/utils"
+import { useCreateUserMutation } from "@/store/users"
+import { useRouter } from "next/navigation"
+import { useDispatch } from "react-redux"
+import * as Yup from "yup"
 
 interface Role {
   uuid: string
@@ -15,9 +17,10 @@ interface Role {
 
 export default function CreateImeVssPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
-  const [isLoading, setIsLoading] = useState(false)
+  const [createUser, { isLoading }] = useCreateUserMutation()
   const router = useRouter()
   const { toast } = useToast()
+  const dispatch = useDispatch()
 
   const initialValues = {
     first_name: "",
@@ -41,25 +44,18 @@ export default function CreateImeVssPage() {
     send_notification: Yup.boolean(),
   })
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError, resetForm }: any) => {
-    setIsLoading(true)
+  const handleSubmit = async (values: typeof initialValues, helpers: any) => {
     try {
-      await apiClient.post("/users", values)
+      await createUser(values).unwrap()
       toast({
         title: "Success",
-        description: "IME-VSS user created successfully",
+        description: "IME-VSS created successfully",
       })
-      resetForm();
+      helpers.resetForm()
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create IME-VSS user",
-        variant: "destructive",
-      })
-      setFieldError("email", error.response?.data?.errors?.email || "")
+      catchError(error, helpers.setFieldError);
     } finally {
-      setIsLoading(false)
-      setSubmitting(false)
+      helpers.setSubmitting(false)
     }
   }
 
@@ -129,32 +125,17 @@ export default function CreateImeVssPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <button
-          type="button"
-          className="btn btn-ghost flex items-center"
-          onClick={() => router.back()}
-        >
-          <span className="mr-2">
-            ←
-          </span>
-          Back
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Create IME-VSS User</h1>
-          <p className="text-[#ababab]">Add a new IME-VSS user to the system</p>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader title="Create IME-VSS" description="Add a new IME-VSS to the system" />
       <UserForm
-        title="IME-VSS User Information"
-        description="Enter the details for the new IME-VSS user"
+        title="IME-VSS Information"
+        description="Enter the details for the new IME-VSS"
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
         isLoading={isLoading || isRolesLoading}
         onSubmit={handleSubmit}
-        submitLabel="Create IME-VSS User"
+        submitLabel="Create IME-VSS"
         onCancel={() => router.back()}
       />
     </div>

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
-import { getSession, signOut } from "next-auth/react";
 import { getServerSession } from "next-auth/next";
+import { getSession, signOut } from "next-auth/react";
 import { authOptions } from "./auth";
 import { showError } from "./notifications";
 

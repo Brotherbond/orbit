@@ -6,7 +6,7 @@ import React from "react";
 
 interface ViewPageHeaderProps {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   actions?: React.ReactNode;
   backLabel?: string;
   showEditButton?: boolean;
@@ -32,7 +32,7 @@ export const ViewPageHeader: React.FC<ViewPageHeaderProps> = ({
   const router = useRouter();
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between mb-6">
       <div className="flex items-center space-x-4">
         <Button variant="ghost" onClick={() => router.back()}>
           <ArrowLeft className="mr-2 h-4 w-4" />

@@ -64,9 +64,6 @@ export async function handleDelete({
       throw new Error(result.error?.message || "Delete operation failed");
     }
 
-    // Reset the store by invalidating all queries
-    setTimeout(() => { store.dispatch(storeApi.util.resetApiState()); }, 500);
-
     toast({
       title: "Success",
       description: `${capitalized} deleted successfully`,

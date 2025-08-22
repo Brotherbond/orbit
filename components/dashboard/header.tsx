@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import Logo from "@/images/orbit-logo.png"
-import { Bell, Key, LogOut, Search, Settings, User } from "lucide-react"
+import { Bell, Key, LogOut, Search, User } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"

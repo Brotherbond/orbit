@@ -1,17 +1,17 @@
 "use client"
 
-import React from "react";
-import { useRouter, useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
-import { MoreHorizontal, Eye, Edit } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { apiClient } from "@/lib/api-client";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api-client";
 import type { Order } from "@/types/order";
+import { Edit, Eye, MoreHorizontal } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useParams, useRouter } from "next/navigation";
+import React from "react";
 
 export default function DistributorOrdersPage() {
   const { data: session } = useSession();
@@ -48,7 +48,7 @@ export default function DistributorOrdersPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div>
       <DataTable
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="ref"

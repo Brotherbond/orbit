@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { useRoles } from "@/components/dashboard/RolesContext"
-import { useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-import * as Yup from "yup"
 import UserForm from "@/components/dashboard/UserForm"
-import { User } from "@/types/user"
+import { useToast } from "@/hooks/use-toast"
+import { catchError } from "@/lib/utils"
+import { useUpdateIMEVSSMutation } from "@/store/ime-vss"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import * as Yup from "yup"
+import { useImeVssContext } from "../ime-vss-context"
 
 export default function EditImeVssPage({ params }: { params: { id: string } }) {
   const [initialValues, setInitialValues] = useState({
@@ -19,43 +20,26 @@ export default function EditImeVssPage({ params }: { params: { id: string } }) {
     role_id: "",
     status: "active",
   })
-  const [userData, setUserData] = useState<User | null>(null)
   const { roles, isLoading: isRolesLoading } = useRoles()
-  const [isLoading, setIsLoading] = useState(false)
+  const { imeVss, fetchImeVss } = useImeVssContext()
 
   const router = useRouter()
   const { toast } = useToast()
+  const [updateIMEVSS] = useUpdateIMEVSSMutation()
 
   useEffect(() => {
-    fetchImeVss()
-  }, [params.id])
-
-  const fetchImeVss = async () => {
-    try {
-      const { data } = await apiClient.get<{ item: User }>(`/users/${params.id}`)
-      setUserData(data.item)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch IME-VSS user data",
-        variant: "destructive",
-      })
-    }
-  }
-
-  useEffect(() => {
-    if (userData && roles.length > 0) {
+    if (imeVss && roles.length > 0) {
       setInitialValues({
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        email: userData.email,
-        phone: userData.phone,
-        market_id: userData.market?.uuid || "",
-        role_id: userData.role?.uuid || "",
-        status: userData.status,
+        first_name: imeVss.first_name,
+        last_name: imeVss.last_name,
+        email: imeVss.email,
+        phone: imeVss.phone,
+        market_id: imeVss.market?.uuid || "",
+        role_id: imeVss.role?.uuid || "",
+        status: imeVss.status,
       })
     }
-  }, [userData, roles])
+  }, [imeVss, roles])
 
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
@@ -133,54 +117,32 @@ export default function EditImeVssPage({ params }: { params: { id: string } }) {
   ]
 
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
-    setIsLoading(true)
     try {
-      await apiClient.put(`/users/${params.id}`, values)
+      await updateIMEVSS({ id: params.id, data: values }).unwrap()
       toast({
         title: "Success",
-        description: "IME-VSS user updated successfully",
+        description: "IME-VSS updated successfully",
       })
+      fetchImeVss()
       router.push(`/dashboard/ime-vss/${params.id}`)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to update IME-VSS user",
-        variant: "destructive",
-      })
-      setFieldError("email", error.response?.data?.errors?.email || "")
+      catchError(error, setFieldError);
     } finally {
-      setIsLoading(false)
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <button
-          type="button"
-          className="btn btn-ghost flex items-center"
-          onClick={() => router.back()}
-        >
-          <span className="mr-2">←</span>
-          Back
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Edit IME-VSS User</h1>
-          <p className="text-[#ababab]">Update IME-VSS user information</p>
-        </div>
-      </div>
-      <UserForm
-        title="IME-VSS User Information"
-        description="Update the IME-VSS user details below"
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        fields={fields}
-        isLoading={false}
-        onSubmit={handleSubmit}
-        submitLabel="Update IME-VSS User"
-        onCancel={() => router.back()}
-      />
-    </div>
+    <UserForm
+      title="IME-VSS Information"
+      description="Update the IME-VSS details below"
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      fields={fields}
+      isLoading={false}
+      onSubmit={handleSubmit}
+      submitLabel="Update IME-VSS"
+      onCancel={() => router.back()}
+    />
   )
 }

@@ -10,8 +10,8 @@ export interface NotificationOptions {
   onConfirm?: () => void;
 }
 
-import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { toast } from "@/hooks/use-toast";
 
 export const showNotification = (options: NotificationOptions) => {
   const {

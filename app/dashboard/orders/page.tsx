@@ -1,32 +1,22 @@
 "use client"
 
-import React, { useRef } from "react"
-import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
+import ListPageHeader from "@/components/dashboard/ListPageHeader"
 import { Button } from "@/components/ui/button"
-import { StatusBadge } from "@/components/ui/status-badge"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { MoreHorizontal, Eye, Edit } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useToast } from "@/hooks/use-toast"
+import { StatusBadge } from "@/components/ui/status-badge"
 import type { Order } from "@/types/order"
-import { apiClient } from "@/lib/api-client"
+import { Edit, Eye, MoreHorizontal } from "lucide-react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import React, { useRef } from "react"
 
 export default function OrdersPage() {
   const { data: session } = useSession()
-  const { toast } = useToast()
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null);
-
-  const refreshTable = () => {
-    dataTableRef.current?.refresh()
-  }
-
-  const columns = React.useMemo(
-    () => getColumns(session, router, toast, refreshTable),
-    [session, router, toast]
-  )
+  const columns = React.useMemo(() => getColumns(session, router),[session, router]);
 
   // Filter config for orders
   const filters: import("@/components/ui/data-table").FilterConfig[] = [
@@ -69,13 +59,11 @@ export default function OrdersPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Orders</h1>
-          <p className="text-[#ababab]">Manage and track all orders in the system</p>
-        </div>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Orders"
+        description="Manage and track all orders in the system"
+      />
       <DataTable
         ref={dataTableRef}
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
@@ -89,7 +77,7 @@ export default function OrdersPage() {
   )
 }
 
-export function getColumns(session: any, router: any, toast: any, refreshTable: () => void): ColumnDef<Order>[] {
+export function getColumns(session: any, router: any): ColumnDef<Order>[] {
   return [
     {
       accessorKey: "ref",
@@ -99,6 +87,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
     {
       accessorKey: "distributor_user.distributor_details.business_name",
       header: "Distributor",
+      width:175,
       cell: ({ row }) => (
         <div>
           <div className="font-medium">{row.original.distributor_user.distributor_details.business_name}</div>
@@ -111,6 +100,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
     {
       accessorKey: "ime_vss.full_name",
       header: "IME/VSS",
+      width:175,
       cell: ({ row }) => (
         <div className="text-sm">
           {row.original.ime_vss.full_name}
@@ -118,7 +108,14 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
       ),
     },
     {
+      accessorKey: "market",
+      header: "Market",
+      width:150,
+      cell: ({ row }) => <div className="text-sm">{row.original.market}</div>,
+    },
+    {
       accessorKey: "self_pickup",
+      width:120,
       header: "Self Pickup",
       cell: ({ row }) => (
         <div className="text-sm">
@@ -129,6 +126,7 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
     {
       accessorKey: "promos",
       header: "Promos",
+      width:100,
       cell: ({ row }) => (
         <div className="text-sm">
           {(row.original.promos?.type || "None")}
@@ -138,16 +136,19 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
     {
       accessorKey: "total_amount",
       header: "Value",
+      width:150,
       cell: ({ row }) => <div className="font-medium">₦{parseFloat(row.original.total_amount).toLocaleString()}</div>,
     },
     {
       accessorKey: "created_at",
       header: "Created At",
+      width:200,
       cell: ({ row }) => row.original.created_at,
     },
     {
       accessorKey: "status",
       header: "Status",
+      width:175,
       cell: ({ row }) => (
         <StatusBadge status={row.original.status} />
       ),
@@ -157,37 +158,12 @@ export function getColumns(session: any, router: any, toast: any, refreshTable: 
       header: "Actions",
       cell: ({ row }) => {
         const userRole = session?.user?.role?.toLowerCase() || "";
-        const handleConfirmPayment = async () => {
-          try {
-            const response = await apiClient.put<{ item: Order }>(`/orders/${row.original.uuid}`, { status: "confirmed" });
-            toast({
-              title: "Success",
-              description: "Order payment confirmed",
-            });
-            refreshTable();
-          } catch (error: any) {
-            toast({
-              title: "Error",
-              description: error?.message || "Failed to confirm payment",
-              variant: "destructive",
-            });
-          }
+        // Replace with mutation hook or handleSubmit utility
+        const handleConfirmPayment = () => {
+          // useConfirmPaymentMutation({ uuid: row.original.uuid, status: "confirmed", onSuccess: refreshTable })
         };
-        const handleConfirmOrder = async () => {
-          try {
-            const response = await apiClient.put<{ item: Order }>(`/orders/${row.original.uuid}`, { status: "approved" });
-            toast({
-              title: "Success",
-              description: "Order Approved",
-            });
-            refreshTable();
-          } catch (error: any) {
-            toast({
-              title: "Error",
-              description: error?.message || "Failed to approve order",
-              variant: "destructive",
-            });
-          }
+        const handleConfirmOrder = () => {
+          // useConfirmOrderMutation({ uuid: row.original.uuid, status: "approved", onSuccess: refreshTable })
         };
         return (
           <DropdownMenu>

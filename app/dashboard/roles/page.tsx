@@ -1,19 +1,18 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import ListPageHeader from "@/components/dashboard/ListPageHeader"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { MoreHorizontal, Plus, Eye, Edit, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
+import { handleDelete } from "@/lib/handleDelete"
 import { Role } from "@/types/role"
+import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 
 export default function RolesPage() {
   const router = useRouter()
-  const { toast } = useToast()
 
   const columns: ColumnDef<Role>[] = [
     {
@@ -29,6 +28,7 @@ export default function RolesPage() {
     {
       accessorKey: "access_type",
       header: "Access Type",
+      width: 150,
       cell: ({ row }) => `${row.original.access_type?.charAt(0)?.toUpperCase() || ''}${row.original.access_type?.slice(1)?.toLowerCase() || ''}` || "N/A",
     },
     {
@@ -38,7 +38,8 @@ export default function RolesPage() {
     },
     {
       accessorKey: "created_at",
-      header: "Created",
+      header: "Created At",
+      width: 200,
       cell: ({ row }) => row.original.created_at,
     },
     {
@@ -60,7 +61,16 @@ export default function RolesPage() {
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDelete(row.original.uuid)} className="text-red-600">
+            <DropdownMenuItem
+              onClick={() =>
+                handleDelete({
+                  storeName: "roles",
+                  uuid: row.original.uuid,
+                  onSuccess: router.refresh,
+                })
+              }
+              className="text-red-600"
+            >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>
@@ -71,36 +81,16 @@ export default function RolesPage() {
   ]
 
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this role?")) return
-
-    try {
-      await apiClient.delete(`/roles/${id}`)
-      toast({
-        title: "Success",
-        description: "Role deleted successfully",
-      })
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete role",
-        variant: "destructive",
-      })
-    }
-  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">Roles</h1>
-          <p className="text-[#ababab]">Manage system roles and permissions</p>
-        </div>
-        <Button className="btn-primary" onClick={() => router.push("/dashboard/roles/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Role
-        </Button>
-      </div>
+    <div>
+      <ListPageHeader
+        title="Roles"
+        description="Manage system roles and permissions"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/roles/create")}
+        addLabel="Add Role"
+      />
 
       <DataTable
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}

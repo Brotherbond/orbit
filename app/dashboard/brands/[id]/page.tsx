@@ -1,103 +1,29 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Trash2, Package } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Package, Tag, FileText } from "lucide-react";
 import Image from "next/image";
-import { Brand } from "@/types/brand";
+import { useRouter } from "next/navigation";
+import { useBrandContext } from "./brand-context";
+
 export default function BrandDetailPage({ params }: { params: { id: string } }) {
-  const [brand, setBrand] = useState<Brand | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
-  const { toast } = useToast()
-
-  const fetchBrand = React.useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const { data } = await apiClient.get<{ item: Brand }>(`/brands/${params.id}`);
-      setBrand(data.item ?? null)
-    } catch (error: any) {
-      setBrand(null)
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to fetch brand details",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [params.id, toast])
-
-  useEffect(() => {
-    fetchBrand()
-  }, [fetchBrand])
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this brand?")) return
-
-    try {
-      await apiClient.delete(`/brands/${params.id}`)
-      toast({
-        title: "Success",
-        description: "Brand deleted successfully",
-      })
-      router.push("/dashboard/brands")
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete brand",
-        variant: "destructive",
-      })
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!brand) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">Brand not found</p>
-      </div>
-    )
-  }
+  const { brand } = useBrandContext();
+  const router = useRouter();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-[#444444]">{brand.name}</h1>
-            <p className="text-[#ababab]">Brand Details</p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => router.push(`/dashboard/brands/${brand.uuid}/edit`)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader
+        title={brand.name}
+        description="Brand Details"
+        showEditButton={true}
+        editHref={`/dashboard/brands/${brand.uuid}/edit`}
+        showDeleteButton={true}
+        deleteOptions={{
+          storeName: "brands",
+          uuid: brand.uuid,
+        }}
+      />
 
       <div className="grid grid-cols-1 gap-6">
         <div className="lg:col-span-2 space-y-6">
@@ -115,31 +41,43 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
                       fill
                       className="object-cover rounded-lg"
                       onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.src = "/placeholder.svg?height=96&width=96&text=Brand"
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/placeholder.svg?height=96&width=96&text=Brand";
                       }}
                     />
                   </div>
                 )}
                 <div className="flex-1">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-sm text-[#ababab]">Brand Name</p>
-                      <p className="font-medium text-[#444444]">{brand.name}</p>
+                    <div className="flex items-center space-x-3">
+                      <Tag className="h-5 w-5 text-[#ababab]" />
+                      <div>
+                        <p className="text-sm text-[#ababab]">Brand Name</p>
+                        <p className="font-medium text-[#444444]">{brand.name}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-[#ababab]">Category</p>
-                      <Badge variant="secondary">{brand.category}</Badge>
+                    <div className="flex items-center space-x-3">
+                      <Package className="h-5 w-5 text-[#ababab]" />
+                      <div>
+                        <p className="text-sm text-[#ababab]">Category</p>
+                        <Badge variant="secondary">{brand.category}</Badge>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-[#ababab]">Total Packages</p>
-                      <p className="font-medium text-[#444444]">{brand.packages?.length || 0}</p>
+                    <div className="flex items-center space-x-3">
+                      <Package className="h-5 w-5 text-[#ababab]" />
+                      <div>
+                        <p className="text-sm text-[#ababab]">Total Packages</p>
+                        <p className="font-medium text-[#444444]">{brand.packages?.length || 0}</p>
+                      </div>
                     </div>
                   </div>
                   {brand.description && (
-                    <div className="mt-4">
-                      <p className="text-sm text-[#ababab]">Description</p>
-                      <p className="text-[#444444]">{brand.description}</p>
+                    <div className="mt-4 flex items-start space-x-3">
+                      <FileText className="h-5 w-5 text-[#ababab] mt-1" />
+                      <div>
+                        <p className="text-sm text-[#ababab]">Description</p>
+                        <p className="text-[#444444]">{brand.description}</p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -248,5 +186,5 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
         </div>
       </div>
     </div>
-  )
+  );
 }

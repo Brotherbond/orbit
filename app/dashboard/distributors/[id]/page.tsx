@@ -1,30 +1,17 @@
-"use client"
-
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { useToast } from "@/hooks/use-toast"
-import { apiClient } from "@/lib/api-client"
-import {
-  Building,
-  CreditCard,
-  Mail,
-  MapPin,
-  Phone,
-  Trash2,
-  TrendingUp,
-} from "lucide-react"
-import { useRouter } from "next/navigation"
-import { memo } from "react"
+"use client";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Building, CreditCard, Mail, MapPin, Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { memo } from "react";
 import {
   useDistributor,
   useDistributorInfo,
   useDistributorPerformance,
   useDistributorUser
-} from "./distributor-context"
+} from "./distributor-context";
 
-// Memoized components to prevent unnecessary re-renders
 const BusinessAndContactInformationCard = memo(() => {
   const distributorInfo = useDistributorInfo()
   const user = useDistributorUser()
@@ -122,8 +109,6 @@ const RegistrationInfo = memo(() => {
 })
 RegistrationInfo.displayName = 'RegistrationInfo'
 
-/* ContactInformationCard removed: merged into BusinessAndContactInformationCard */
-
 const BankingInformationCard = memo(() => {
   const { distributor } = useDistributor()
 
@@ -197,69 +182,19 @@ const PerformanceMetricsCard = memo(() => {
 })
 PerformanceMetricsCard.displayName = 'PerformanceMetricsCard'
 
-/* QuickActionsCard removed as per requirements */
-
 export default function DistributorDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const { toast } = useToast()
-  const { distributor, isLoading, error } = useDistributor()
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this distributor?")) return
-
-    try {
-      await apiClient.delete(`/distributors/${params.id}`)
-      toast({
-        title: "Success",
-        description: "Distributor deleted successfully",
-      })
-      router.push("/dashboard/distributors")
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete distributor",
-        variant: "destructive",
-      })
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !distributor) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">{error || "Distributor not found"}</p>
-      </div>
-    )
-  }
+  const { distributor } = useDistributor()
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <div className="flex space-x-2">
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-        </div>
-      </div>
-
+    <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <BusinessAndContactInformationCard />
           <BankingInformationCard />
         </div>
 
-        <div className="space-y-6">
+        <div>
           <PerformanceMetricsCard />
         </div>
       </div>

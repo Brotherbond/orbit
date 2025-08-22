@@ -1,57 +1,44 @@
 "use client";
 import BrandForm from "@/components/dashboard/BrandForm";
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api-client";
-import { Brand, BrandPackage } from "@/types/brand";
+import { catchError } from "@/lib/utils";
+import { useUpdateBrandMutation } from "@/store/brands";
+import { BrandPackage } from "@/types/brand";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import * as Yup from "yup";
+import { useBrandContext } from "../brand-context";
 
 export default function EditBrandPage({ params }: { params: { id: string } }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [initialValues, setInitialValues] = useState<any>(null);
+  const { brand, isLoading, fetchBrand } = useBrandContext();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const [updateBrand] = useUpdateBrandMutation();
 
-  useEffect(() => {
-    async function fetchBrand() {
-      setIsLoading(true);
-      try {
-        const { data } = await apiClient.get<{ item: Brand }>(`/brands/${params.id}`);
-        const brand = data.item;
-        setInitialValues({
-          name: brand.name || "",
-          category: brand.category || "",
-          image: brand.image || "",
-          packages: (brand.packages || []).map((pkg: BrandPackage) => ({
-            uuid: pkg.uuid,
-            type: pkg.type || "",
-            quantity: pkg.quantity || 0,
-            width: pkg.width || 0,
-            height: pkg.height || 0,
-            length: pkg.length || 0,
-            weight: pkg.weight || 0,
-            wholesale_price: pkg.wholesale_price || 0,
-            retail_price: pkg.retail_price || 0,
-            retail_price_with_markup: pkg.retail_price_with_markup || 0,
-            og_price: pkg.og_price || 0,
-            distributor_price: pkg.distributor_price || 0,
-          })),
-        });
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error?.message || "Failed to fetch brand details",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchBrand();
-    // eslint-disable-next-line
-  }, [params.id]);
+  const initialValues = useMemo(() => {
+    if (!brand) return null;
+    return {
+      name: brand.name || "",
+      category: brand.category || "",
+      image: brand.image || "",
+      packages: (brand.packages || []).map((pkg: BrandPackage) => ({
+        uuid: pkg.uuid,
+        type: pkg.type || "",
+        quantity: pkg.quantity || 0,
+        width: pkg.width || 0,
+        height: pkg.height || 0,
+        length: pkg.length || 0,
+        weight: pkg.weight || 0,
+        wholesale_price: pkg.wholesale_price || 0,
+        retail_price: pkg.retail_price || 0,
+        retail_price_with_markup: pkg.retail_price_with_markup || 0,
+        og_price: pkg.og_price || 0,
+        distributor_price: pkg.distributor_price || 0,
+      })),
+    };
+  }, [brand]);
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Brand name is required"),
@@ -76,8 +63,7 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
       .min(1, "At least one package is required"),
   });
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
-    setIsLoading(true);
+  const handleSubmit = async (values: any, { setSubmitting, setFieldError }: any) => {
     try {
       const formData = new FormData();
       formData.append("name", values.name);
@@ -92,42 +78,23 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
           formData.append(`packages[${idx}][${key}]`, String(val));
         });
       });
-      await apiClient.post(`/brands/${params.id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await updateBrand({ id: params.id, data: formData as any }).unwrap();
       toast({
         title: "Success",
         description: "Brand updated successfully",
       });
+      fetchBrand();
       router.push(`/dashboard/brands/${params.id}`);
     } catch (error: any) {
-      let errorSet = false;
-      if (Array.isArray(error.errors)) {
-        error.errors.forEach((err: any) => {
-          if (err && typeof err.field === "string" && typeof err.message === "string") {
-            setFieldError(err.field, err.message);
-            errorSet = true;
-          }
-        });
-      }
-      if (!errorSet) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to update brand",
-          variant: "destructive",
-        });
-      }
+      catchError(error, setFieldError);
     } finally {
-      setIsLoading(false);
       setSubmitting(false);
     }
   };
 
   if (isLoading || !initialValues) {
     return (
-      <div className="space-y-6">
+      <div>
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -137,15 +104,18 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <BrandForm
-      mode="edit"
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      isLoading={isLoading}
-      imageFile={imageFile}
-      setImageFile={setImageFile}
-      onSubmit={handleSubmit}
-      onBack={() => router.back()}
-    />
+    <>
+      <ViewPageHeader title="Edit Brand" description="Update brand details" />
+      <BrandForm
+        mode="edit"
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        isLoading={isLoading}
+        imageFile={imageFile}
+        setImageFile={setImageFile}
+        onSubmit={handleSubmit}
+        onBack={() => router.back()}
+      />
+    </>
   );
 }

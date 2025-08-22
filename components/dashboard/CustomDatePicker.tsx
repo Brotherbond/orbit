@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Calendar } from "lucide-react"
+import { useState } from "react"
 import type { DateRange } from "react-day-picker"
 
 interface CustomDatePickerProps {

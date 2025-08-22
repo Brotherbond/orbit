@@ -1,11 +1,11 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BrandPackage } from "@/types/brand";
 import { ErrorMessage, FieldArray, Form, Formik } from "formik";
 import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
-import { BrandPackage } from "@/types/brand";
 interface BrandFormProps {
   mode: "create" | "edit";
   initialValues: any;
@@ -29,21 +29,6 @@ export function BrandForm({
 }: BrandFormProps) {
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-[#444444]">
-            {mode === "create" ? "Create Brand" : "Edit Brand"}
-          </h1>
-          <p className="text-[#ababab]">
-            {mode === "create" ? "Add a new brand to the system" : "Update brand details"}
-          </p>
-        </div>
-      </div>
-
       <Formik
         initialValues={initialValues}
         enableReinitialize
@@ -51,7 +36,7 @@ export function BrandForm({
         onSubmit={onSubmit}
       >
         {({ values, handleChange, setFieldValue, isSubmitting }) => (
-          <Card className="max-w-4xl">
+          <Card className="max-w-5xl">
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
               <div>
                 <CardTitle className="text-[#444444]">Brand Information</CardTitle>
@@ -179,14 +164,6 @@ export function BrandForm({
                       )}
                     />
                   </div>
-                  <ErrorMessage
-                    name="packages"
-                    render={msg =>
-                      typeof msg === "string"
-                        ? <p className="text-sm text-red-500">{msg}</p>
-                        : <p className="text-sm text-red-500">{JSON.stringify(msg)}</p>
-                    }
-                  />
                   <div className="space-y-4">
                     {values.packages.map((pkg: BrandPackage, index: number) => (
                       <Card key={pkg.uuid || index} className="p-4">
