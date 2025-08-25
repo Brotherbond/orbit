@@ -2,7 +2,7 @@
 
 import { DeliveryForm } from "@/components/dashboard/DeliveryForm"
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useCreateDeliveryMutation } from "@/store/deliveries"
 import { useRouter } from "next/navigation"
@@ -10,8 +10,7 @@ import * as Yup from "yup"
 
 export default function CreateDeliveryPage() {
   const router = useRouter()
-  const { toast } = useToast()
-  const [createDelivery, { isLoading: isCreating }] = useCreateDeliveryMutation()
+    const [createDelivery, { isLoading: isCreating }] = useCreateDeliveryMutation()
 
   const initialValues = {
     order_id: "",

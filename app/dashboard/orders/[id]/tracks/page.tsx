@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,6 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
   const [isEventsLoading, setIsEventsLoading] = useState(true);
   const { order } = useOrderContext();
   const router = useRouter();
-  const { toast } = useToast();
 
   const [evidenceOpen, setEvidenceOpen] = useState(false);
 
@@ -38,6 +37,8 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
     fetchEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
+
+  if (!order) { return null; }
 
   return (
     <div>

@@ -104,7 +104,7 @@ function getColumns(
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${row.original.user.uuid}/orders`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${row.original.uuid}/orders`)}>
               <Eye className="mr-2 h-4 w-4" />
               View Orders
             </DropdownMenuItem>

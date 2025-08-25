@@ -3,12 +3,12 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import Logo from "@/images/orbit-logo.png"
@@ -57,7 +57,7 @@ export function DashboardHeader() {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="" className="flex items-center cursor-pointer">
+                <Link href="/dashboard/settings" className="flex items-center cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </Link>

@@ -2,7 +2,7 @@
 
 import UserForm from "@/components/dashboard/UserForm"
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { userFullNameEmailFormatter } from "@/lib/label-formatters"
 import { catchError } from "@/lib/utils"
 import { useCreateDistributorMutation } from "@/store/distributors"
@@ -13,7 +13,6 @@ import * as Yup from "yup"
 export default function CreateDistributorPage() {
   const [createDistributor, { isLoading }] = useCreateDistributorMutation()
   const router = useRouter()
-  const { toast } = useToast()
   const dispatch = useDispatch()
 
   const initialValues = {

@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Modal from "@/components/ui/modal";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import SuccessIcon from "@/images/success.svg";
 import { apiClient } from "@/lib/api-client";
 import type { Order } from "@/types/order";
@@ -27,7 +27,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const [messages, setMessages] = useState<any[]>([]);
   const [isMessagesLoading, setIsMessagesLoading] = useState(true);
   const router = useRouter();
-  const { toast } = useToast();
 
   // Order fetching handled by useOrder hook
 
@@ -47,6 +46,8 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     fetchMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
+
+  if (!order) { return null; }
 
   const updateOrderStatus = async (status: string, extra: Record<string, any> = {}) => {
     setIsSubmitting(true);

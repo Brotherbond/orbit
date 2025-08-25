@@ -8,6 +8,7 @@ import { useRoleContext } from "../role-context";
 export default function EditRolePage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { role, isLoading } = useRoleContext();
+  if (!role) { return null; }
 
   const initialValues: RoleFormValues = {
     name: role?.name || "",

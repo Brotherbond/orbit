@@ -2,7 +2,7 @@
 
 import { SettingForm } from "@/components/dashboard/SettingForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useCreateSettingMutation } from "@/store/settings";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,6 @@ import * as Yup from "yup";
 
 export default function CreateSettingPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const [createSetting, { isLoading }] = useCreateSettingMutation()
 
   const initialValues = {

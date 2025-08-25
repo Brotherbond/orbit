@@ -2,51 +2,17 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
-import { apiClient } from "@/lib/api-client"
+import { useMarketContext } from "./market-context"
 import { handleDelete } from "@/lib/handleDelete"
 import { ArrowLeft, Calendar, Edit, MapPin, Store, Trash2, Type } from "lucide-react"
 import { useRouter } from "next/navigation"
-import React, { useEffect, useState } from "react"
-
-interface MarketDetail {
-  uuid: string
-  name: string
-  type: string
-  full_name: string
-  created_at: string
-  location: {
-    uuid: string
-    city: string
-    state: string
-    region: string
-    country: string
-    full_location: string
-    created_at: string
-  }
-}
+import { Map } from "@/components/ui/map"
 
 export default function MarketDetailPage({ params }: { params: { id: string } }) {
-  const [market, setMarket] = useState<MarketDetail | null>(null)
   const router = useRouter()
-  const { toast } = useToast()
+  const { market } = useMarketContext()
 
-  const fetchMarket = React.useCallback(async () => {
-    try {
-      const { data } = await apiClient.get<{ item: MarketDetail }>(`/markets/${params.id}`)
-      setMarket(data.item ?? null)
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch market details",
-        variant: "destructive",
-      })
-    }
-  }, [params.id, toast])
-
-  useEffect(() => {
-    fetchMarket()
-  }, [fetchMarket])
+  if (!market) { return null; }
 
   return (
     <div>
@@ -115,6 +81,27 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
             </div>
           </CardContent>
         </Card>
+
+        {/* Map Card */}
+        {market.location?.latitude && market.location?.longitude && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#444444] flex items-center space-x-2">
+                <MapPin className="h-5 w-5" />
+                <span>Market Location Map</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Map
+                latitude={Number(market.location.latitude)}
+                longitude={Number(market.location.longitude)}
+                title={`${market.name} - ${market.location.full_location}`}
+                height="400px"
+                className="w-full"
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

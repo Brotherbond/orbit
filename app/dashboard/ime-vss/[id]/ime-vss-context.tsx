@@ -1,5 +1,5 @@
 "use client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useGetIMEVSSQuery } from "@/store/ime-vss";
 import type { User } from "@/types/user";
 import React, { createContext, useCallback, useContext, useMemo } from "react";
@@ -14,7 +14,6 @@ interface ImeVssContextValue {
 const ImeVssContext = createContext<ImeVssContextValue | undefined>(undefined);
 
 export function ImeVssProvider({ imeVssId, children }: { imeVssId: string; children: React.ReactNode }) {
-  const { toast } = useToast();
 
   const {
     data: imeVss,
@@ -23,7 +22,7 @@ export function ImeVssProvider({ imeVssId, children }: { imeVssId: string; child
     refetch
   } = useGetIMEVSSQuery(imeVssId);
 
-  // Handle errors from the query
+
   React.useEffect(() => {
     if (error) {
       toast({

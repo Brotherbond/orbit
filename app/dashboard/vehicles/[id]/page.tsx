@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Car, Fuel, Gauge, Ruler, Scale, Truck } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useVehicleContext } from "./vehicle-context";
+
 export default function VehicleDetailPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const user = session?.user;
-  const { vehicle, fetchVehicle } = useVehicleContext();
+  const { vehicle } = useVehicleContext();
+
+  if (!vehicle) { return null; }
 
   const userRole = user?.role?.toLowerCase() || ""
 

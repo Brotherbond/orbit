@@ -4,7 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { PasswordField } from "@/components/ui/password-field"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { apiClient } from "@/lib/api-client"
 import { Form, Formik } from "formik"
 import { useRouter } from "next/navigation"
@@ -13,7 +13,6 @@ import * as Yup from "yup"
 
 export default function ChangePasswordPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 

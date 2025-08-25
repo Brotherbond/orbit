@@ -1,16 +1,14 @@
 "use client"
 
-import { getColumns } from "@/app/dashboard/orders/page";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
-import { useSession } from "next-auth/react";
-import { useParams, useRouter } from "next/navigation";
+import { ORDER_FILTERS } from "@/lib/filters/orders";
+import { useOrderColumns } from "@/hooks/useOrderColumns";
+import { useParams } from "next/navigation";
 import React from "react";
 
 export default function ImeVssOrdersPage() {
-  const router = useRouter();
-  const { data: session } = useSession();
-  const columns = React.useMemo(() => getColumns(session, router), [session, router]);
+  const { columns } = useOrderColumns();
   const routeParams = useParams();
   const imeVssId = routeParams?.id as string;
   const fixedQuery = React.useMemo(() => ({ ime_vss: imeVssId }), [imeVssId]);
@@ -24,6 +22,7 @@ export default function ImeVssOrdersPage() {
         store="orders"
         fixedQuery={fixedQuery}
         exportFileName="IME-VSS-Orders.xlsx"
+        filters={ORDER_FILTERS}
       />
     </div>
   );

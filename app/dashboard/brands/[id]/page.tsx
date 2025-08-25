@@ -11,6 +11,8 @@ export default function BrandDetailPage({ params }: { params: { id: string } }) 
   const { brand } = useBrandContext();
   const router = useRouter();
 
+  if (!brand) { return null; }
+
   return (
     <div>
       <ViewPageHeader

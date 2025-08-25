@@ -2,7 +2,7 @@
 
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { WarehouseForm } from "@/components/dashboard/WarehouseForm"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useCreateWarehouseMutation } from "@/store/warehouses"
 import { useRouter } from "next/navigation"
@@ -10,7 +10,6 @@ import * as Yup from "yup"
 
 export default function CreateWarehousePage() {
   const router = useRouter()
-  const { toast } = useToast()
   const [createWarehouse, { isLoading: isCreating }] = useCreateWarehouseMutation()
 
   const initialValues = {

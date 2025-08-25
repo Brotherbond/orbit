@@ -1,6 +1,6 @@
 "use client"
 
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useCreateVehicleMutation } from "@/store/vehicles";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,6 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 
 export default function CreateVehiclePage() {
   const router = useRouter()
-  const { toast } = useToast()
   const [createVehicle, { isLoading: isCreating }] = useCreateVehicleMutation()
 
   const initialValues = {

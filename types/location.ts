@@ -13,6 +13,7 @@ export interface Location {
   latitude: number;
   longitude: number;
   markets: Market[];
+  markets_count: number;
   status: string;
   created_at: string;
 }

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
 import { handleDelete } from "@/lib/handleDelete";
 import type { Warehouse } from "@/types/warehouse";
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
@@ -16,7 +15,6 @@ import React, { useRef } from "react";
 
 export default function WarehousesPage() {
   const { data: session } = useSession()
-  const { toast } = useToast()
   const router = useRouter()
   const [bulkOpen, setBulkOpen] = React.useState(false);
   const dataTableRef = useRef<{ refresh: () => void }>(null);

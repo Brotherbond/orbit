@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
 import { handleDelete } from "@/lib/handleDelete";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -13,7 +12,8 @@ export default function WarehouseDetailPage({ params }: { params: { id: string }
   const user = session?.user;
   const { warehouse, fetchWarehouse } = useWarehouseContext();
   const router = useRouter();
-  const { toast } = useToast();
+
+  if (!warehouse) { return null; }
 
   const userRole = user?.role?.toLowerCase() || ""
 

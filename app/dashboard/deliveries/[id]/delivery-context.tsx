@@ -1,5 +1,5 @@
 "use client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useGetDeliveryQuery } from "@/store/deliveries";
 import type { Delivery } from "@/types/delivery";
 import React, { createContext, useCallback, useContext } from "react";
@@ -14,7 +14,7 @@ interface DeliveryContextValue {
 const DeliveryContext = createContext<DeliveryContextValue | undefined>(undefined);
 
 export function DeliveryProvider({ deliveryId, children }: { deliveryId: string; children: React.ReactNode }) {
-  const { toast } = useToast();
+  
 
   const {
     data: delivery,
@@ -23,7 +23,7 @@ export function DeliveryProvider({ deliveryId, children }: { deliveryId: string;
     refetch
   } = useGetDeliveryQuery(deliveryId);
 
-  // Handle errors from the query
+
   React.useEffect(() => {
     if (error) {
       toast({

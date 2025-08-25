@@ -2,7 +2,7 @@
 
 import { LocationForm } from "@/components/dashboard/LocationForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useCreateLocationMutation } from "@/store/locations";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,6 @@ import * as Yup from "yup";
 
 export default function CreateLocationPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [createLocation, { isLoading }] = useCreateLocationMutation();
 
   const initialValues = {

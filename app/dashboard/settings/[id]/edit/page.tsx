@@ -2,7 +2,7 @@
 
 import { SettingForm } from "@/components/dashboard/SettingForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateSettingMutation } from "@/store/settings";
 import { useRouter } from "next/navigation";
@@ -18,9 +18,10 @@ interface SettingData {
 
 export default function EditSettingPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { toast } = useToast();
   const [updateSetting] = useUpdateSettingMutation();
   const { setting, isLoading } = useSettingContext();
+
+  if (!setting) { return null; }
 
   const initialValues: SettingData = {
     key: setting?.key || "",

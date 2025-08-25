@@ -3,7 +3,7 @@
 import { useRoles } from "@/components/dashboard/RolesContext"
 import UserForm from "@/components/dashboard/UserForm"
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useCreateUserMutation } from "@/store/users"
 import { useRouter } from "next/navigation"
@@ -19,7 +19,6 @@ export default function CreateImeVssPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
   const [createUser, { isLoading }] = useCreateUserMutation()
   const router = useRouter()
-  const { toast } = useToast()
   const dispatch = useDispatch()
 
   const initialValues = {

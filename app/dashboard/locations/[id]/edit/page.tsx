@@ -1,7 +1,7 @@
 "use client";
 import { LocationForm } from "@/components/dashboard/LocationForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateLocationMutation } from "@/store/locations";
 import { useRouter } from "next/navigation";
@@ -21,9 +21,10 @@ interface LocationData {
 
 export default function EditLocationPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { toast } = useToast();
   const [updateLocation] = useUpdateLocationMutation();
   const { location, isLoading } = useLocationContext();
+
+  if (!location) { return null; }
 
   const initialValues: LocationData = {
     street: location?.street || "",

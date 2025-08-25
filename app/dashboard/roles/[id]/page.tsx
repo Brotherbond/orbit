@@ -2,33 +2,15 @@
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api-client";
-import { Role } from "@/types/role";
+import { useRoleContext } from "./role-context";
 import { Calendar, FileText, Laptop, Shield, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
 
 export default function RoleDetailPage({ params }: { params: { id: string } }) {
-  const [role, setRole] = useState<Role | null>(null)
   const router = useRouter()
-  const { toast } = useToast()
+  const { role } = useRoleContext()
 
-  useEffect(() => { fetchRole() }, [params.id])
-
-  const fetchRole = async () => {
-    try {
-      const { data } = await apiClient.get<{ item: Role }>(`/roles/${params.id}`)
-      setRole(data.item ?? null)
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch role details",
-        variant: "destructive",
-      })
-    }
-  }
+  if (!role) { return null; }
 
   return (
     <div>

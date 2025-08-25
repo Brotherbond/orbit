@@ -2,7 +2,7 @@
 
 import { MarketForm } from "@/components/dashboard/MarketForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useGetLocationsQuery } from "@/store/locations";
 import { useCreateMarketMutation } from "@/store/markets";
@@ -11,7 +11,6 @@ import * as Yup from "yup";
 
 export default function CreateMarketPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [createMarket, { isLoading }] = useCreateMarketMutation();
   const { data: locationsData, isLoading: locationsLoading } = useGetLocationsQuery();
 

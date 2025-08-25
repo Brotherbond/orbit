@@ -1,7 +1,7 @@
 "use client";
 import { DeliveryForm } from "@/components/dashboard/DeliveryForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateDeliveryMutation } from "@/store/deliveries";
 import type { Delivery } from "@/types/delivery";
@@ -12,11 +12,10 @@ import { useDeliveryContext } from "../delivery-context";
 export default function EditDeliveryPage({ params }: { params: { id: string } }) {
   const { delivery, isLoading, fetchDelivery } = useDeliveryContext();
   const router = useRouter()
-  const { toast } = useToast()
-  const [updateDelivery] = useUpdateDeliveryMutation();
-  if (!delivery) {
-    return null;
-  }
+    const [updateDelivery] = useUpdateDeliveryMutation();
+
+  if (!delivery) { return null; }
+
   const validationSchema = Yup.object({
     order_id: Yup.string().required("Order is required"),
     vehicle_id: Yup.string().required("Vehicle is required"),

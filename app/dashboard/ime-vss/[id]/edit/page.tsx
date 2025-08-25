@@ -2,7 +2,7 @@
 
 import { useRoles } from "@/components/dashboard/RolesContext"
 import UserForm from "@/components/dashboard/UserForm"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useUpdateIMEVSSMutation } from "@/store/ime-vss"
 import { useRouter } from "next/navigation"
@@ -22,9 +22,7 @@ export default function EditImeVssPage({ params }: { params: { id: string } }) {
   })
   const { roles, isLoading: isRolesLoading } = useRoles()
   const { imeVss, fetchImeVss } = useImeVssContext()
-
   const router = useRouter()
-  const { toast } = useToast()
   const [updateIMEVSS] = useUpdateIMEVSSMutation()
 
   useEffect(() => {
@@ -40,6 +38,8 @@ export default function EditImeVssPage({ params }: { params: { id: string } }) {
       })
     }
   }, [imeVss, roles])
+
+  if (!imeVss) { return null; }
 
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),

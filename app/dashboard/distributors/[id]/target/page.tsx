@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useCreateTargetMutation, useGetTargetsQuery, useUpdateTargetMutation } from "@/store/targets";
 import { Target } from "@/types/target";
@@ -17,8 +17,7 @@ import { useDistributor, useDistributorUser } from "../distributor-context";
 
 
 export default function DistributorTargetPage() {
-  const { toast } = useToast()
-  const { distributor } = useDistributor()
+    const { distributor } = useDistributor()
   const distributorUser = useDistributorUser()
   const [createTarget] = useCreateTargetMutation();
   const [updateTarget] = useUpdateTargetMutation();
@@ -66,7 +65,6 @@ export default function DistributorTargetPage() {
     start_date: Yup.date().required("Start date is required"),
     end_date: Yup.date().required("End date is required").min(Yup.ref('start_date'), "End date must be after start date"),
   }), [])
-
 
   const handleSubmit = useCallback(
     async (
@@ -127,7 +125,9 @@ export default function DistributorTargetPage() {
     }
   }, [existingTarget, distributorUser?.uuid])
 
-  if (isDistributorLoading || isTargetLoading) {
+  if (!distributor || !distributorUser) { return null; }
+
+  if (isTargetLoading) {
     return (
       <div>
         <div className="animate-pulse">
@@ -136,10 +136,6 @@ export default function DistributorTargetPage() {
         </div>
       </div>
     )
-  }
-
-  if (error || !distributor) {
-    notFound();
   }
 
   const isEditMode = !!existingTarget?.uuid;

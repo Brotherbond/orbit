@@ -4,6 +4,7 @@ export interface Market {
   id: string;
   uuid: string;
   name: string;
+  full_name: string;
   type: string;
   description: string;
   region: string;

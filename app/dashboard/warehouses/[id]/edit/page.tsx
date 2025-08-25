@@ -2,7 +2,7 @@
 
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { WarehouseForm } from "@/components/dashboard/WarehouseForm";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateWarehouseMutation } from "@/store/warehouses";
 import type { Warehouse } from "@/types/warehouse";
@@ -15,8 +15,9 @@ export default function EditWarehousePage({ params }: { params: { id: string } }
   const { warehouse, isLoading, fetchWarehouse } = useWarehouseContext();
   const { data: session } = useSession()
   const router = useRouter()
-  const { toast } = useToast()
   const [updateWarehouse] = useUpdateWarehouseMutation()
+
+  if (!warehouse) { return null; }
 
   const validationSchema = Yup.object({
     warehouse_code: Yup.string().required("Warehouse code is required"),

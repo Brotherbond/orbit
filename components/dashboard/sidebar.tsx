@@ -1,21 +1,21 @@
 "use client"
 import { Button } from "@/components/ui/button"
 import {
-  Building2,
-  FileText,
-  History,
-  Home,
-  LogOut,
-  MapPin,
-  Package,
-  PackageCheck,
-  Settings,
-  Shield,
-  ShoppingCart,
-  Truck,
-  UserCheck,
-  Users,
-  Warehouse,
+    Building2,
+    FileText,
+    History,
+    Home,
+    LogOut,
+    MapPin,
+    Package,
+    PackageCheck,
+    Settings,
+    Shield,
+    ShoppingCart,
+    Truck,
+    UserCheck,
+    Users,
+    Warehouse,
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
@@ -41,6 +41,7 @@ const iconMap: Record<string, IconType> = {
   "Roles & Permissions": Shield,
   Reports: FileText,
   "Audit Logs": History,
+
   Settings: Settings,
 };
 

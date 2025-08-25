@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/modal";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { DownloadIcon, FileIcon, UploadIcon, XIcon } from "lucide-react";
@@ -30,7 +30,6 @@ export function BulkUploadModal({
   title,
   label,
 }: BulkUploadModalProps) {
-  const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);

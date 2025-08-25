@@ -86,9 +86,9 @@ function DistributorUserName() {
   if (!distributor?.user) return null
 
   return (
-    <p className="text-[#ababab]">
+    <span className="text-[#ababab]">
       {distributor.user.first_name} {distributor.user.last_name}
-    </p>
+    </span>
   )
 }
 

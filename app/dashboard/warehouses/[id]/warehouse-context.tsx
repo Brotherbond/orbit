@@ -1,5 +1,5 @@
 "use client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useGetWarehouseQuery } from "@/store/warehouses";
 import type { Warehouse } from "@/types/warehouse";
 import React, { createContext, useCallback, useContext } from "react";
@@ -14,7 +14,6 @@ interface WarehouseContextValue {
 const WarehouseContext = createContext<WarehouseContextValue | undefined>(undefined);
 
 export function WarehouseProvider({ warehouseId, children }: { warehouseId: string; children: React.ReactNode }) {
-  const { toast } = useToast();
 
   const {
     data: warehouse,

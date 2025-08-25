@@ -3,7 +3,7 @@
 import { useRoles } from "@/components/dashboard/RolesContext";
 import UserForm from "@/components/dashboard/UserForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateUserMutation } from "@/store/users";
 import { useRouter } from "next/navigation";
@@ -13,9 +13,10 @@ import { useUserContext } from "../user-context";
 export default function EditUserPage({ params }: { params: { id: string } }) {
   const { roles, isLoading: isRolesLoading } = useRoles()
   const router = useRouter()
-  const { toast } = useToast()
   const [updateUser] = useUpdateUserMutation()
   const { user, isLoading, fetchUser } = useUserContext();
+
+  if (!user) { return null; }
 
   const initialValues = {
     first_name: user?.first_name || "",

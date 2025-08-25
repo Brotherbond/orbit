@@ -1,7 +1,6 @@
-"use client";
+"use client";;
 import BrandForm from "@/components/dashboard/BrandForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateBrandMutation } from "@/store/brands";
 import { BrandPackage } from "@/types/brand";
@@ -9,14 +8,14 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 import { useBrandContext } from "../brand-context";
+import { toast } from "@/hooks/use-toast";
 
 export default function EditBrandPage({ params }: { params: { id: string } }) {
   const { brand, isLoading, fetchBrand } = useBrandContext();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const router = useRouter();
-  const { toast } = useToast();
+  
   const [updateBrand] = useUpdateBrandMutation();
-
   const initialValues = useMemo(() => {
     if (!brand) return null;
     return {
@@ -39,6 +38,7 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
       })),
     };
   }, [brand]);
+  if (!brand) { return null; }
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Brand name is required"),

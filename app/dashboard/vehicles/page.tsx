@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import type { Vehicle } from "@/types/vehicle"
 import { Button } from "@/components/ui/button"
 import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react"
@@ -17,7 +17,6 @@ import { handleDelete } from "@/lib/handleDelete"
 
 export default function VehiclesPage() {
   const { data: session } = useSession()
-  const { toast } = useToast()
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null);
 

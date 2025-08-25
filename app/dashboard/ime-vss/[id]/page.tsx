@@ -7,6 +7,8 @@ import { useImeVssContext } from "./ime-vss-context";
 export default function ImeVssDetailPage({ params }: { params: { id: string } }) {
   const { imeVss } = useImeVssContext();
 
+  if (!imeVss) { return null; }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">

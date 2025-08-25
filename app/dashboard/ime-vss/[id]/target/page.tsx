@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useCreateTargetMutation, useGetTargetsQuery, useUpdateTargetMutation } from "@/store/targets";
 import { Target } from "@/types/target";
@@ -16,7 +16,6 @@ import * as Yup from "yup";
 import { useImeVssContext } from "../ime-vss-context";
 
 export default function ImeVssTargetPage() {
-  const { toast } = useToast()
   const { imeVss } = useImeVssContext()
   const [createTarget] = useCreateTargetMutation();
   const [updateTarget] = useUpdateTargetMutation();
@@ -124,7 +123,7 @@ export default function ImeVssTargetPage() {
     }
   }, [existingTarget, imeVss?.uuid])
 
-
+  if (!imeVss) { return null; }
 
   const isEditMode = !!existingTarget?.uuid;
 

@@ -1,5 +1,5 @@
 "use client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useGetVehicleQuery } from "@/store/vehicles";
 import type { Vehicle } from "@/types/vehicle";
 import React, { createContext, useCallback, useContext } from "react";
@@ -14,7 +14,6 @@ interface VehicleContextValue {
 const VehicleContext = createContext<VehicleContextValue | undefined>(undefined);
 
 export function VehicleProvider({ vehicleId, children }: { vehicleId: string; children: React.ReactNode }) {
-  const { toast } = useToast();
 
   const {
     data: vehicle,
@@ -23,7 +22,7 @@ export function VehicleProvider({ vehicleId, children }: { vehicleId: string; ch
     refetch
   } = useGetVehicleQuery(vehicleId);
 
-  // Handle errors from the query
+
   React.useEffect(() => {
     if (error) {
       toast({

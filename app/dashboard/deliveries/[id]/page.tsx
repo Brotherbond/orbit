@@ -1,7 +1,6 @@
 "use client";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -14,7 +13,8 @@ export default function DeliveryDetailPage({ params }: { params: { id: string } 
   const user = session?.user;
   const { delivery } = useDeliveryContext();
   const router = useRouter();
-  const { toast } = useToast();
+
+  if (!delivery) { return null; }
 
   const icons: Record<string, ComponentType<SVGProps<SVGSVGElement>> | undefined> = {
     orderRef: Package,

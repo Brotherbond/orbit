@@ -1,7 +1,7 @@
 "use client";
 import BrandForm from "@/components/dashboard/BrandForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useCreateBrandMutation } from "@/store/brands";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ export default function CreateBrandPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const router = useRouter();
-  const { toast } = useToast();
+  
   const [createBrand] = useCreateBrandMutation();
 
   const initialValues = {

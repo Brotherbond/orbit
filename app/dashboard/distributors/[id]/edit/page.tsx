@@ -1,7 +1,7 @@
 "use client"
 
 import UserForm from "@/components/dashboard/UserForm";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useUpdateDistributorMutation } from "@/store/distributors";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
@@ -23,8 +23,7 @@ interface Distributor {
 export default function EditDistributorPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
-  const { distributor, updateDistributor } = useDistributor()
+    const { distributor, updateDistributor } = useDistributor()
   const [updateDistributorMutation] = useUpdateDistributorMutation()
 
   const initialValues = useMemo<Distributor>(() => {

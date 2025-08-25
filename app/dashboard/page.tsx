@@ -9,16 +9,16 @@ import type { RootState } from "@/store";
 import { useGetDashboardQuery } from "@/store/dashboard-api";
 import { RevenueWithDay } from "@/types/dashboard";
 import { Package, ShoppingCart } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { getColumns } from "./orders/page";
+import { useOrderColumns } from "@/hooks/useOrderColumns";
+import { useSession } from "next-auth/react";
 
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
   const dateRange = useSelector((state: RootState) => state.dashboardFilters.dateRange);
   const selectedFilter = useSelector((state: RootState) => state.dashboardFilters.selectedFilter);
 
@@ -31,15 +31,8 @@ export default function DashboardPage() {
   );
   const dataTableRef = useRef<{ refresh: () => void }>(null)
   const [periodType, setPeriodType] = useState('');
-  const { data: session } = useSession()
-  const router = useRouter()
+  const { columns } = useOrderColumns();
 
-
-
-  const columns = useMemo(
-    () => getColumns(session, router, () => { }),
-    [session, router]
-  )
 
   const sortedRevenue: RevenueWithDay[] = useMemo(() => {
     if (!dashboardData || !dashboardData.revenue) return [];
@@ -84,7 +77,9 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#444444]">Dashboard</h1>
-          <p className="text-[#ababab]">Welcome back! Here&apos;s what&apos;s happening with your business.</p>
+          <p className="text-[#ababab]">
+            Welcome back, {session?.user?.first_name || "User"}! Here&apos;s what&apos;s happening with your business.
+          </p>
         </div>
         <div className="flex items-center">
           <DateFilter />
@@ -211,7 +206,6 @@ export default function DashboardPage() {
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
                 store="orders"
                 per_page={5}
-                filters={filters}
                 exportFileName="recent-orders.xlsx"
               />
             </div>

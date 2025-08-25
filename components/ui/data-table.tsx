@@ -3,33 +3,32 @@
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SelectWithFetch } from "@/components/ui/select";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
 import { apiClient } from "@/lib/api-client";
 import {
-  type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
+    type ColumnFiltersState,
+    type SortingState,
+    type VisibilityState,
+    flexRender,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, Download, Filter, RefreshCw, Search } from "lucide-react";
 import * as React from "react";
@@ -155,7 +154,6 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
 ) {
-  const { dismiss } = useToast();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [paginationInput, setPaginationInput] = React.useState("");
   const [paginationError, setPaginationError] = React.useState("");

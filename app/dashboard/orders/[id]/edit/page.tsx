@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateOrderMutation } from "@/store/orders";
 import { ErrorMessage, Form, Formik } from "formik";
@@ -47,8 +46,9 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
   const { order, isLoading, fetchOrder } = useOrderContext();
   const { data: session } = useSession()
   const router = useRouter()
-  const { toast } = useToast()
   const [updateOrder] = useUpdateOrderMutation()
+
+  if (!order) { return null; }
 
   const validationSchema = Yup.object({
     status: Yup.string().oneOf([

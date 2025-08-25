@@ -2,7 +2,6 @@
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { Calendar, FileText, Settings } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { SettingProvider, useSettingContext } from "./setting-context";
@@ -29,7 +28,8 @@ export default function SettingDetailPage({ params }: { params: { id: string } }
 function SettingDetailPageContent({ params }: { params: { id: string } }) {
   const { setting } = useSettingContext();
   const router = useRouter();
-  const { toast } = useToast();
+
+  if (!setting) { return null; }
 
   return (
     <div>

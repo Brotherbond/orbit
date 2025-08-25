@@ -1,56 +1,16 @@
-"use client";;
+"use client";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api-client";
+import { useUserContext } from "./user-context";
 import { Calendar, Mail, MapPin, Phone, Shield, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
-interface UserDetail {
-  id: string
-  uuid: string
-  first_name: string
-  last_name: string
-  email: string
-  phone: string
-  role: {
-    id: string
-    name: string
-  }
-  market: {
-    id: string
-    name: string
-  }
-  status: string
-  created_at: string
-  updated_at: string
-  last_login: string
-}
 
 export default function UserDetailPage({ params }: { params: { id: string } }) {
-  const [user, setUser] = useState<UserDetail | null>(null)
   const router = useRouter()
-  const { toast } = useToast()
+  const { user } = useUserContext()
 
-  useEffect(() => {
-    fetchUser()
-  }, [params.id])
-
-  const fetchUser = async () => {
-    try {
-      const { data } = await apiClient.get<{ item: UserDetail }>(`/users/${params.id}`)
-      setUser(data.item ?? null)
-    } catch (error: any) {
-      setUser(null)
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to fetch user details",
-        variant: "destructive",
-      })
-    }
-  }
+  if (!user) { return null; }
 
   return (
     <div>

@@ -1,7 +1,7 @@
 "use client";
 import { MarketForm } from "@/components/dashboard/MarketForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useGetLocationsQuery } from "@/store/locations";
 import { useUpdateMarketMutation } from "@/store/markets";
@@ -18,10 +18,11 @@ interface MarketData {
 
 export default function EditMarketPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { toast } = useToast();
   const [updateMarket] = useUpdateMarketMutation();
   const { market, isLoading } = useMarketContext();
   const { data: locationsData, isLoading: locationsLoading } = useGetLocationsQuery();
+
+  if (!market) { return null; }
 
   const initialValues: MarketData = {
     name: market?.name || "",

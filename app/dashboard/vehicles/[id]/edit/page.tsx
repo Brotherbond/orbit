@@ -2,7 +2,7 @@
 
 import { VehicleForm } from "@/components/dashboard/VehicleForm"
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useUpdateVehicleMutation } from "@/store/vehicles"
 import type { Vehicle } from "@/types/vehicle"
@@ -13,9 +13,9 @@ import { useVehicleContext } from "../vehicle-context"
 export default function EditVehiclePage({ params }: { params: { id: string } }) {
   const { vehicle, isLoading, fetchVehicle } = useVehicleContext();
   const router = useRouter()
-  const { toast } = useToast()
   const [updateVehicle] = useUpdateVehicleMutation()
 
+  if (!vehicle) { return null; }
 
   const validationSchema = Yup.object({
     vehicle_number: Yup.string().required("Vehicle number is required"),
