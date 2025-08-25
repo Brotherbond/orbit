@@ -12,29 +12,25 @@ import { useDeliveryContext } from "../delivery-context";
 export default function EditDeliveryPage({ params }: { params: { id: string } }) {
   const { delivery, isLoading, fetchDelivery } = useDeliveryContext();
   const router = useRouter()
-    const [updateDelivery] = useUpdateDeliveryMutation();
+  const [updateDelivery] = useUpdateDeliveryMutation();
 
   if (!delivery) { return null; }
 
   const validationSchema = Yup.object({
     order_id: Yup.string().required("Order is required"),
     vehicle_id: Yup.string().required("Vehicle is required"),
-    distance: Yup.string().required("Distance is required"),
-    cost_ratio: Yup.string().required("Cost Ratio is required"),
-    delivery_burn_rate: Yup.string().required("Burn Rate is required"),
-    from: Yup.string().required("From location is required"),
-    to: Yup.string().required("To location is required"),
   });
 
-  const initialValues = { ...delivery, order_id: delivery?.order?.uuid, vehicle_id: delivery?.vehicle?.uuid, to: delivery?.to?.uuid, from: delivery?.from?.uuid };
+  const initialValues = {
+    order_id: delivery?.order?.uuid || "",
+    vehicle_id: delivery?.vehicle?.uuid || "",
+  };
 
-  const handleSubmit = async (values: Delivery, helpers: any) => {
+  const handleSubmit = async (values: typeof initialValues, helpers: any) => {
     const payload = {
-      ...values,
-      distance: Number(values.distance),
-      cost_ratio: Number(values.cost_ratio),
-      delivery_burn_rate: Number(values.delivery_burn_rate),
-    };
+      order_id: values.order_id,
+      vehicle_id: values.vehicle_id,
+    } as Partial<Delivery>;
     try {
       await updateDelivery({ id: params.id, data: payload }).unwrap();
       toast({ title: "Success", description: "Delivery updated successfully" });
@@ -68,29 +64,6 @@ export default function EditDeliveryPage({ params }: { params: { id: string } })
       labelKey: "type",
       placeholder: "Select vehicle",
     },
-    {
-      name: "from",
-      label: "From Location",
-      type: "selectWithFetch" as const,
-      required: true,
-      fetchUrl: "/locations",
-      valueKey: "uuid",
-      labelKey: "full_location",
-      placeholder: "Select from location",
-    },
-    {
-      name: "to",
-      label: "To Location",
-      type: "selectWithFetch" as const,
-      required: true,
-      fetchUrl: "/locations",
-      valueKey: "uuid",
-      labelKey: "full_location",
-      placeholder: "Select to location",
-    },
-    { name: "distance", label: "Distance (km)", type: "text" as const, required: true, placeholder: "Distance" },
-    // { name: "cost_ratio", label: "Cost Ratio", type: "text" as const, required: true, placeholder: "Cost Ratio" },
-    // { name: "delivery_burn_rate", label: "Burn Rate", type: "text" as const, required: true, placeholder: "Burn Rate" },
   ];
 
   return (

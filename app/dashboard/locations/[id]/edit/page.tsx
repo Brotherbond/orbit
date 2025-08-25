@@ -19,7 +19,7 @@ interface LocationData {
 }
 
 
-export default function EditLocationPage({ params }: { params: { id: string } }) {
+export default function EditLocationPage() {
   const router = useRouter();
   const [updateLocation] = useUpdateLocationMutation();
   const { location, isLoading } = useLocationContext();
@@ -56,7 +56,7 @@ export default function EditLocationPage({ params }: { params: { id: string } })
 
   const handleSubmit = async (values: LocationData, helpers: any) => {
     try {
-      await updateLocation({ id: params.id, data: values }).unwrap();
+      await updateLocation({ id: location.uuid, data: values }).unwrap();
       toast({
         title: "Success",
         description: "Location updated successfully",

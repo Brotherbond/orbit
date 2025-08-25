@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation"
 import * as Yup from "yup"
 import { useVehicleContext } from "../vehicle-context"
 
-export default function EditVehiclePage({ params }: { params: { id: string } }) {
+export default function EditVehiclePage() {
   const { vehicle, isLoading, fetchVehicle } = useVehicleContext();
   const router = useRouter()
   const [updateVehicle] = useUpdateVehicleMutation()
@@ -40,10 +40,10 @@ export default function EditVehiclePage({ params }: { params: { id: string } }) 
         width: values.width,
         max_weight: values.max_weight,
       };
-      await updateVehicle({ id: params.id, data }).unwrap();
+      await updateVehicle({ id: vehicle.uuid, data }).unwrap();
       toast({ title: "Success", description: "Vehicle updated successfully" });
       fetchVehicle();
-      router.push(`/dashboard/vehicles/${params.id}`);
+      router.push(`/dashboard/vehicles/${vehicle.uuid}`);
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {

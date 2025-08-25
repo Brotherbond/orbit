@@ -1,14 +1,14 @@
 "use client";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck } from "lucide-react";
+import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck, MapPin } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { ComponentType, SVGProps } from "react";
 import { useDeliveryContext } from "./delivery-context";
 import { formatLabelToTitleCase } from "@/lib/label-formatters";
 
-export default function DeliveryDetailPage({ params }: { params: { id: string } }) {
+export default function DeliveryDetailPage() {
   const { data: session } = useSession();
   const user = session?.user;
   const { delivery } = useDeliveryContext();
@@ -20,6 +20,8 @@ export default function DeliveryDetailPage({ params }: { params: { id: string } 
     orderRef: Package,
     vehicleNumber: Truck,
     vehicleType: Truck,
+    pickupLocation: MapPin,
+    dropoffLocation: MapPin,
     distance: Ruler,
     costRatio: Percent,
     burnRate: Flame,
@@ -73,6 +75,20 @@ export default function DeliveryDetailPage({ params }: { params: { id: string } 
               <div>
                 <p className="text-sm text-[#ababab]">Vehicle Type</p>
                 <p className="font-medium text-[#444444]">{delivery.vehicle?.type}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Icon name="pickupLocation" />
+              <div>
+                <p className="text-sm text-[#ababab]">Pickup Location</p>
+                <p className="font-medium text-[#444444]">{delivery.from?.full_location || "Not specified"}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Icon name="dropoffLocation" />
+              <div>
+                <p className="text-sm text-[#ababab]">Drop Off Location</p>
+                <p className="font-medium text-[#444444]">{delivery.to?.full_location || "Not specified"}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">

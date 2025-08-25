@@ -5,7 +5,7 @@ import { Calendar, Car, Fuel, Gauge, Ruler, Scale, Truck } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useVehicleContext } from "./vehicle-context";
 
-export default function VehicleDetailPage({ params }: { params: { id: string } }) {
+export default function VehicleDetailPage() {
   const { data: session } = useSession();
   const user = session?.user;
   const { vehicle } = useVehicleContext();

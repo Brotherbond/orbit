@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 import { useWarehouseContext } from "../warehouse-context";
 
-export default function EditWarehousePage({ params }: { params: { id: string } }) {
+export default function EditWarehousePage() {
   const { warehouse, isLoading, fetchWarehouse } = useWarehouseContext();
   const { data: session } = useSession()
   const router = useRouter()
@@ -34,10 +34,10 @@ export default function EditWarehousePage({ params }: { params: { id: string } }
         address: values.address,
         location: values.location,
       };
-      await updateWarehouse({ id: params.id, data: payload }).unwrap();
+      await updateWarehouse({ id: warehouse.uuid, data: payload }).unwrap();
       toast({ title: "Success", description: "Warehouse updated successfully" });
       fetchWarehouse();
-      router.push(`/dashboard/warehouses/${params.id}`);
+      router.push(`/dashboard/warehouses/${warehouse.uuid}`);
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {

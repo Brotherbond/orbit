@@ -4,13 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Tag, FileText } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useBrandContext } from "./brand-context";
 
-export default function BrandDetailPage({ params }: { params: { id: string } }) {
+export default function BrandDetailPage() {
   const { brand } = useBrandContext();
-  const router = useRouter();
-
   if (!brand) { return null; }
 
   return (

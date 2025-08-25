@@ -16,7 +16,7 @@ interface MarketData {
   location_id: string
 }
 
-export default function EditMarketPage({ params }: { params: { id: string } }) {
+export default function EditMarketPage() {
   const router = useRouter();
   const [updateMarket] = useUpdateMarketMutation();
   const { market, isLoading } = useMarketContext();
@@ -42,7 +42,7 @@ export default function EditMarketPage({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (values: MarketData, helpers: any) => {
     try {
-      await updateMarket({ id: params.id, data: values }).unwrap();
+      await updateMarket({ id: market.uuid, data: values }).unwrap();
       toast({
         title: "Success",
         description: "Market updated successfully",

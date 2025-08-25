@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import * as Yup from "yup"
 import { useImeVssContext } from "../ime-vss-context"
 
-export default function EditImeVssPage({ params }: { params: { id: string } }) {
+export default function EditImeVssPage() {
   const [initialValues, setInitialValues] = useState({
     first_name: "",
     last_name: "",
@@ -118,13 +118,13 @@ export default function EditImeVssPage({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     try {
-      await updateIMEVSS({ id: params.id, data: values }).unwrap()
+      await updateIMEVSS({ id: imeVss.uuid, data: values }).unwrap()
       toast({
         title: "Success",
         description: "IME-VSS updated successfully",
       })
       fetchImeVss()
-      router.push(`/dashboard/ime-vss/${params.id}`)
+      router.push(`/dashboard/ime-vss/${imeVss.uuid}`)
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {

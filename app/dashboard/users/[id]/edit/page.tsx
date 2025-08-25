@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 import { useUserContext } from "../user-context";
 
-export default function EditUserPage({ params }: { params: { id: string } }) {
+export default function EditUserPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
   const router = useRouter()
   const [updateUser] = useUpdateUserMutation()
@@ -91,10 +91,10 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     try {
-      await updateUser({ id: params.id, data: values }).unwrap();
+      await updateUser({ id: user.uuid, data: values }).unwrap();
       toast({ title: "Success", description: "User updated successfully" });
       fetchUser();
-      router.push(`/dashboard/users/${params.id}`);
+      router.push(`/dashboard/users/${user.uuid}`);
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {

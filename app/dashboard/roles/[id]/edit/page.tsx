@@ -5,7 +5,7 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { useRouter } from "next/navigation";
 import { useRoleContext } from "../role-context";
 
-export default function EditRolePage({ params }: { params: { id: string } }) {
+export default function EditRolePage() {
   const router = useRouter();
   const { role, isLoading } = useRoleContext();
   if (!role) { return null; }
@@ -31,7 +31,7 @@ export default function EditRolePage({ params }: { params: { id: string } }) {
       <RoleForm
         initialValues={initialValues}
         isEdit={true}
-        roleId={params.id}
+        roleId={role.uuid}
         title="Edit Role"
         description="Update role information"
         submitButtonText="Update Role"

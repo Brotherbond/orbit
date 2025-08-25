@@ -10,7 +10,7 @@ import * as Yup from "yup";
 import { useBrandContext } from "../brand-context";
 import { toast } from "@/hooks/use-toast";
 
-export default function EditBrandPage({ params }: { params: { id: string } }) {
+export default function EditBrandPage() {
   const { brand, isLoading, fetchBrand } = useBrandContext();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const router = useRouter();
@@ -78,13 +78,13 @@ export default function EditBrandPage({ params }: { params: { id: string } }) {
           formData.append(`packages[${idx}][${key}]`, String(val));
         });
       });
-      await updateBrand({ id: params.id, data: formData as any }).unwrap();
+      await updateBrand({ id: brand.uuid, data: formData as any }).unwrap();
       toast({
         title: "Success",
         description: "Brand updated successfully",
       });
       fetchBrand();
-      router.push(`/dashboard/brands/${params.id}`);
+      router.push(`/dashboard/brands/${brand.uuid}`);
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {

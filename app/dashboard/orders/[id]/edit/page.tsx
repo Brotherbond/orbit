@@ -42,7 +42,7 @@ interface OrderData {
   content?: string
 }
 
-export default function EditOrderPage({ params }: { params: { id: string } }) {
+export default function EditOrderPage() {
   const { order, isLoading, fetchOrder } = useOrderContext();
   const { data: session } = useSession()
   const router = useRouter()
@@ -69,9 +69,9 @@ export default function EditOrderPage({ params }: { params: { id: string } }) {
         await handleMessageSubmit(values?.content || "");
       }
       const payload = { status: values?.status }
-      await updateOrder({ id: params.id, data: payload as any }).unwrap()
+      await updateOrder({ id: order.uuid, data: payload as any }).unwrap()
       fetchOrder(); // Refetch the order data
-      router.push(`/dashboard/orders/${params.id}`)
+      router.push(`/dashboard/orders/${order.uuid}`)
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {
